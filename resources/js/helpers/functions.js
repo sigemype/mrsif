@@ -1,8 +1,11 @@
-function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pigv) {
+function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pigv,isEdit) {
     // console.log(currency_type_id_new, exchange_rate_sale)
 
     let currency_type_id_old = row_old.item.currency_type_id
     let unit_price = parseFloat(row_old.item.unit_price)
+    if(row_old.item.meter && row_old.item.meter > 0 && !isEdit){
+        unit_price = parseFloat(row_old.item.unit_price) * parseFloat(row_old.item.meter)
+    }
     // } else {
     //     unit_price = parseFloat(row_old.item.unit_price) * 1.18
     // }
@@ -18,7 +21,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pig
         unit_price = unit_price * exchange_rate_sale;
     }
 
-    // unit_price = _.round(unit_price, 4);
+    // unit_price = _.round(unit_price, 4); 
 
 
     // fixed for update sale_note
@@ -110,7 +113,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pig
     //     }
     //     row.discounts.splice(index, discount)
     // })
-    if (row.discounts.length > 0) {
+    if (row.discounts && row.discounts.length > 0) {
         row.discounts.forEach((discount, index) => {
 
             let affectation_igv_type_exonerated = ['20', '21', '30', '31', '32', '33', '34', '35', '36', '37']
@@ -196,7 +199,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pig
     /* Charges */
     let charge_base = 0
     let charge_no_base = 0
-    if (row.charges.length > 0) {
+    if (row.charges && row.charges.length > 0) {
         row.charges.forEach((charge, index) => {
             charge.percentage = parseFloat(charge.percentage)
             charge.factor = charge.percentage / 100
@@ -312,7 +315,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pig
 
 
     // descuentos, se modifica precio unitario y total descuentos
-    if (row.discounts.length > 0) {
+    if (row.discounts && row.discounts.length > 0) {
 
         let sum_discount_no_base = 0
         let sum_discount_base = 0
@@ -349,7 +352,7 @@ function calculateRowItem(row_old, currency_type_id_new, exchange_rate_sale, pig
     row.total_without_rounding = total
 
 
-    if (row.affectation_igv_type.free) {
+    if (row.affectation_igv_type && row.affectation_igv_type.free) {
         row.price_type_id = '02'
         row.unit_value = 0
         // row.total_value = 0

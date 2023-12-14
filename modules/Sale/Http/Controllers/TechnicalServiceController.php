@@ -119,7 +119,7 @@
                     'number' => $row->number
                 ];
             });
-            $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+            $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
             $document_types_note = DocumentType::whereIn('id', ['07', '08'])->get();
             $note_credit_types = NoteCreditType::whereActive()->orderByDescription()->get();
             $note_debit_types = NoteDebitType::whereActive()->orderByDescription()->get();

@@ -1,16 +1,25 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
 
     $document_base = $document->note;
     $document_number = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
     $document_type_description_array = [
-        '01' => 'FACTURA',
-        '03' => 'BOLETA DE VENTA',
+        '01' => 'Factura',
+        '03' => 'Boleta DE VENTA',
         '07' => 'NOTA DE CREDITO',
         '08' => 'NOTA DE DEBITO',
     ];
@@ -79,7 +88,7 @@ $logo = "{$establishment->logo}";
 </table>
 <table class="full-width">
     <tr>
-        <td width="45%" class="pt-3"><p class="desc">FECHA DE EMISIÓN:</p></td>
+        <td width="45%" class="pt-3"><p class="desc">Fecha de emisión:</p></td>
         <td width="" class="pt-3"><p class="desc">{{ $document->date_of_issue->format('Y-m-d') }}</p></td>
     </tr>
     @isset($document->date_of_due)
@@ -90,7 +99,7 @@ $logo = "{$establishment->logo}";
     @endisset
 
     <tr>
-        <td><p class="desc">CLIENTE:</p></td>
+        <td><p class="desc">Cliente:</p></td>
         <td><p class="desc"><strong>{{ $customer->name }}</p></td>
     </tr>
     <tr>
@@ -99,7 +108,7 @@ $logo = "{$establishment->logo}";
     </tr>
     @if ($customer->address !== '')
         <tr>
-            <td class="align-top"><p class="desc"><strong>DIRECCIÓN:</p></td>
+            <td class="align-top"><p class="desc"><strong>Dirección:</p></td>
             <td>
                 <p class="desc">
                     {{ $customer->address }}
@@ -150,7 +159,7 @@ $logo = "{$establishment->logo}";
     @endif
     @if ($optional->method_payment)
         <tr>
-            <td class="desc">Cond. de pago:</td>
+            <td class="desc">Cond. de Pago:</td>
             <td class="desc">{{ $optional->method_payment  }}</td>
         </tr>
     @endif --}}
@@ -158,11 +167,11 @@ $logo = "{$establishment->logo}";
 <table class="full-width mt-10 mb-10">
     <thead class="">
     <tr>
-        <th class="border-top-bottom desc-9 text-left">CANT.</th>
-        <th class="border-top-bottom desc-9 text-left">UNIDAD</th>
-        <th class="border-top-bottom desc-9 text-left">DESCRIPCIÓN</th>
-        <th class="border-top-bottom desc-9 text-left">P.UNIT</th>
-        <th class="border-top-bottom desc-9 text-left">TOTAL</th>
+        <th class="border-top-bottom desc-9 text-left">Cant.</th>
+        <th class="border-top-bottom desc-9 text-left">Unidad</th>
+        <th class="border-top-bottom desc-9 text-left">Descripción</th>
+        <th class="border-top-bottom desc-9 text-left">P.Unit</th>
+        <th class="border-top-bottom desc-9 text-left">Total</th>
     </tr>
     </thead>
     <tbody>
@@ -198,37 +207,37 @@ $logo = "{$establishment->logo}";
     @endforeach
         @if($document->total_exportation > 0)
             <tr>
-                <td colspan="4" class="text-right font-bold desc">OP. EXPORTACIÓN: {{ $document->currency_type->symbol }}</td>
+                <td colspan="4" class="text-right font-bold desc">Op. Exportación: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold desc">{{ number_format($document->total_exportation, 2) }}</td>
             </tr>
         @endif
         @if($document->total_free > 0)
             <tr>
-                <td colspan="4" class="text-right font-bold desc">OP. GRATUITAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="4" class="text-right font-bold desc">Op. Gratuitas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold desc">{{ number_format($document->total_free, 2) }}</td>
             </tr>
         @endif
         @if($document->total_unaffected > 0)
             <tr>
-                <td colspan="4" class="text-right font-bold desc">OP. INAFECTAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="4" class="text-right font-bold desc">Op. Inafectas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold desc">{{ number_format($document->total_unaffected, 2) }}</td>
             </tr>
         @endif
         @if($document->total_exonerated > 0)
             <tr>
-                <td colspan="4" class="text-right font-bold desc">OP. EXONERADAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="4" class="text-right font-bold desc">Op. Exoneradas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold desc">{{ number_format($document->total_exonerated, 2) }}</td>
             </tr>
         @endif
         @if($document->total_taxed > 0)
             <tr>
-                <td colspan="4" class="text-right font-bold desc">OP. GRAVADAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="4" class="text-right font-bold desc">Op. Gravadas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold desc">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
         @endif
         @if($document->total_discount > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif
@@ -237,7 +246,7 @@ $logo = "{$establishment->logo}";
             <td class="text-right font-bold desc">{{ number_format($document->total_igv, 2) }}</td>
         </tr>
         <tr>
-            <td colspan="4" class="text-right font-bold desc">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+            <td colspan="4" class="text-right font-bold desc">Total a pagar: {{ $document->currency_type->symbol }}</td>
             <td class="text-right font-bold desc">{{ number_format($document->total, 2) }}</td>
         </tr>
     </tbody>

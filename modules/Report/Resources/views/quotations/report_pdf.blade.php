@@ -105,6 +105,7 @@
                                 <th class="text-right">T.Gravado</th>
                                 <th class="text-right">T.Igv</th>
                                 <th class="text-right">Total</th>
+                                <th class="text-right">Pagos</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -141,6 +142,10 @@
                                     <td class="celda">{{ $value->total_taxed}}</td>
                                     <td class="celda">{{ $value->total_igv}}</td>
                                     <td class="celda">{{ $value->total}}</td>
+                                    @php
+                                        $payments = $value->payments->sum('payment');
+                                    @endphp
+                                    <td class="celda">{{ number_format($payments,2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

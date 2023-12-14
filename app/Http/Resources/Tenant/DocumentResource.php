@@ -82,7 +82,7 @@ class DocumentResource extends JsonResource
             'customer_telephone' => optional($document->person)->telephone,
             'message_text' => "Su comprobante de pago electrónico {$this->number_full} ha sido generado correctamente, puede revisarlo en el siguiente enlace: ".url('')."/print/document/{$this->external_id}/a4"."",
             'sales_note' => $nvs,
-
+            'bill_of_exchange_id' => $document->bill_of_exchange_id,
             'send_to_pse' => $document->send_to_pse,
             'response_signature_pse' => optional($document->response_signature_pse)->message,
             'response_send_cdr_pse' => optional($document->response_send_cdr_pse)->message,

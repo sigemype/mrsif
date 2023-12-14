@@ -74,6 +74,9 @@ use App\CoreFacturalo\Helpers\Storage\StorageDocument;
 use App\CoreFacturalo\Requests\Inputs\Common\PersonInput;
 use Modules\Suscription\Models\Tenant\SuscriptionPayment;
 use App\CoreFacturalo\Requests\Inputs\Common\EstablishmentInput;
+use App\Exports\SaleNoteExport;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Modules\Inventory\Models\InventoryConfiguration;
 
 class SaleNoteController extends Controller
 {
@@ -88,7 +91,38 @@ class SaleNoteController extends Controller
     protected $sale_note;
     protected $company;
     protected $apply_change;
+    protected $document;
 
+    public function excel(Request $request)
+    {
+        if ($request->column == 'customer_id') {
+            $records = SaleNote::where($request->column, '=', $request->value)
+                ->latest('id');
+            // dd(SaleNote::where($request->column, '=',$request->value)->toSql());
+        } else if ($request->column == 'date_of_issue') {
+            if ($request->end != null) {
+                $records = SaleNote::whereBetween($request->column, [$request->value, $request->end])->latest('id');
+            } else {
+                $records = SaleNote::where($request->column, 'like', "%{$request->value}%")->latest('id');
+            }
+        } else {
+            $records = SaleNote::where($request->column, 'like', "%{$request->value}%")->latest('id');
+        }
+
+
+
+
+        if ($request->series) {
+            $records = $records->where('series', 'like', '%' . $request->series . '%');
+        }
+        $records = $records->get();
+        $company = Company::active();
+        $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+        return (new SaleNoteExport)
+            ->records($records)
+            ->company($company)
+            ->download('Reporte_Nota_de_Venta_' . Carbon::now() . '.xlsx');
+    }
     public function index()
     {
         $company = Company::select('soap_type_id')->first();
@@ -99,25 +133,27 @@ class SaleNoteController extends Controller
     }
 
 
+
     public function create($id = null)
-    {   
-        $cashid=null;
-        if($id!=null){
+    {
+        $cashid = null;
+        if ($id != null) {
             $salenote = SaleNote::find($id);
-            $cash_open = Cash::where('user_id',$salenote->user_id)->where('state',true)->first();
-            if($cash_open!=null){
+            $cash_open = Cash::where('user_id', $salenote->user_id)->where('state', true)->first();
+            if ($cash_open != null) {
                 $cashid = $cash_open->id;
-            }    
-        }else{
-            $cash_open = Cash::where('user_id',auth()->user()->id)->where('state',true)->first();
-            if($cash_open!=null){
+            }
+        } else {
+            $cash_open = Cash::where('user_id', auth()->user()->id)->where('state', true)->first();
+            if ($cash_open != null) {
                 $cashid = $cash_open->id;
             }
         }
-        return view('tenant.sale_notes.form', compact('id','cashid'));
+        return view('tenant.sale_notes.form', compact('id', 'cashid'));
     }
 
-    public function killDocument($id){
+    public function killDocument($id)
+    {
         $sale_note = SaleNote::find($id);
         CashDocument::where('sale_note_id', $id)->delete();
         CashDocumentCredit::where('sale_note_id', $id)->delete();
@@ -543,19 +579,27 @@ class SaleNoteController extends Controller
 
     public function searchCustomers(Request $request)
     {
-
-        $customers = Person::where('number', 'like', "%{$request->input}%")
-            ->orWhere('name', 'like', "%{$request->input}%")
-            ->whereType('customers')->orderBy('name')
+        $driver = filter_var($request->driver ?? "false", FILTER_VALIDATE_BOOLEAN);
+        $customers = Person::query();
+        if ($driver) {
+            $customers = Person::where('barcode', 'like', "%{$request->input}%");
+        } else {
+            $customers = Person::where('number', 'like', "%{$request->input}%")
+                ->orWhere('name', 'like', "%{$request->input}%");
+        }
+        $customers = $customers->whereType('customers')->orderBy('name')
             ->whereIsEnabled()
+            ->where('is_driver', $driver)
             ->get()->transform(function (Person $row) {
                 return [
                     'id' => $row->id,
                     'description' => $row->number . ' - ' . $row->name,
                     'seller_id' => $row->seller_id,
                     'seller' => $row->seller,
+                    'person_type_id' => $row->person_type_id,
                     'name' => $row->name,
                     'number' => $row->number,
+                    'barcode' => $row->barcode,
                     'identity_document_type_id' => $row->identity_document_type_id,
                     'identity_document_type_code' => $row->identity_document_type->code
                 ];
@@ -563,12 +607,12 @@ class SaleNoteController extends Controller
 
         return compact('customers');
     }
-    public function paymentdestinations($user_id){
+    public function paymentdestinations($user_id)
+    {
         $payment_destinations = $this->getPaymentDestinations($user_id);
         return compact('payment_destinations');
-
     }
-    public function tables($user_id=null)
+    public function tables($user_id = null)
     {
         $user = new User();
         if (\Auth::user()) {
@@ -596,7 +640,7 @@ class SaleNoteController extends Controller
             ];
         });
         $payment_destinations = $this->getPaymentDestinations();
-         $configuration = Configuration::select('destination_sale', 'ticket_58')->first();
+        $configuration = Configuration::select('destination_sale', 'ticket_58')->first();
         // $sellers = User::GetSellers(false)->get();
         $sellers = User::getSellersToNvCpe($establishment_id, $userId);
         $global_discount_types = ChargeDiscountType::getGlobalDiscounts();
@@ -671,13 +715,21 @@ class SaleNoteController extends Controller
 
     public function store(SaleNoteRequest $request)
     {
+        $configuration = Configuration::first();
+        $type_user = auth()->user()->type;
+        if($configuration->block_seller_sale_note_edit && $type_user === 'seller') {
+            return [
+                'success' => false,
+                'message' => 'No tiene permisos para editar Notas de Venta'
+            ];
+        }
         return $this->storeWithData($request->all());
     }
 
 
     public function storeWithData($inputs)
     {
-     
+
         DB::connection('tenant')->beginTransaction();
         try {
             if (!isset($inputs['id'])) {
@@ -702,6 +754,7 @@ class SaleNoteController extends Controller
                     $row['item']['lots'] = isset($row['lots']) ? $row['lots'] : $row['item']['lots'];
                 }
                 $this->setIdLoteSelectedToItem($row);
+                $this->setSizesSelectedToItem($row);
                 $sale_note_item->fill($row);
                 $sale_note_item->sale_note_id = $this->sale_note->id;
                 $sale_note_item->save();
@@ -730,11 +783,14 @@ class SaleNoteController extends Controller
                     if (is_array($id_lote_selected)) {
                         // presentacion - factor de lista de precios
                         $quantity_unit = isset($sale_note_item->item->presentation->quantity_unit) ? $sale_note_item->item->presentation->quantity_unit : 1;
-
+                        $inventory_configuration = InventoryConfiguration::first();
+                        $inventory_configuration->stock_control;
                         foreach ($id_lote_selected as $item) {
                             $lot = ItemLotsGroup::query()->find($item['id']);
                             $lot->quantity = $lot->quantity - ($quantity_unit * $item['compromise_quantity']);
-                            $this->validateStockLotGroup($lot, $sale_note_item);
+                            if($inventory_configuration->stock_control){
+                                $this->validateStockLotGroup($lot, $sale_note_item);
+                            }
                             $lot->save();
                         }
                     } else {
@@ -751,9 +807,9 @@ class SaleNoteController extends Controller
                 $configuration = Configuration::first();
                 if ($configuration->college) {
                     $sale_note_id = $this->sale_note->id;
-                    $periods = Functions::valueKeyInArray($data,'months');
-                    $client_id = Functions::valueKeyInArray($data,'customer_id'); //$data['customer_id'];
-                    $child_id = Functions::valueKeyInArray($data,'child_id'); //$data['child_id'];
+                    $periods = Functions::valueKeyInArray($data, 'months');
+                    $client_id = Functions::valueKeyInArray($data, 'customer_id'); //$data['customer_id'];
+                    $child_id = Functions::valueKeyInArray($data, 'child_id'); //$data['child_id'];
                     if ($client_id && $child_id && $periods) {
                         SuscriptionPayment::where('sale_note_id', $sale_note_id)->delete();
                         foreach ($periods as  $period) {
@@ -769,19 +825,24 @@ class SaleNoteController extends Controller
                 }
             }
             //pagos
-            $this->savePayments($this->sale_note, $data['payments'],$data['cash_id']);
+            $this->savePayments($this->sale_note, $data['payments'], $data['cash_id']);
 
             $this->setFilename();
             $this->createPdf($this->sale_note, "a4", $this->sale_note->filename);
             $this->regularizePayments($data['payments']);
             DB::connection('tenant')->commit();
-
+            $base_url = url('/');
+            $external_id = $this->sale_note->external_id;
+            $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+            $print_format = $establishment->print_format??'ticket';
+            $url_print = "{$base_url}/sale-notes/print/{$external_id}/$print_format";
             return [
                 'success' => true,
                 'data' => [
                     'id' => $this->sale_note->id,
                     'printer'  => $this->printerName(auth()->user()->id),
                     'number_full' => $this->sale_note->number_full,
+                    'url_print' => $url_print,
                 ],
             ];
         } catch (Exception $e) {
@@ -836,7 +897,14 @@ class SaleNoteController extends Controller
             $row['item']['IdLoteSelected'] = isset($row['item']['IdLoteSelected']) ? $row['item']['IdLoteSelected'] : null;
         }
     }
-
+    private function setSizesSelectedToItem(&$row)
+    {
+        if (isset($row['sizes_selected'])) {
+            $row['item']['sizes_selected'] = $row['sizes_selected'];
+        } else {
+            $row['item']['sizes_selected'] = isset($row['item']['sizes_selected']) ? $row['item']['sizes_selected'] : null;
+        }
+    }
 
     private function regularizePayments($payments)
     {
@@ -881,11 +949,11 @@ class SaleNoteController extends Controller
 
     public function mergeData($inputs)
     {
-
+        
         $this->company = Company::active();
 
-        $cash_id = Functions::valueKeyInArray($inputs,'cash_id'); 
-        if($cash_id == null){
+        $cash_id = Functions::valueKeyInArray($inputs, 'cash_id');
+        if ($cash_id == null) {
             $cash_id = optional(Cash::where([['user_id', auth()->user()->id], ['state', true]]))->first()->id;
         }
         // Para matricula, se busca el hijo en atributos
@@ -958,9 +1026,9 @@ class SaleNoteController extends Controller
         $this->setDataPointSystemToValues($values, $inputs);
 
 
-        unset($inputs['series_id']);         
+        unset($inputs['series_id']);
         $inputs = array_merge($inputs, $values);
-      
+
         return $inputs;
     }
 
@@ -1063,7 +1131,7 @@ class SaleNoteController extends Controller
         return $width;
     }
 
- 
+
     public function changeValuesPdfTicket50(&$pdf_margin_right, &$pdf_margin_left, &$base_height)
     {
         $pdf_margin_right = 2;
@@ -1077,7 +1145,7 @@ class SaleNoteController extends Controller
         ini_set("pcre.backtrack_limit", "5000000");
         $template = new Template();
         $pdf = new Mpdf();
-
+        $pdf->shrink_tables_to_fit = 1;
         $this->company = ($this->company != null) ? $this->company : Company::active();
         $this->document = ($sale_note != null) ? $sale_note : $this->sale_note;
 
@@ -1225,10 +1293,9 @@ class SaleNoteController extends Controller
                     'margin_bottom' => 0,
                     'margin_left' => 3
                 ]);
-
             }
 
-            
+
             $pdf_font_regular = config('tenant.pdf_name_regular');
             $pdf_font_bold = config('tenant.pdf_name_bold');
 
@@ -1314,7 +1381,7 @@ class SaleNoteController extends Controller
 
         $this->uploadFile($this->document->filename, $pdf->output('', 'S'), 'sale_note');
     }
- 
+
     public function getHtmlDirectPrint(&$pdf, $stylesheet, $html)
     {
         $path_html = app_path('CoreFacturalo' . DIRECTORY_SEPARATOR . 'Templates' . DIRECTORY_SEPARATOR . 'pdf' . DIRECTORY_SEPARATOR . 'ticket_html.css');
@@ -1348,6 +1415,22 @@ class SaleNoteController extends Controller
     {
         $this->uploadStorage($filename, $file_content, $file_type);
     }
+    public function receipt($id)
+    {
+        $data = SaleNote::findOrFail($id);
+
+        // dd($data["documents"]->count());
+        $company = Company::active();
+        $establishment = $data->establishment;
+        $total_ =  250;
+        $items = count($data->items) * 20;
+        $total_ = $total_ + $items;
+        $pdf = Pdf::loadView('tenant.package_handler.receipt', compact("data", "company", "establishment"))
+            ->setPaper(array(0, 0, 180, $total_), 'portrait');
+        $filename = "Recibo de caja";
+
+        return $pdf->stream($filename . '.pdf');
+    }
     public function table($table)
     {
         switch ($table) {
@@ -1362,10 +1445,14 @@ class SaleNoteController extends Controller
                             'seller_id' => $row->seller_id,
                             'name' => $row->name,
                             'number' => $row->number,
+                            'person_type_id' => $row->person_type_id,
+                            'barcode' => $row->barcode,
+                            'is_driver' => (bool) $row->is_driver,
                             'identity_document_type_id' => $row->identity_document_type_id,
                             'identity_document_type_code' => $row->identity_document_type->code
                         ];
                     });
+               
                 return $customers;
 
                 break;
@@ -1461,7 +1548,7 @@ class SaleNoteController extends Controller
         $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
         $warehouse_id = ($warehouse) ? $warehouse->id : null;
         $items = SearchItemController::getItemsToSaleNote($request);
- 
+
         return compact('items');
     }
 
@@ -1560,7 +1647,7 @@ class SaleNoteController extends Controller
     {
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $series = Series::where('establishment_id', $establishment->id)->get();
-        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         $payment_method_types = PaymentMethodType::all();
         $payment_destinations = $this->getPaymentDestinations();
         $sellers = User::GetSellers(false)->get();
@@ -1731,7 +1818,7 @@ class SaleNoteController extends Controller
     }
 
 
-    public function savePayments($sale_note, $payments,$cash_id=null)
+    public function savePayments($sale_note, $payments, $cash_id = null)
     {
 
         $total = $sale_note->total;
@@ -1770,7 +1857,7 @@ class SaleNoteController extends Controller
             });
         }
 
-       
+
 
         foreach ($payments as $row) {
 
@@ -1889,7 +1976,8 @@ class SaleNoteController extends Controller
         ], 200);
     }
 
-    public function getItemsFromNotesDispatch(Request $request){
+    public function getItemsFromNotesDispatch(Request $request)
+    {
         $request->validate([
             'notes_id' => 'required|array',
         ]);

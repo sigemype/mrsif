@@ -15,9 +15,11 @@ class TenantAddPermissionEditCpeToUsers extends Migration
     public function up()
     {
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->boolean('permission_edit_cpe')->default(false)->after('type');
-        });
+        if (!Schema::hasColumn('users', 'permission_edit_cpe')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->boolean('permission_edit_cpe')->default(false)->after('type');
+            });
+        }
         
         $user = User::first();
 

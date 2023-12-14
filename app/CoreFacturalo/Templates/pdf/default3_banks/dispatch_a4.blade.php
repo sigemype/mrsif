@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
 
@@ -11,11 +20,10 @@ $logo = "{$establishment->logo}";
     // $document_type_driver = App\Models\Tenant\Catalogs\IdentityDocumentType::findOrFail($document->driver->identity_document_type_id);
     // $document_type_dispatcher = App\Models\Tenant\Catalogs\IdentityDocumentType::findOrFail($document->dispatcher->identity_document_type_id);
 
-    $allowed_items = 90;
+    $allowed_items = 26;
     $quantity_items = $document->items()->count();
     $cycle_items = $allowed_items - ($quantity_items * 5);
     $total_weight = 0;
-
 @endphp
 <html>
 <head>
@@ -37,7 +45,6 @@ $logo = "{$establishment->logo}";
         <td width="40%" class="pl-3">
             <div class="text-left">
                 <h3 class="">{{ $company->name }}</h3>
-                <h4>{{ 'RUC '.$company->number }}</h4>
                 <h5 style="text-transform: uppercase;">
                     {{ ($establishment->address !== '-')? $establishment->address : '' }}
                     {{ ($establishment->district_id !== '-')? ', '.$establishment->district->description : '' }}
@@ -141,7 +148,7 @@ $logo = "{$establishment->logo}";
         <td width="45%" class="border-box pl-3">
             <table class="full-width">
                 <tr>
-                    <td style="text-decoration: underline;" colspan="2"><strong>UNIDAD DE TRANSPORTE - CONDUCTOR</td>
+                    <td style="text-decoration: underline;" colspan="2"><strong>Unidad DE TRANSPORTE - CONDUCTOR</td>
                 </tr>
 
     @if($document->transport_mode_type_id === '02')
@@ -235,12 +242,12 @@ $logo = "{$establishment->logo}";
 <table class="full-width mt-0 mb-0" >
     <thead >
         <tr class="">
-            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">ITEM</th>
-            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="12%">CÓDIGO</th>
-            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">CANTIDAD</th>
+            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">Item</th>
+            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="12%">Código</th>
+            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">Cantidad</th>
             <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">U.M.</th>
-            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="40%">DESCRIPCIÓN</th>
-            <th class="border-top-bottom text-right py-1 desc" class="cell-solid"  width="12%">PESO</th>
+            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="40%">Descripción</th>
+            <th class="border-top-bottom text-right py-1 desc" class="cell-solid"  width="12%">Peso</th>
         </tr>
     </thead>
     <tbody class=""> 
@@ -259,7 +266,7 @@ $logo = "{$establishment->logo}";
                     @endif
                     
                 </td>
-                <td class="p-1 text-center align-top desc cell-solid-rl">{{ $row->item->unit_type_id }}</td>
+                <td class="p-1 text-center align-top desc cell-solid-rl">{{ symbol_or_code($row->item->unit_type_id) }}</td>
                 <td class="p-1 text-left align-top desc text-upp cell-solid-rl">
                     {!!$row->item->description!!}
                     @if($row->relation_item->attributes)
@@ -274,9 +281,23 @@ $logo = "{$establishment->logo}";
                             <br/><span style="font-size: 9px">{!! $attr->description !!} : {{ $attr->value }}</span>
                         @endforeach
                     @endif
+                    @isset($row->item->lots)
+                    <br>
+                    @foreach ($row->item->lots as $lot)
+                        @if (isset($lot->has_sale) && $lot->has_sale)
+                            <span style="font-size: 9px">
+                                {{ $lot->series }}
+                                @if (!$loop->last)
+                                    -
+                                @endif
+                            </span>
+                        @endif
+                    @endforeach
+                @endisset
+
                 </td> 
                 <td class="p-1 text-center align-top desc cell-solid-rl">
-                    {{ $total_weight_line }}
+                    {{ $row->item->weight }}
                 </td>
             </tr>
 
@@ -284,7 +305,7 @@ $logo = "{$establishment->logo}";
 
         @for($i = 0; $i < $cycle_items; $i++)
         <tr>
-            <td class="p-1 text-center align-top desc cell-solid-rl"></td>
+            <td class="p-1 text-center align-top desc cell-solid-rl">&nbsp;</td>
             <td class="p-1 text-center align-top desc cell-solid-rl"></td>
             <td class="p-1 text-right align-top desc cell-solid-rl"></td>
             <td class="p-1 text-right align-top desc cell-solid-rl"></td>
@@ -303,59 +324,50 @@ $logo = "{$establishment->logo}";
     </tbody>
 </table>
  
-
-<table class="full-widthmt-10 mb-10"> 
-    <tr>
-        <td width="75%">
-            <table class="full-width">
-                <tr>
-                    @php
+<table class="full-width mt-10 mb-10" border=1> 
+    <tr class="align-top">
+        <td width="80%" class="align-top">
+            <table class="full-width align-top">
+                <tr class="align-top">
+                   {{--  @php
                         $total_packages = $document->items()->sum('quantity');
-                    @endphp
-                    <td ><strong>TOTAL NÚMERO DE BULTOS:</strong> 
-                        @if(((int)$total_packages != $total_packages))
+                    @endphp --}}
+                    <td><strong>TOTAL NÚMERO DE BULTOS:</strong> 
+                        {{ $document->packages_number }}
+                        {{-- @if(((int)$total_packages != $total_packages))
                             {{ $total_packages }}
                         @else
                             {{ number_format($total_packages, 0) }}
-                        @endif
+                        @endif --}}
                     </td>
                 </tr> 
-            </table>
-        </td>
-
-        <td width="25%" class="pl-3">
-            <table class="full-width">
-                <tr>
-                    <td ><strong>PESO TOTAL:</strong> KGM: {{$total_weight}}</td>
-                </tr> 
-            </table>
-        </td> 
-    </tr>
-</table>
-
-
-<table class="full-width border-box mt-10 mb-10"> 
-    <tr>
-        <td width="50%" class="border-box pl-3">
-            <table class="full-width">
-                <tr>
-                    <td colspan="2"><strong>OBSERVACIONES:</td>
+                <tr class="align-top">
+                    <td ><strong>PESO TOTAL:</strong> {{ $document->unit_type_id }}: {{ $document->total_weight }}</td>
                 </tr>
-                <tr>
-                    <td>{{ $document->observations }}</td>
+                <tr class="align-top">
+                    <td colspan="2"><strong>Observaciones:</td>
+                </tr>
+                <tr class="align-top">
+                    <td>{{ $document->observations }} &nbsp;</td>
                 </tr> 
             </table>
         </td>
-        <td width="3%"></td>
-
-        <td width="47%" class="">
-            <table class="full-width">
+        <td width="20%">
+            <table class="full-width text-center">
                 <tr>
-                    <td rowspan="2"><strong>Representación impresa de la Guía de Remisión</strong></td>
-                </tr> 
+                    <td>
+                        @if($document->qr)
+                            <img src="data:image/png;base64, {{ $document->qr }}" style="margin-right: -10px; width: 120px"/>
+                        @endif
+                    </td>
+                </tr>
             </table>
         </td>
-
+    </tr>
+    <tr>
+        <td colspan="2" class="text-center">
+            <strong>Representación impresa de la Guía de Remisión</strong>
+        </td>
     </tr>
 </table>
 @if ($document->terms_condition)

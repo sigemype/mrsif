@@ -24,6 +24,7 @@ class CompanyResource extends JsonResource
         $configuration = Configuration::first();
         $config = Client::where('number',$this->number)->first(); 
          return [
+            'is_rus' => (bool) $this->is_rus,
             'footer_text_template' => $this->footer_text_template,
             'mtc_auth' => $this->mtc_auth,
             'id' => $this->id,

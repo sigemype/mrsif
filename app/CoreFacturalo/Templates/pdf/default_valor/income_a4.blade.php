@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $payments = $document->payments;
     $tittle = str_pad($document->number, 8, '0', STR_PAD_LEFT);
 @endphp
@@ -77,8 +86,8 @@ $logo = "{$establishment->logo}";
     <thead class="">
     <tr class="bg-grey">
         <th class="border-top-bottom text-center py-2" width="5%">#</th>
-        <th class="border-top-bottom text-left py-2">DESCRIPCIÓN</th>
-        <th class="border-top-bottom text-right py-2" width="12%">TOTAL</th>
+        <th class="border-top-bottom text-left py-2">Descripción</th>
+        <th class="border-top-bottom text-right py-2" width="12%">Total</th>
     </tr>
     </thead>
     <tbody>

@@ -1,9 +1,18 @@
 @php
 $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 $customer = $document->customer;
 $invoice = $document->invoice;
 $document_base = ($document->note) ? $document->note : null;
@@ -97,39 +106,39 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
     </table>
     <table class="full-width mt-5">
         <tr>
-            <td width="120px">FECHA DE EMISIÓN</td>
+            <td width="120px">Fecha de emisión</td>
             <td width="8px">:</td>
             <td>{{$document->date_of_issue->format('Y-m-d')}}</td>
 
             @if ($document->detraction)
 
-            <td width="120px">N. CTA DETRACCIONES</td>
+            <td width="120px">N. Cta detracciones</td>
             <td width="8px">:</td>
             <td>{{ $document->detraction->bank_account}}</td>
             @endif
         </tr>
         @if($invoice)
         <tr>
-            <td>FECHA DE VENCIMIENTO</td>
+            <td>F. de vencimiento</td>
             <td width="8px">:</td>
             <td>{{$invoice->date_of_due->format('Y-m-d')}}</td>
         </tr>
         @endif
 
         @if ($document->detraction)
-        <td width="140px">B/S SUJETO A DETRACCIÓN</td>
+        <td width="140px">B/S Sujeto a detracción</td>
         <td width="8px">:</td>
         @inject('detractionType', 'App\Services\DetractionTypeService')
         <td width="220px">{{$document->detraction->detraction_type_id}} - {{ $detractionType->getDetractionTypeDescription($document->detraction->detraction_type_id ) }}</td>
 
         @endif
         <tr>
-            <td>CLIENTE:</td>
+            <td>Cliente:</td>
             <td>:</td>
             <td>{{ $customer->name }}</td>
 
             @if ($document->detraction)
-            <td width="120px">MÉTODO DE PAGO</td>
+            <td width="120px">Método de pago</td>
             <td width="8px">:</td>
             <td width="220px">{{ $detractionType->getPaymentMethodTypeDescription($document->detraction->payment_method_id ) }}</td>
             @endif
@@ -142,14 +151,14 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
 
             @if ($document->detraction)
 
-            <td width="120px">P. DETRACCIÓN</td>
+            <td width="120px">P. Detracción</td>
             <td width="8px">:</td>
             <td>{{ $document->detraction->percentage}}%</td>
             @endif
         </tr>
         @if ($customer->address !== '')
         <tr>
-            <td class="align-top">DIRECCIÓN:</td>
+            <td class="align-top">Dirección:</td>
             <td>:</td>
             <td>
                 {{ $customer->address }}
@@ -159,7 +168,7 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
             </td>
 
             @if ($document->detraction)
-            <td width="120px">MONTO DETRACCIÓN</td>
+            <td width="120px">Monto detracción</td>
             <td width="8px">:</td>
             <td>{{ $document->currency_type->symbol }} {{ $document->detraction->amount}}</td>
             @endif
@@ -170,7 +179,7 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
         <tr>
             <td colspan="3">
             </td>
-            <td width="120px">CONSTANCIA DE PAGO</td>
+            <td width="120px">Constancia de pago</td>
             <td width="8px">:</td>
             <td>{{ $document->detraction->pay_constancy}}</td>
         </tr>
@@ -181,7 +190,7 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
     {{--<table class="full-width mt-3">--}}
     {{--@if ($document->purchase_order)--}}
     {{--<tr>--}}
-    {{--<td width="25%">Orden de Compra: </td>--}}
+    {{--<td width="25%">Orden de compra: </td>--}}
     {{--<td>:</td>--}}
     {{--<td class="text-left">{{ $document->purchase_order }}</td>--}}
     {{--</tr>--}}
@@ -233,7 +242,7 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
         @if ($document->prepayments)
         @foreach($document->prepayments as $p)
         <tr>
-            <td width="120px">ANTICIPO</td>
+            <td width="120px">Anticipo</td>
             <td width="8px">:</td>
             <td>{{$p->number}}</td>
         </tr>
@@ -241,14 +250,14 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
         @endif
         @if ($document->purchase_order)
         <tr>
-            <td width="120px">ORDEN DE COMPRA</td>
+            <td width="120px">Orden de compra</td>
             <td width="8px">:</td>
             <td>{{ $document->purchase_order }}</td>
         </tr>
         @endif
         @if ($document->quotation_id)
         <tr>
-            <td width="120px">COTIZACIÓN</td>
+            <td width="120px">Cotización</td>
             <td width="8px">:</td>
             <td>{{ $document->quotation->identifier }}</td>
 
@@ -262,24 +271,24 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
         @endif
         @isset($document->quotation->sale_opportunity)
         <tr>
-            <td width="120px">O. VENTA</td>
+            <td width="120px">O. Venta</td>
             <td width="8px">:</td>
             <td>{{ $document->quotation->sale_opportunity->number_full}}</td>
         </tr>
         @endisset
         @if(!is_null($document_base))
         <tr>
-            <td width="120px">DOC. AFECTADO</td>
+            <td width="120px">Doc. Afectado</td>
             <td width="8px">:</td>
             <td>{{ $affected_document_number }}</td>
         </tr>
         <tr>
-            <td>TIPO DE NOTA</td>
+            <td>Tipo de nota</td>
             <td>:</td>
             <td>{{ ($document_base->note_type === 'credit')?$document_base->note_credit_type->description:$document_base->note_debit_type->description}}</td>
         </tr>
         <tr>
-            <td>DESCRIPCIÓN</td>
+            <td>Descripción</td>
             <td>:</td>
             <td>{{ $document_base->note_description }}</td>
         </tr>
@@ -302,14 +311,14 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
     <table class="full-width mt-10 mb-10">
         <thead class="">
             <tr class="bg-grey">
-                <th class="border-top-bottom text-center py-2" width="8%">CANT.</th>
-                <th class="border-top-bottom text-center py-2" width="8%">UNIDAD</th>
-                <th class="border-top-bottom text-left py-2">DESCRIPCIÓN</th>
-                <th class="border-top-bottom text-center py-2" width="8%">LOTE</th>
-                <th class="border-top-bottom text-center py-2" width="8%">SERIE</th>
-                <th class="border-top-bottom text-right py-2" width="12%">P.UNIT</th>
-                <th class="border-top-bottom text-right py-2" width="8%">DTO.</th>
-                <th class="border-top-bottom text-right py-2" width="12%">TOTAL</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Cant.</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Unidad</th>
+                <th class="border-top-bottom text-left py-2">Descripción</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Lote</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Serie</th>
+                <th class="border-top-bottom text-right py-2" width="12%">P.Unit</th>
+                <th class="border-top-bottom text-right py-2" width="8%">Dto.</th>
+                <th class="border-top-bottom text-right py-2" width="12%">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -396,7 +405,7 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
                 </td>
                 <td class="text-center align-top">NIU</td>
                 <td class="text-left align-top">
-                    ANTICIPO: {{($p->document_type_id == '02')? 'FACTURA':'BOLETA'}} NRO. {{$p->number}}
+                    Anticipo: {{($p->document_type_id == '02')? 'Factura':'Boleta'}} Nro. {{$p->number}}
                 </td>
                 <td class="text-right align-top">-{{ number_format($p->total, 2) }}</td>
                 <td class="text-right align-top">
@@ -412,43 +421,43 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
 
             @if($document->total_exportation > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">OP. EXPORTACIÓN: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Op. Exportación: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_exportation, 2) }}</td>
             </tr>
             @endif
             @if($document->total_free > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">OP. GRATUITAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Op. Gratuitas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_free, 2) }}</td>
             </tr>
             @endif
             @if($document->total_unaffected > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">OP. INAFECTAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Op. Inafectas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_unaffected, 2) }}</td>
             </tr>
             @endif
             @if($document->total_exonerated > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">OP. EXONERADAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Op. Exoneradas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_exonerated, 2) }}</td>
             </tr>
             @endif
             @if($document->total_taxed > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">OP. GRAVADAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Op. Gravadas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
             @endif
             @if($document->total_discount > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
             @endif
             @if($document->total_plastic_bag_taxes > 0)
             <tr>
-                <td colspan="7" class="text-right font-bold">ICBPER: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Icbper: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_plastic_bag_taxes, 2) }}</td>
             </tr>
             @endif
@@ -459,26 +468,26 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
 
             @if($document->perception)
             <tr>
-                <td colspan="7" class="text-right font-bold"> IMPORTE TOTAL: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold"> Importe total: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
             </tr>
             <tr>
-                <td colspan="7" class="text-right font-bold">PERCEPCIÓN: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Percepción: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->perception->amount, 2) }}</td>
             </tr>
             <tr>
-                <td colspan="7" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format(($document->total + $document->perception->amount), 2) }}</td>
             </tr>
             @else
             <tr>
-                <td colspan="7" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
             </tr>
             @endif
 
             @if($balance < 0) <tr>
-                <td colspan="7" class="text-right font-bold">VUELTO: {{ $document->currency_type->symbol }}</td>
+                <td colspan="7" class="text-right font-bold">Vuelto: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format(abs($balance),2, ".", "") }}</td>
                 </tr>
 
@@ -557,7 +566,7 @@ $balance = ($document->total - $total_payment) - $document->payments->sum('chang
     <table class="full-width">
         <tr>
             <td>
-                <strong>PAGOS:</strong>
+                <strong>Pagos:</strong>
             </td>
         </tr>
         @php

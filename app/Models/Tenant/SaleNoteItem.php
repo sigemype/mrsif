@@ -97,7 +97,10 @@ class SaleNoteItem extends ModelTenant
     {
         return (is_null($value)) ? null : (object) json_decode($value);
     }
-
+    public function getExchangeRateSale()
+    {
+        return $this->sale_note->exchange_rate_sale;
+    }
     public function setAttributesAttribute($value)
     {
         $this->attributes['attributes'] = (is_null($value)) ? null : json_encode($value);

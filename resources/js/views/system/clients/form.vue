@@ -17,7 +17,7 @@
                             <label class="control-label">RUC</label>
 
                             <x-input-service
-                            @input="changeNumber"
+                                :disabled="isSmart"
                                 v-model="form.number"
                                 :identity_document_type_id="
                                     form.identity_document_type_id
@@ -54,7 +54,7 @@
                         <div
                             v-if="form.is_update"
                             :class="{
-                                'has-danger': errors.subdomain || errors.uuid
+                                'has-danger': errors.subdomain || errors.uuid,
                             }"
                             class="form-group"
                         >
@@ -71,7 +71,7 @@
                         <div
                             v-else
                             :class="{
-                                'has-danger': errors.subdomain || errors.uuid
+                                'has-danger': errors.subdomain || errors.uuid,
                             }"
                             class="form-group"
                         >
@@ -171,9 +171,7 @@
                             :class="{ 'has-danger': errors.plan_id }"
                             class="form-group"
                         >
-                            <label class="control-label w-100">
-                                Plan
-                            </label>
+                            <label class="control-label w-100"> Plan </label>
                             <el-select v-model="form.plan_id" dusk="plan_id">
                                 <el-option
                                     v-for="option in plans"
@@ -197,9 +195,7 @@
                             :class="{ 'has-danger': errors.type }"
                             class="form-group"
                         >
-                            <label class="control-label w-100">
-                                Perfil
-                            </label>
+                            <label class="control-label w-100"> Perfil </label>
                             <el-select
                                 v-model="form.type"
                                 :disabled="form.is_update"
@@ -220,7 +216,7 @@
                             </small>
                         </div>
                     </div>
-                    <div class="col-md-6 center-el-checkbox mt-4">
+                    <div class="col-md-4 center-el-checkbox mt-3">
                         <div
                             :class="{ 'has-danger': errors.locked_emission }"
                             class="form-group"
@@ -232,10 +228,34 @@
                                 Limitar emisión de documentos
                             </el-checkbox>
                             <br />
+
+                            <el-checkbox v-model="form.is_rus">
+                                Régimen Unico Simplificado
+                            </el-checkbox>
+                            <br />
                             <small
                                 v-if="errors.locked_emission"
                                 class="text-danger"
                                 v-text="errors.locked_emission[0]"
+                            >
+                            </small>
+                        </div>
+                    </div>
+                    <div v-if="form.is_rus && !recordId" class="col-md-5 center-el-checkbox">
+                        <div
+                            :class="{ 'has-danger': errors.trade_name }"
+                            class="form-group"
+                        >
+                            <label class="control-label"
+                                >Nombre Comercial</label
+                            >
+                            <el-input v-model="form.trade_name" dusk="name">
+                            </el-input>
+                            <br />
+                            <small
+                                v-if="errors.trade_name"
+                                class="text-danger"
+                                v-text="errors.trade_name[0]"
                             >
                             </small>
                         </div>
@@ -272,7 +292,7 @@
                             </small>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-4">
                         <div
                             :class="{ 'has-danger': errors.password_cdt }"
@@ -310,9 +330,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6">
-                                <span>
-                                    Habilitar módulos
-                                </span>
+                                <span> Habilitar módulos </span>
                                 <div class="form-group tree-container-admin">
                                     <el-tree
                                         ref="tree"
@@ -329,9 +347,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <span>
-                                    Habilitar apps
-                                </span>
+                                <span> Habilitar apps </span>
                                 <div class="form-group tree-container-admin">
                                     <el-tree
                                         ref="Apptree"
@@ -354,18 +370,22 @@
                             <div class="col-md-6">
                                 <div
                                     :class="{
-                                        'has-danger': errors.soap_send_id
+                                        'has-danger': errors.soap_send_id,
                                     }"
                                     class="form-group"
                                 >
                                     <label class="control-label w-100">
                                         SOAP Envio
                                     </label>
-                                           
-                                    <el-select  @change="checkSoap" v-model="form.soap_send_id">
+
+                                    <el-select
+                                        @change="checkSoap"
+                                        v-model="form.soap_send_id"
+                                    >
                                         <el-option
-                                            v-for="(option,
-                                            index) in soap_sends"
+                                            v-for="(
+                                                option, index
+                                            ) in soap_sends"
                                             :key="index"
                                             :label="option.text"
                                             :value="option.value"
@@ -383,16 +403,18 @@
                             <div class="col-md-6">
                                 <div
                                     :class="{
-                                        'has-danger': errors.soap_type_id
+                                        'has-danger': errors.soap_type_id,
                                     }"
                                     class="form-group"
                                 >
                                     <label class="control-label w-100">
                                         SOAP Tipo
                                     </label>
-                                    <el-select v-model="form.soap_type_id"  @change="checkSoap">
+                                    <el-select
+                                        v-model="form.soap_type_id"
+                                        @change="checkSoap"
+                                    >
                                         <el-option
-                                           
                                             v-for="option in soap_types"
                                             :key="option.id"
                                             :label="option.description"
@@ -404,7 +426,7 @@
                                     <el-checkbox
                                         v-if="
                                             form.soap_send_id == '02' &&
-                                                form.soap_type_id == '01'
+                                            form.soap_type_id == '01'
                                         "
                                         v-model="toggle"
                                         label="Ingresar Usuario"
@@ -433,7 +455,7 @@
                                 <div class="col-md-6">
                                     <div
                                         :class="{
-                                            'has-danger': errors.soap_username
+                                            'has-danger': errors.soap_username,
                                         }"
                                         class="form-group"
                                     >
@@ -441,8 +463,9 @@
                                             SOAP Usuario
                                             <span class="text-danger">*</span>
                                         </label>
-                                        <el-input v-model="form.soap_username"
-                                        :disabled="isSmart"
+                                        <el-input
+                                            v-model="form.soap_username"
+                                            :disabled="isSmart"
                                         >
                                         </el-input>
                                         <div class="sub-title text-muted">
@@ -462,7 +485,7 @@
                                 <div class="col-md-6" v-show="!isSmart">
                                     <div
                                         :class="{
-                                            'has-danger': errors.soap_password
+                                            'has-danger': errors.soap_password,
                                         }"
                                         class="form-group"
                                     >
@@ -470,7 +493,7 @@
                                             SOAP Password
                                             <span class="text-danger">*</span>
                                         </label>
-                                        <el-input  v-model="form.soap_password" >
+                                        <el-input v-model="form.soap_password">
                                         </el-input>
                                         <small
                                             v-if="errors.soap_password"
@@ -508,7 +531,7 @@
                                 <div
                                     :class="{
                                         'has-danger':
-                                            errors.password_certificate
+                                            errors.password_certificate,
                                     }"
                                     class="form-group"
                                 >
@@ -530,7 +553,7 @@
                             <div class="col-md-3">
                                 <div
                                     :class="{
-                                        'has-danger': errors.certificate
+                                        'has-danger': errors.certificate,
                                     }"
                                     class="form-group"
                                 >
@@ -563,13 +586,13 @@
                                     </small>
                                 </div>
                             </div>
-                               <div class="col-md-2">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <label class="control-label">
                                         Certificado .pfx
                                     </label>
                                     <el-upload
-                                    v-if="!form.cert_pfx"
+                                        v-if="!form.cert_pfx"
                                         ref="upload"
                                         :action="`/clients/cert/pfx/${form.id}`"
                                         :data="{ type: 'certificate' }"
@@ -588,15 +611,15 @@
                                         </el-button>
                                     </el-upload>
                                     <template v-else>
-                                    <el-button
+                                        <el-button
                                             type="success"
                                             @click="downloadCert(form.cert_pfx)"
                                         >
-                                        <i class="fas fa-download "></i>
+                                            <i class="fas fa-download"></i>
                                         </el-button>
-                                          <el-button
+                                        <el-button
                                             type="danger"
-                                            @click="deleteCert('pfx',form.id)"
+                                            @click="deleteCert('pfx', form.id)"
                                         >
                                             <i class="fas fa-times"></i>
                                         </el-button>
@@ -609,7 +632,7 @@
                                         Certificado .pem
                                     </label>
                                     <el-upload
-                                     v-if="!form.cert_pem"
+                                        v-if="!form.cert_pem"
                                         ref="upload"
                                         :action="`/clients/cert/pem/${form.id}`"
                                         :data="{ type: 'certificate' }"
@@ -627,23 +650,23 @@
                                             Subir
                                         </el-button>
                                     </el-upload>
-                                        <template v-else>
+                                    <template v-else>
                                         <el-button
                                             type="success"
                                             @click="downloadCert(form.cert_pem)"
                                         >
-                                           <i class="fas fa-download "></i>
+                                            <i class="fas fa-download"></i>
                                         </el-button>
-                                          <el-button
+                                        <el-button
                                             type="danger"
-                                            @click="deleteCert('pfx',form.id)"
+                                            @click="deleteCert('pfx', form.id)"
                                         >
-                                             <i class="fas fa-times "></i>
+                                            <i class="fas fa-times"></i>
                                         </el-button>
                                     </template>
                                 </div>
                             </div>
-                         
+
                             <div
                                 v-show="
                                     form.is_update == false && certificate_admin
@@ -740,7 +763,7 @@
                             <div class="col-md-6">
                                 <div
                                     :class="{
-                                        'has-danger': errors.smtp_password
+                                        'has-danger': errors.smtp_password,
                                     }"
                                     class="form-group"
                                 >
@@ -764,7 +787,7 @@
                             <div class="col-md-6">
                                 <div
                                     :class="{
-                                        'has-danger': errors.smtp_encryption
+                                        'has-danger': errors.smtp_encryption,
                                     }"
                                     class="form-group"
                                 >
@@ -785,9 +808,7 @@
                             <div class="col-md-6">
                                 <div class="form-group p-t-20">
                                     <a
-                                        :href="
-                                            'https://docs.google.com/document/d/1ix2vPsiqSoK9jNAOF2gPjWhNa3BdajU5x8I5aBvEz0o/edit?usp=sharing'
-                                        "
+                                        :href="'https://docs.google.com/document/d/1ix2vPsiqSoK9jNAOF2gPjWhNa3BdajU5x8I5aBvEz0o/edit?usp=sharing'"
                                         class="control-label"
                                         target="_new"
                                     >
@@ -821,9 +842,7 @@
                 </div>
             </div>
             <div class="form-actions text-end pt-2">
-                <el-button @click.prevent="close()">
-                    Cancelar
-                </el-button>
+                <el-button @click.prevent="close()"> Cancelar </el-button>
                 <el-button
                     :loading="loading_submit"
                     dusk="submit"
@@ -833,9 +852,7 @@
                     <template v-if="loading_submit">
                         {{ button_text }}
                     </template>
-                    <template v-else>
-                        Guardar
-                    </template>
+                    <template v-else> Guardar </template>
                 </el-button>
             </div>
         </form>
@@ -850,14 +867,14 @@ export default {
     props: ["showDialog", "recordId"],
     data() {
         return {
-            isSmart:false,
+            isSmart: false,
             defaultProps: {
                 children: "childrens",
-                label: "description"
+                label: "description",
             },
             defaultAppsProps: {
                 children: "childrens",
-                label: "description"
+                label: "description",
             },
             headers: headers_token,
             loading_submit: false,
@@ -876,11 +893,11 @@ export default {
             soap_sends: [
                 { value: "01", text: "Sunat" },
                 { value: "02", text: "Ose" },
-                { value: "03", text: "Smart" }
+                { value: "03", text: "Smart" },
             ],
             soap_types: [
                 { id: "01", description: "Demo" },
-                { id: "02", description: "Producción" }
+                { id: "02", description: "Producción" },
             ],
             toggle: false,
             certificate_admin: "",
@@ -888,7 +905,7 @@ export default {
             soap_password: null,
             collapse: 1,
             business: null,
-            regex_password_client: false
+            regex_password_client: false,
         };
     },
     updated() {
@@ -898,7 +915,7 @@ export default {
         }
     },
     async created() {
-        await this.$http.get(`/${this.resource}/tables`).then(response => {
+        await this.$http.get(`/${this.resource}/tables`).then((response) => {
             this.url_base = response.data.url_base;
             this.plans = response.data.plans;
             this.modules = response.data.modules;
@@ -923,51 +940,55 @@ export default {
         this.form.soap_password = this.soap_password;
     },
     methods: {
-        changeNumber(){
-            if(this.isSmart){
-                this.form.soap_username = `${this.form.number}FACTUR`;
+        changeNumber() {
+            if (this.isSmart) {
+                this.form.soap_username = `20611567759FACTUR`;
             }
         },
-        checkSoap(){
-            this.isSmart = this.form.soap_type_id == '02' && this.form.soap_send_id == '03';
+        checkSoap() {
+            this.isSmart =
+                this.form.soap_type_id == "02" &&
+                this.form.soap_send_id == "03";
             console.log(this.form);
-            if(this.isSmart && this.form.number){
-
-                this.form.soap_username = `${this.form.number}FACTUR`;
-            }else{
+            if (this.isSmart) {
+                this.form.soap_username = `20611567759FACTUR`;
+            } else {
                 this.form.soap_username = null;
-
             }
         },
-        downloadCert(type){
-            window.open(`/storage/uploads/certf/${type}`, '_blank');
+        downloadCert(type) {
+            window.open(`/storage/uploads/certf/${type}`, "_blank");
         },
-        deleteCert(type,client_id){
-            this.$confirm("¿Está seguro de eliminar el certificado?", "Eliminar", {
-                confirmButtonText: "Sí",
-                cancelButtonText: "No",
-                type: "warning"
-            })
+        deleteCert(type, client_id) {
+            this.$confirm(
+                "¿Está seguro de eliminar el certificado?",
+                "Eliminar",
+                {
+                    confirmButtonText: "Sí",
+                    cancelButtonText: "No",
+                    type: "warning",
+                }
+            )
                 .then(() => {
                     this.$http
                         .delete(`/clients/cert/${type}/${client_id}`)
-                        .then(response => {
+                        .then((response) => {
                             this.$message({
                                 type: "success",
-                                message: "Certificado eliminado con éxito!"
+                                message: "Certificado eliminado con éxito!",
                             });
                             this.create();
                         })
-                        .catch(error => {
+                        .catch((error) => {
                             this.$message({
                                 type: "error",
-                                message: "Error al eliminar el certificado!"
+                                message: "Error al eliminar el certificado!",
                             });
                         });
                 })
                 .catch(() => {});
         },
-        
+
         beforeUpload(file) {
             if (this.isSmart) {
                 console.log(file.name);
@@ -976,14 +997,14 @@ export default {
                 } else {
                     this.$message({
                         type: "error",
-                        message: "El archivo debe tener el nombre de certificate_smart.pem"
+                        message:
+                            "El archivo debe tener el nombre de certificate_smart.pem",
                     });
                     return false;
                 }
-            } 
+            }
 
             return true;
-
         },
         beforeUploadPfx(file) {
             this.loading = true;
@@ -995,7 +1016,7 @@ export default {
             } else {
                 this.$message({
                     type: "error",
-                    message: "El archivo debe ser de tipo .pfx"
+                    message: "El archivo debe ser de tipo .pfx",
                 });
             }
 
@@ -1014,7 +1035,7 @@ export default {
             } else {
                 this.$message({
                     type: "error",
-                    message: "El archivo debe ser de tipo .pem"
+                    message: "El archivo debe ser de tipo .pem",
                 });
             }
 
@@ -1086,6 +1107,8 @@ export default {
         initForm() {
             this.errors = {};
             this.form = {
+                is_rus: false,
+                trade_name: null,
                 id: null,
                 name: null,
                 email: null,
@@ -1117,8 +1140,8 @@ export default {
                 create_restaurant: false,
                 users: null,
                 password: null,
-                password_sunat:null,
-                password_cdt: null
+                password_sunat: null,
+                password_cdt: null,
             };
             console.log(this.form.identity_document_type_id, " xd");
         },
@@ -1128,17 +1151,17 @@ export default {
             } else {
                 this.titleDialog = "Nuevo Cliente";
                 const preSelecteds = [];
-                this.modules.map(m => {
+                this.modules.map((m) => {
                     preSelecteds.push(m.id);
-                    m.childrens.map(c => {
+                    m.childrens.map((c) => {
                         preSelecteds.push(c.id);
                     });
                 });
 
                 const preAppSelecteds = [];
-                this.apps.map(m => {
+                this.apps.map((m) => {
                     preAppSelecteds.push(m.id);
-                    m.childrens.map(c => {
+                    m.childrens.map((c) => {
                         preAppSelecteds.push(c.id);
                     });
                 });
@@ -1151,12 +1174,14 @@ export default {
             if (this.recordId) {
                 this.$http
                     .get(`/${this.resource}/record/${this.recordId}`)
-                    .then(response => {
+                    .then((response) => {
                         this.$refs.tree.setCheckedKeys([]);
                         this.$refs.Apptree.setCheckedKeys([]);
                         this.form = response.data.data;
-                        if(this.form.cert_smart){
+                        if (this.form.cert_smart) {
                             this.isSmart = true;
+                            this.form.soap_password = null;
+                            this.form.soap_url = null;
                             // this.form.soap_send_id = "03";
                         }
                         this.form.is_update = true;
@@ -1167,11 +1192,11 @@ export default {
 
                         const preAppSelecteds = [];
                         const preSelectedsApps = this.form.apps;
-                        this.modules.map(m => {
+                        this.modules.map((m) => {
                             if (preSelectedsModules.includes(m.id)) {
                                 preSelecteds.push(m.id);
                             }
-                            m.childrens.map(c => {
+                            m.childrens.map((c) => {
                                 const idArray = c.id.split("-");
                                 if (
                                     preSelectedsLevels.includes(
@@ -1183,11 +1208,11 @@ export default {
                             });
                         });
 
-                        this.apps.map(m => {
+                        this.apps.map((m) => {
                             if (preSelectedsApps.includes(m.id)) {
                                 preAppSelecteds.push(m.id);
                             }
-                            m.childrens.map(c => {
+                            m.childrens.map((c) => {
                                 const idArray = c.id.split("-");
                                 if (
                                     preSelectedsLevels.includes(
@@ -1207,28 +1232,27 @@ export default {
             }
         },
         async submit() {
-        
             const modulesAndLevelsSelecteds = this.$refs.tree.getCheckedNodes();
             const appsAndLevelsSelecteds = this.$refs.Apptree.getCheckedNodes();
             const modules = [];
-            modulesAndLevelsSelecteds.map(m => {
+            modulesAndLevelsSelecteds.map((m) => {
                 if (m.is_parent) {
                     modules.push(m.id);
                 }
             });
-            appsAndLevelsSelecteds.map(m => {
+            appsAndLevelsSelecteds.map((m) => {
                 if (m.is_parent) {
                     modules.push(m.id);
                 }
             });
             const levels = [];
-            modulesAndLevelsSelecteds.filter(l => {
+            modulesAndLevelsSelecteds.filter((l) => {
                 if (!l.is_parent) {
                     const idArray = l.id.split("-");
                     levels.push(idArray[1]);
                 }
             });
-            appsAndLevelsSelecteds.filter(l => {
+            appsAndLevelsSelecteds.filter((l) => {
                 if (!l.is_parent) {
                     const idArray = l.id.split("-");
                     levels.push(idArray[1]);
@@ -1251,7 +1275,11 @@ export default {
                     );
                 }
             } else {
-                if (this.form.temp_path && !this.form.password_certificate && !this.isSmart) {
+                if (
+                    this.form.temp_path &&
+                    !this.form.password_certificate &&
+                    !this.isSmart
+                ) {
                     return this.$message.error(
                         "Si carga un certificado, es necesario ingresar el password del certificado"
                     );
@@ -1267,7 +1295,7 @@ export default {
                     `${this.resource}${this.form.is_update ? "/update" : ""}`,
                     this.form
                 )
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1276,7 +1304,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 422) {
                         this.errors = error.response.data;
                     } else if (error.response.status === 500) {
@@ -1321,7 +1349,7 @@ export default {
         changeModules() {
             var group = {
                 modules: [],
-                apps: []
+                apps: [],
             };
             if (this.business == 1) {
                 group.modules = this.getIds(this.group_basic);
@@ -1343,14 +1371,14 @@ export default {
         },
         getIds(modules) {
             const preSelecteds = [];
-            modules.map(m => {
+            modules.map((m) => {
                 preSelecteds.push(m.id);
-                m.childrens.map(c => {
+                m.childrens.map((c) => {
                     preSelecteds.push(c.id);
                 });
             });
             return preSelecteds;
-        }
-    }
+        },
+    },
 };
 </script>

@@ -9,6 +9,7 @@ use App\Http\Resources\Tenant\CompanyResource;
 use Illuminate\Http\Request;
 use App\Http\Requests\Tenant\CompanyPseRequest;
 use App\Http\Requests\Tenant\CompanyWhatsAppApiRequest;
+use App\Models\Tenant\Catalogs\DocumentType;
 use Modules\Finance\Helpers\UploadFileHelper;
 
 
@@ -69,6 +70,7 @@ class CompanyController extends Controller
         $company->fill($request->all());
         $company->save();
 
+        DocumentType::where('id', '01')->update(['active' => !$company->is_rus]);
         return [
             'success' => true,
             'message' => 'Empresa actualizada'

@@ -109,40 +109,54 @@ use App\Models\Tenant\ItemUnitType;
                         @foreach ($records as $row)
                             @php
                                 $quantity = $row->quantity;
-                                $unit_price = $row->unit_price;
+                                $unit_price = $row->unit_price * $quantity;
                                 $type_document = '';
                                 $presentation_name = null;
                                 $relation = $row->document_id ? $row->document : $row->sale_note;
                                 $items = Item::find($row->item_id); 
+                                $purchase_unit_price  = 0;
+                                $purchase_unit_price = $items->purchase_unit_price * $quantity;
                                 if ($row->document_id) {
                                     $type_document = $row->document->document_type_id == '01' ? 'FACTURA' : 'BOLETA';
                                     if (isset($row->item->presentation->id)) {
                                        // dd($row->item->unit_type_id);
                                         $presentation = $row->item->presentation;
                                         $presentation_name = $presentation->description;
-                                        $data_items = ItemUnitType::where('item_id',$row->item_id)->where('unit_type_id',$row->item->unit_type_id)->first();
+                                        $data_items = ItemUnitType::find($row->item->presentation->id);
                                         $purchase_unit_price = $items->purchase_unit_price*$data_items->quantity_unit;
                                 
-                                        $quantity = $presentation->quantity_unit;
+                                        // $quantity = $presentation->quantity_unit;
                                         $unit_price = number_format($unit_price, 2, '.', '');
                                         // $unit_price =
-                                    }else{
-                                         $purchase_unit_price = $items->purchase_unit_price;
                                     }
                                 } elseif ($row->sale_note_id) {
                                     $type_document = 'NOTA DE VENTA';
+                                    if (isset($row->item->presentation->id)) {
+                                       // dd($row->item->unit_type_id);
+                                        $presentation = $row->item->presentation;
+                                        $presentation_name = $presentation->description;
+                                        $data_items = ItemUnitType::find($row->item->presentation->id);
+                                        $purchase_unit_price = $items->purchase_unit_price*$data_items->quantity_unit;
+                                
+                                        // $quantity = $presentation->quantity_unit;
+                                        $unit_price = number_format($unit_price, 2, '.', '');
+                                        // $unit_price =
+                                    }
                                 }
                                 
                                 // $purchase_unit_price = 0;
                                 // if (isset($row->item->purchase_unit_price)) {
                                 //     $purchase_unit_price = $row->item->purchase_unit_price;
                                 // }
-                                $unit_gain = (float) $unit_price - (float) $purchase_unit_price;
-                                $overall_profit = (float) $unit_price * $quantity - (float) $purchase_unit_price * $quantity;
+                                $unit_gain = ((float) $unit_price - (float) $purchase_unit_price)/$quantity;
+                                $overall_profit = (float) $unit_price  - (float) $purchase_unit_price ;
                                 
                                 $acum_unit_gain += (float) $unit_gain;
                                 $acum_overall_profit += (float) $overall_profit;
-                                
+                                if($purchase_unit_price  == 0){
+                                    $item = \App\Models\Tenant\Item::find($row->item_id);
+                                    $purchase_unit_price = $item->purchase_unit_price;
+                                }
                             @endphp
 
                             <tr>
@@ -168,7 +182,7 @@ use App\Models\Tenant\ItemUnitType;
                                 <td class="celda">{{ $purchase_unit_price }}</td>
                                 <td class="celda">{{ $unit_price }}</td>
 
-                                <td class="celda">{{ $unit_gain }}</td>
+                                <td class="celda">{{ number_format($unit_gain,2) }}</td>
                                 <td class="celda">{{ $overall_profit }}</td>
 
                             </tr>

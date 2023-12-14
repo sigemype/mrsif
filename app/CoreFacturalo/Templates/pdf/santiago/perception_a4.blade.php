@@ -1,17 +1,26 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     $details = $document->details;
     $document_base = $document->invoice;
     //$optional = $document->optional;
     $document_number = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
     $document_type_description_array = [
-        '01' => 'FACTURA',
-        '03' => 'BOLETA DE VENTA',
+        '01' => 'Factura',
+        '03' => 'Boleta DE VENTA',
         '07' => 'NOTA DE CREDITO',
         '08' => 'NOTA DE DEBITO',
     ];
@@ -224,7 +233,7 @@ $logo = "{$establishment->logo}";
                 <tbody>
                 @if ($document->purchase_order)
                     <tr>
-                        <td width="50%">Orden de Compra: </td>
+                        <td width="50%">Orden de compra: </td>
                         <td width="50%">{{ $document->purchase_order }}</td>
                     </tr>
                 @endif
@@ -244,11 +253,11 @@ $logo = "{$establishment->logo}";
 <table class="voucher-details">
     <thead>
     <tr>
-        <th class="text-center" width="80px">CANT.</th>
-        <th width="60px">UNIDAD</th>
-        <th>DESCRIPCIÓN</th>
-        <th class="text-right" width="80px">P.UNIT</th>
-        <th class="text-right" width="80px">TOTAL</th>
+        <th class="text-center" width="80px">Cant.</th>
+        <th width="60px">Unidad</th>
+        <th>Descripción</th>
+        <th class="text-right" width="80px">P.Unit</th>
+        <th class="text-right" width="80px">Total</th>
     </tr>
     </thead>
     <tbody>
@@ -302,25 +311,25 @@ $logo = "{$establishment->logo}";
                 <tbody>
                 @if($document->total_free > 0)
                     <tr>
-                        <td class="text-right font-lg font-bold" width="70%">OP. GRATUITAS: {{ $document->currency_type->symbol }}</td>
+                        <td class="text-right font-lg font-bold" width="70%">Op. Gratuitas: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-lg font-bold" width="30%">{{ number_format($document->total_free, 2) }}</td>
                     </tr>
                 @endif
                 @if($document->total_unaffected > 0)
                     <tr>
-                        <td class="text-right font-lg font-bold" width="70%">OP. INAFECTAS: {{ $document->currency_type->symbol }}</td>
+                        <td class="text-right font-lg font-bold" width="70%">Op. Inafectas: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-lg font-bold" width="30%">{{ number_format($document->total_unaffected, 2) }}</td>
                     </tr>
                 @endif
                 @if($document->total_exonerated > 0)
                     <tr>
-                        <td class="text-right font-lg font-bold" width="70%">OP. EXONERADAS: {{ $document->currency_type->symbol }}</td>
+                        <td class="text-right font-lg font-bold" width="70%">Op. Exoneradas: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-lg font-bold" width="30%">{{ number_format($document->total_exonerated, 2) }}</td>
                     </tr>
                 @endif
                 @if($document->total_taxed > 0)
                     <tr>
-                        <td class="text-right font-lg font-bold" width="70%">OP. GRAVADAS: {{ $document->currency_type->symbol }}</td>
+                        <td class="text-right font-lg font-bold" width="70%">Op. Gravadas: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-lg font-bold" width="30%">{{ number_format($document->total_taxed, 2) }}</td>
                     </tr>
                 @endif
@@ -329,7 +338,7 @@ $logo = "{$establishment->logo}";
                     <td class="text-right font-lg font-bold" width="30%">{{ number_format($document->total_igv, 2) }}</td>
                 </tr>
                 <tr>
-                    <td class="text-right font-lg font-bold" width="70%">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+                    <td class="text-right font-lg font-bold" width="70%">Total a pagar: {{ $document->currency_type->symbol }}</td>
                     <td class="text-right font-lg font-bold" width="30%">{{ number_format($document->total, 2) }}</td>
                 </tr>
                 </tbody>

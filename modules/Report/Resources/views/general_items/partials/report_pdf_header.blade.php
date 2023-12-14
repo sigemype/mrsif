@@ -3,41 +3,49 @@ $document_type_id = $document_type_id ?? null;
 $type = $type ?? 'sale';
 $plus = $plus ?? 4;
 ?>
-<th style="width:{{$plus+2}}%;">FECHA DE EMISIÓN</th>
-<th style="width:{{$plus+2}}%;">USUARIO/VENDEDOR</th>
-@if($document_type_id != '80' && $type == 'sale')
-    <th style="width:3%;">DIST</th>
-    <th style="width:3%;">DPTO</th>
-    <th style="width:3%;">PROV</th>
+
+<head>
+    <style>
+        .break-word {
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<th>FECHA DE EMISIÓN</th>
+<th class="break-word">USUARIO/VENDEDOR</th>
+@if ($document_type_id != '80' && $type == 'sale')
+    <th class="break-word">DIST</th>
+    <th class="break-word">DPTO</th>
+    <th class="break-word">PROV</th>
 @endif
-<th style="width:4%;">SERIE</th>
-<th style="width:4%;">NÚMERO</th>
-@if( $type == 'sale')
-    <th style="width:4%;">ORDEN DE COMPRA</th>
-    <th style="width:{{$plus+1}}%;">PLATAFORMA</th>
+<th class="break-word">SERIE</th>
+<th class="break-word">NÚMERO</th>
+@if ($type == 'sale')
+    <th class="break-word">ORDEN DE COMPRA</th>
+    <th class="break-word">PLATAFORMA</th>
 @endif
-<th style="width:{{$plus+2}}%;">DOC ENTIDAD TIPO DNI RUC</th>
-<th style="width:{{$plus+4}}%;">DOC ENTIDAD NÚMERO</th>
-<th style="width:11%;">DENOMINACIÓN ENTIDAD</th>
-<th style="width:{{$plus}}%;">MONEDA</th>
-<th style="width:{{$plus+1}}%;">UNIDAD DE MEDIDA</th>
-<th style="width:{{$plus+1}}%;">MARCA</th>
-<th style="width:{{$plus+8}}%;">DESCRIPCIÓN</th>
-{{-- @if($type == 'sale')
+<th class="break-word">DOC ENTIDAD TIPO DNI RUC</th>
+<th class="break-word">DOC ENTIDAD NÚMERO</th>
+<th class="break-word">DENOMINACIÓN ENTIDAD</th>
+<th class="break-word">MONEDA</th>
+<th class="break-word">UNIDAD DE MEDIDA</th>
+<th class="break-word">MARCA</th>
+<th class="break-word">DESCRIPCIÓN</th>
+{{-- @if ($type == 'sale')
     se comenta porque genera inconsistencia en columnas
     <th style="width:{{$plus+1}}%;">MODELO</th>
 @endif --}}
-<th style="width:{{$plus+1}}%;">CATEGORÍA</th>
-<th style="width:{{$plus+1}}%;">CANTIDAD</th>
-<th style="width:5%;">PRECIO UNITARIO</th>
+<th class="break-word">CATEGORÍA</th>
+<th class="break-word">CANTIDAD</th>
+<th class="break-word">PRECIO UNITARIO</th>
 
-@if($type == 'purchase')
-<th> TIPO DE ISC</th>
-<th> ISC</th>
+@if ($type == 'purchase')
+    <th class="break-word"> TIPO DE ISC</th>
+    <th class="break-word"> ISC</th>
 @endif
 
-<th style="width:5%;">TOTAL</th>
-@if($type == 'sale')
-    <th style="width:6%;">TOTAL COMPRA</th>
-    <th style="width:7%;">GANANCIA</th>
+<th class="break-word"> TOTAL</th>
+    @if ($type == 'sale')
+<th class="break-word">TOTAL COMPRA</th>
+<th class="break-word">GANANCIA</th>
 @endif

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tenant\Company;
 use Illuminate\Console\Command;
 use App\Models\Tenant\Task;
 use Carbon\Carbon;
@@ -38,17 +39,21 @@ class TenantCommand extends Command
      * @return mixed
      */
     public function handle() {
-        foreach (Task::where('execution_time', Carbon::now()->format('H:i').':00')->get() as $task) {
-            try {
-                Artisan::call($task->class);
-                
-                $task->output = Artisan::output();
-                $task->save();
-            }
-            catch (\Exception $e) {
-                $task->output = $e->getMessage();
-                $task->save();
-            }
-        };
+        $company = Company::active();
+        if(!$company->pse){
+            foreach (Task::where('execution_time', Carbon::now()->format('H:i').':00')->get() as $task) {
+                try {
+                    Artisan::call($task->class);
+                    
+                    $task->output = Artisan::output();
+                    $task->save();
+                }
+                catch (\Exception $e) {
+                    $task->output = $e->getMessage();
+                    $task->save();
+                }
+            };
+        }
+        
     }
 }

@@ -24,10 +24,7 @@
                         <div class="col-sm-10 text-left mt-3 mb-0">
                             <address class="ib mr-2">
                                 <span class="font-weight-bold d-block"
-                                    >NOTA DE VENTA</span
-                                >
-                                <span class="font-weight-bold d-block"
-                                    >NV-XXX</span
+                                    >Nota de venta</span
                                 >
                                 <span class="font-weight-bold">{{
                                     company.name
@@ -41,10 +38,6 @@
                                 {{ establishment.department.description }} -
                                 {{ establishment.country.description }}
                                 <br />
-                                {{ establishment.email }} -
-                                <span v-if="establishment.telephone != '-'">{{
-                                    establishment.telephone
-                                }}</span>
                             </address>
                         </div>
                     </div>
@@ -444,7 +437,12 @@
 
                             <div class="col-lg-2 col-md-2">
                                 <div class="form-group">
-                                    <label class="control-label">Placa</label>
+                                    <label class="control-label">
+                                        <template v-if="isDriver"
+                                            >Vehículo</template
+                                        >
+                                        <template v-else>Placa</template>
+                                    </label>
                                     <el-input
                                         v-model="form.license_plate"
                                         :maxlength="200"
@@ -1159,6 +1157,7 @@
         </div>
 
         <sale-notes-form-item
+            :person_type_id="person_type_id"
             :typeUser="typeUser"
             :showDialog.sync="showDialogAddItem"
             :currency-type-id-active="form.currency_type_id"
@@ -1177,6 +1176,7 @@
             :external="true"
             :input_person="input_person"
             :document_type_id="form.document_type_id"
+            :isDriver="isDriver"
         ></person-form>
 
         <sale-notes-options
@@ -1251,6 +1251,8 @@ export default {
     },
     data() {
         return {
+            person_type_id: null,
+            isDriver: false,
             monthCollege: [],
             collegeYear: [],
             yearCollegeName: null,
@@ -1336,15 +1338,21 @@ export default {
     async created() {
         this.loadConfiguration();
         this.$store.commit("setConfiguration", this.configuration);
-        let { decimal_quantity } = this.configuration;
+        let { decimal_quantity, package_handlers } = this.configuration;
         if (decimal_quantity) {
             this.decimalQuantity = decimal_quantity;
         }
+        this.isDriver = package_handlers;
         await this.initForm();
         await this.$http.get(`/${this.resource}/tables`).then((response) => {
             this.currency_types = response.data.currency_types;
             this.establishments = response.data.establishments;
             this.all_customers = response.data.customers;
+            if (this.isDriver) {
+                this.all_customers = this.all_customers.filter((customer) => {
+                    return customer.is_driver;
+                });
+            }
             this.discount_types = response.data.discount_types;
             this.charges_types = response.data.charges_types;
             this.global_charge_types = response.data.global_charge_types;
@@ -1367,10 +1375,7 @@ export default {
             ];
             this.all_series = response.data.series;
             this.payment_destinations = response.data.payment_destinations;
-            console.log(
-                "🚀 ~ file: form.vue:1359 ~ awaitthis.$http.get ~ this.payment_destinations:",
-                this.payment_destinations
-            );
+
             // this.configuration = response.data.configuration
             this.sellers = response.data.sellers;
             let { type } = this.authUser;
@@ -1604,8 +1609,9 @@ export default {
             let payment_method_type = _.find(this.payment_method_types, {
                 id: this.form.payments[index].payment_method_type_id,
             });
+            console.log("🚀 ~ file: form.vue:1619 ~ changePaymentMethodType ~ payment_method_type:", payment_method_type)
 
-            if (payment_method_type.id == "09") {
+            if (payment_method_type.is_credit) {
                 this.form.payment_method_type_id = payment_method_type.id;
                 this.form.date_of_due = this.form.date_of_issue;
                 // this.form.payments = []
@@ -1778,14 +1784,22 @@ export default {
             this.form.payments.splice(index, 1);
         },
         changeCustomer() {
+            this.person_type_id = null;
             let customer = _.find(this.customers, {
                 id: this.form.customer_id,
             });
-            let seller = this.sellers.find(
-                (element) => element.id == customer.seller_id
-            );
-            if (seller !== undefined) {
-                this.form.seller_id = seller.id;
+            if (customer) {
+                this.person_type_id = customer.person_type_id;
+                let seller = this.sellers.find(
+                    (element) => element.id == customer.seller_id
+                );
+                if (seller !== undefined) {
+                    this.form.seller_id = seller.id;
+                }
+                let { package_handlers } = this.config;
+                if (package_handlers) {
+                    this.form.license_plate = customer.barcode;
+                }
             }
         },
         searchRemoteCustomers(input) {
@@ -1794,7 +1808,9 @@ export default {
                 let parameters = `input=${input}`;
 
                 this.$http
-                    .get(`/${this.resource}/search/customers?${parameters}`)
+                    .get(
+                        `/${this.resource}/search/customers?${parameters}&driver=${this.isDriver}`
+                    )
                     .then((response) => {
                         this.customers = response.data.customers;
                         this.loading_search = false;
@@ -1900,7 +1916,7 @@ export default {
                 id: this.form.establishment_id,
             });
             this.filterSeries();
-            this.selectDefaultCustomer();
+            if (!this.isDriver) this.selectDefaultCustomer();
         },
         cleanCustomer() {
             this.form.customer_id = null;
@@ -1937,6 +1953,12 @@ export default {
             this.calculateTotal();
         },
         clickRemoveItem(index) {
+              let item = this.form.items[index];
+            if (item.random_key) {
+                this.form.items = this.form.items.filter((it, index) => {
+                    return item.random_key !== it.depend_key;
+                });
+            }
             this.form.items.splice(index, 1);
             this.calculateTotal();
         },
@@ -2453,6 +2475,7 @@ export default {
                     }
                 }
             }
+            this.changeCustomer();
         },
         checkKeyWithAlt(e) {
             let code = e.event.code;

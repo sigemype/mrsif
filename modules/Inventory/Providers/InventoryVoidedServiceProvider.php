@@ -179,9 +179,9 @@ class InventoryVoidedServiceProvider extends ServiceProvider
     private function voided_dispatch()
     {
         Dispatch::updated(function ($dispatch) {
-
+            
             // dd($dispatch, $dispatch['state_type_id'],$dispatch->state_type_id);
-            if($dispatch->transfer_reason_type->discount_stock){
+            if($dispatch->transfer_reason && $dispatch->transfer_reason_type->discount_stock){
 
                 if(in_array($dispatch->state_type_id, [ '09', '11' ], true)){
 

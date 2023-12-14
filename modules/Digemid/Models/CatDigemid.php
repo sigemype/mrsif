@@ -122,6 +122,9 @@
         : string {
             return $this->cod_digemid;
         }
+        public function getFechaVencimiento(){
+            return date('d/m/Y',strtotime($this->fec_vcto_reg_sanitario));
+        }
 
         /**
          * @param string $cod_digemid

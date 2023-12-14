@@ -2,6 +2,8 @@
 
 namespace Modules\Item\Http\Controllers;
 
+use App\Imports\PriceUpdatePersonTypeImport;
+use App\Imports\PriceUpdateWarehouseImport;
 use App\Models\System\Digemid;
 use \Exception;
 use App\Models\Tenant\DocumentItem;
@@ -25,6 +27,7 @@ use Modules\Item\Models\ItemLot;
 use Picqer\Barcode\BarcodeGeneratorPNG;
 use Illuminate\Support\Carbon;
 use Modules\Item\Imports\{
+    ItemListSizeImport,
     ItemUpdatePriceImport
 };
 
@@ -122,6 +125,30 @@ class ItemController extends Controller
     }
 
 
+    public function importItemSizeLists(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            try {
+                $import = new ItemListSizeImport();
+                $import->import($request->file('file'), null, Excel::XLSX);
+                $data = $import->getData();
+                return [
+                    'success' => true,
+                    'message' => __('app.actions.upload.success'),
+                    'data' => $data
+                ];
+            } catch (Exception $e) {
+                return [
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ];
+            }
+        }
+        return [
+            'success' => false,
+            'message' => __('app.actions.upload.error'),
+        ];
+    }
     public function importItemPriceLists(Request $request)
     {
         if ($request->hasFile('file')) {
@@ -183,6 +210,16 @@ class ItemController extends Controller
         $item = Item::findOrFail($id);
 
         return [
+            'sizes' => $item->sizes->transform(function ($row)  {
+                return [
+                    'warehouse_id' => $row->warehouse->id,
+                    'warehouse_description' => $row->warehouse->description,
+                    'stock' => $row->stock,
+                    'item_id' => $row->id,
+                    'size' => $row->size,
+                ];
+            })
+            ,
             'warehouses' => $item->warehouses->transform(function ($row) use ($item) {
                 return [
                     'warehouse_id' => $row->warehouse->id,
@@ -316,6 +353,54 @@ class ItemController extends Controller
         if ($request->hasFile('file')) {
             try {
                 $import = new ItemUpdatePriceImport();
+                $import->import($request->file('file'), null, Excel::XLSX);
+                $data = $import->getData();
+                return [
+                    'success' => true,
+                    'message' => __('app.actions.upload.success'),
+                    'data' => $data
+                ];
+            } catch (Exception $e) {
+                return [
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ];
+            }
+        }
+        return [
+            'success' => false,
+            'message' => __('app.actions.upload.error'),
+        ];
+    }
+    public function importItemUpdatePricesPersonType(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            try {
+                $import = new PriceUpdatePersonTypeImport();
+                $import->import($request->file('file'), null, Excel::XLSX);
+                $data = $import->getData();
+                return [
+                    'success' => true,
+                    'message' => __('app.actions.upload.success'),
+                    'data' => $data
+                ];
+            } catch (Exception $e) {
+                return [
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ];
+            }
+        }
+        return [
+            'success' => false,
+            'message' => __('app.actions.upload.error'),
+        ];
+    }
+    public function importItemUpdatePricesWarehouses(Request $request)
+    {
+        if ($request->hasFile('file')) {
+            try {
+                $import = new PriceUpdateWarehouseImport();
                 $import->import($request->file('file'), null, Excel::XLSX);
                 $data = $import->getData();
                 return [

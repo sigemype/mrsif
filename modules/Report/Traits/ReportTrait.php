@@ -22,7 +22,9 @@ use App\Models\Tenant\Establishment;
 use Modules\Item\Models\WebPlatform;
 use App\Http\Controllers\FunctionController;
 use App\Models\Tenant\Catalogs\DocumentType;
-
+use App\Models\Tenant\InventoryReference;
+use App\Models\Tenant\Purchase;
+use App\Models\Tenant\Quotation;
 
 /**
  * Trait ReportTrait
@@ -50,16 +52,17 @@ trait ReportTrait
         $month_end = FunctionController::InArray($request, 'month_end');
         $person_id = FunctionController::InArray($request, 'person_id');
         $type_person = FunctionController::InArray($request, 'type_person');
-
+        $license_id = FunctionController::InArray($request, 'license_id');
+        $responsible_id = FunctionController::InArray($request, 'responsible_id');
         $seller_id = FunctionController::InArray($request, 'seller_id');
         $state_type_id = FunctionController::InArray($request, 'state_type_id');
         $purchase_order = FunctionController::InArray($request, 'purchase_order');
         $guides = FunctionController::InArray($request, 'guides');
         $web_platform = FunctionController::InArray($request, 'web_platform_id', 0);
-
+        $has_payment = FunctionController::InArray($request, 'has_payment', false);
         $session_user_id = FunctionController::InArray($request, 'session_user_id', false);
 
-
+        $has_payment = ($has_payment == 'true') ? true : false;
         $d_start = null;
         $d_end = null;
 
@@ -101,7 +104,10 @@ trait ReportTrait
             $purchase_order,
             $guides,
             $web_platform,
-            $session_user_id
+            $session_user_id,
+            $has_payment,
+            $license_id,
+            $responsible_id
         );
 
         return $records;
@@ -137,7 +143,11 @@ trait ReportTrait
         $purchase_order,
         $guides = null,
         $web_platform = null,
-        $session_user_id = false
+        $session_user_id = false,
+        $has_payment = false,
+        $license_id = null,
+        $responsible_id = null
+        
     ) {
         $configuration = Configuration::first();
         $web_platform = (int)$web_platform;
@@ -161,7 +171,14 @@ trait ReportTrait
         } else {
             $data = PurchaseItem::whereNotNull('id');
         }
-
+        if($model == Purchase::class){
+            if($license_id){
+                $data->where('license_id', $license_id);
+            }
+            if($responsible_id){
+                $data->where('responsible_id', $responsible_id);
+            }
+        }
         /** @var \Illuminate\Database\Eloquent\Builder  $data */
         if ($document_type_id && $establishment_id) {
             if ($document_type_id == '80') {
@@ -188,7 +205,9 @@ trait ReportTrait
             $data->where('establishment_id', $establishment_id);
         }
 
-
+        if($model == Quotation::class && $has_payment){
+            $data->has('payments');
+        }
         if ($person_id && $type_person) {
             $column = ($type_person == 'customers') ? 'customer_id' : 'supplier_id';
             $data->where($column, $person_id);
@@ -345,6 +364,11 @@ trait ReportTrait
      *
      * @return mixed
      */
+
+
+    public function getInventoryReferences(){
+        return InventoryReference::all();
+    }
     public function getPersons($type)
     {
 

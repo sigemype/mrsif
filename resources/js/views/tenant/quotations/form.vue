@@ -12,21 +12,15 @@
                                 url="/"
                                 :path_logo="
                                     company.logo != null
-                                        ? `/storage/uploads/logos/${
-                                              company.logo
-                                          }`
+                                        ? `/storage/uploads/logos/${company.logo}`
                                         : ''
                                 "
                             ></logo>
                         </div>
                         <div class="col-sm-6 text-left mt-3 mb-0">
                             <address class="ib mr-2">
-
                                 <span class="font-weight-bold d-block"
-                                    >COTIZACIÓN</span
-                                >
-                                <span class="font-weight-bold d-block"
-                                    >{{ serie ? serie : "COT" }}-XXX</span
+                                    >Cotización</span
                                 >
                                 <span class="font-weight-bold">{{
                                     company.name
@@ -40,22 +34,86 @@
                                 {{ establishment.department.description }} -
                                 {{ establishment.country.description }}
                                 <br />
-                                {{ establishment.email }} -
-                                <span v-if="establishment.telephone != '-'">{{
-                                    establishment.telephone
-                                }}</span>
                             </address>
                         </div>
                     </div>
                 </header>
                 <form autocomplete="off" @submit.prevent="submit">
                     <div class="form-body">
+                        <div class="row mt-1" v-if="isProject">
+                            <div class="col-lg-2">
+                                <div
+                                    class="form-group"
+                                    :class="{ 'has-danger': errors.series_id }"
+                                >
+                                    <label class="control-label">Serie</label>
+                                    <el-select
+                                        v-model="form.series_id"
+                                        :disabled="disabledSeries()"
+                                    >
+                                        <el-option
+                                            v-for="(option, idx) in series"
+                                            :key="idx"
+                                            :value="option.id"
+                                            :label="option.number"
+                                        ></el-option>
+                                    </el-select>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.series_id"
+                                        v-text="errors.series_id[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row mt-1">
+                            <div class="col-lg-4 pb-2" v-if="isProject">
+                                <div
+                                    class="form-group"
+                                    :class="{
+                                        'has-danger': errors.project_name,
+                                    }"
+                                >
+                                    <label
+                                        class="control-label font-weight-bold text-info"
+                                    >
+                                        Proyecto
+                                    </label>
+                                    <el-input v-model="form.project_name">
+                                    </el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.project_name"
+                                        v-text="errors.project_name[0]"
+                                    ></small>
+                                </div>
+                                <div
+                                    v-if="customer_addresses.length > 0 && !isProject"
+                                    class="form-group"
+                                >
+                                    <label
+                                        class="control-label font-weight-bold text-info"
+                                        >Dirección</label
+                                    >
+                                    <el-select
+                                        v-model="form.customer_address_id"
+                                    >
+                                        <el-option
+                                            v-for="(
+                                                option, idx
+                                            ) in customer_addresses"
+                                            :key="idx"
+                                            :value="option.id"
+                                            :label="option.address"
+                                        ></el-option>
+                                    </el-select>
+                                </div>
+                            </div>
                             <div class="col-lg-4 pb-2">
                                 <div
                                     class="form-group"
                                     :class="{
-                                        'has-danger': errors.customer_id
+                                        'has-danger': errors.customer_id,
                                     }"
                                 >
                                     <label
@@ -96,7 +154,7 @@
                                     ></small>
                                 </div>
                                 <div
-                                    v-if="customer_addresses.length > 0"
+                                    v-if="customer_addresses.length > 0 && !isProject"
                                     class="form-group"
                                 >
                                     <label
@@ -107,8 +165,51 @@
                                         v-model="form.customer_address_id"
                                     >
                                         <el-option
-                                            v-for="(option,
-                                            idx) in customer_addresses"
+                                            v-for="(
+                                                option, idx
+                                            ) in customer_addresses"
+                                            :key="idx"
+                                            :value="option.id"
+                                            :label="option.address"
+                                        ></el-option>
+                                    </el-select>
+                                </div>
+                            </div>
+                            <div class="col-lg-4 pb-2" v-if="isProject">
+                                <div
+                                    class="form-group"
+                                    :class="{
+                                        'has-danger': errors.atention,
+                                    }"
+                                >
+                                    <label
+                                        class="control-label font-weight-bold text-info"
+                                    >
+                                        Atención
+                                    </label>
+                                    <el-input v-model="form.atention">
+                                    </el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.atention"
+                                        v-text="errors.atention[0]"
+                                    ></small>
+                                </div>
+                                <div
+                                    v-if="customer_addresses.length > 0 && !isProject"
+                                    class="form-group"
+                                >
+                                    <label
+                                        class="control-label font-weight-bold text-info"
+                                        >Dirección</label
+                                    >
+                                    <el-select
+                                        v-model="form.customer_address_id"
+                                    >
+                                        <el-option
+                                            v-for="(
+                                                option, idx
+                                            ) in customer_addresses"
                                             :key="idx"
                                             :value="option.id"
                                             :label="option.address"
@@ -120,7 +221,7 @@
                                 <div
                                     class="form-group"
                                     :class="{
-                                        'has-danger': errors.date_of_issue
+                                        'has-danger': errors.date_of_issue,
                                     }"
                                 >
                                     <label class="control-label"
@@ -144,11 +245,16 @@
                                 <div
                                     class="form-group"
                                     :class="{
-                                        'has-danger': errors.date_of_due
+                                        'has-danger': errors.date_of_due,
                                     }"
                                 >
-                                    <label class="control-label"
+                                    <label
+                                        class="control-label"
+                                        v-if="!isProject"
                                         >Tiempo de Validez</label
+                                    >
+                                    <label class="control-label" v-else
+                                        >Fecha de vencimiento</label
                                     >
                                     <el-input
                                         v-model="form.date_of_due"
@@ -160,11 +266,11 @@
                                     ></small>
                                 </div>
                             </div>
-                            <div class="col-lg-2">
+                            <div class="col-lg-2" v-if="!isProject">
                                 <div
                                     class="form-group"
                                     :class="{
-                                        'has-danger': errors.delivery_date
+                                        'has-danger': errors.delivery_date,
                                     }"
                                 >
                                     <label class="control-label"
@@ -180,25 +286,21 @@
                                     ></small>
                                 </div>
                             </div>
-                            <div class="col-lg-2">
-                                <div
-                                    class="form-group">
+                            <div class="col-lg-2" v-if="!isProject">
+                                <div class="form-group">
                                     <label class="control-label">
-                                        {{form.quotations_optional}}
-                                    </label
-                                    >
+                                        {{ form.quotations_optional }}
+                                    </label>
                                     <el-input
                                         v-model="form.quotations_optional_value"
                                     ></el-input>
-
                                 </div>
                             </div>
 
-
-                            <div class="col-lg-4">
+                            <div class="col-lg-4" v-if="!isProject">
                                 <div class="form-group">
-                                    <label class="control-label"
-                                        >Dirección de envío
+                                    <label class="control-label">
+                                        <template>Dirección de envío</template>
                                     </label>
                                     <el-input
                                         v-model="form.shipping_address"
@@ -210,13 +312,83 @@
                                     ></small>
                                 </div>
                             </div>
-
+                            <div class="col-lg-4" v-else>
+                                <div class="form-group">
+                                    <label class="control-label">
+                                        <template>Dirección </template>
+                                    </label>
+                                    <el-input
+                                        v-model="form.direction"
+                                    ></el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.direction"
+                                        v-text="errors.direction[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4" v-if="isProject">
+                                <div class="form-group">
+                                    <label class="control-label">
+                                        Teléfono
+                                    </label>
+                                    <el-input
+                                        v-model="form.telephone"
+                                    ></el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.telephone"
+                                        v-text="errors.telephone[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4" v-if="isProject">
+                                <div class="form-group">
+                                    <label class="control-label"> Email </label>
+                                    <el-input v-model="form.email"></el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.email"
+                                        v-text="errors.email[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4" v-if="isProject">
+                                <div class="form-group">
+                                    <label class="control-label">
+                                        Porcentaje a abonar
+                                    </label>
+                                    <el-input
+                                        v-model="form.percentage"
+                                    ></el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.percentage"
+                                        v-text="errors.percentage[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-lg-4" v-if="isProject">
+                                <div class="form-group">
+                                    <label class="control-label">
+                                        Plazo de entrega
+                                    </label>
+                                    <el-input
+                                        v-model="form.limit_date"
+                                    ></el-input>
+                                    <small
+                                        class="text-danger"
+                                        v-if="errors.limit_date"
+                                        v-text="errors.limit_date[0]"
+                                    ></small>
+                                </div>
+                            </div>
                             <div class="col-lg-2">
                                 <div
                                     class="form-group"
                                     :class="{
                                         'has-danger':
-                                            errors.payment_method_type_id
+                                            errors.payment_method_type_id,
                                     }"
                                 >
                                     <label class="control-label">
@@ -228,8 +400,9 @@
                                         @change="changePaymentMethodType"
                                     >
                                         <el-option
-                                            v-for="(option,
-                                            idx) in payment_method_types"
+                                            v-for="(
+                                                option, idx
+                                            ) in payment_method_types"
                                             :key="idx"
                                             :value="option.id"
                                             :label="option.description"
@@ -263,7 +436,7 @@
                                 <div
                                     class="form-group"
                                     :class="{
-                                        'has-danger': errors.currency_type_id
+                                        'has-danger': errors.currency_type_id,
                                     }"
                                 >
                                     <label class="control-label">Moneda</label>
@@ -272,8 +445,9 @@
                                         @change="changeCurrencyType"
                                     >
                                         <el-option
-                                            v-for="(option,
-                                            idx) in currency_types"
+                                            v-for="(
+                                                option, idx
+                                            ) in currency_types"
                                             :key="idx"
                                             :value="option.id"
                                             :label="option.description"
@@ -290,7 +464,7 @@
                                 <div
                                     class="form-group"
                                     :class="{
-                                        'has-danger': errors.exchange_rate_sale
+                                        'has-danger': errors.exchange_rate_sale,
                                     }"
                                 >
                                     <label class="control-label"
@@ -387,8 +561,9 @@
                                     </thead>
                                     <tbody>
                                         <tr
-                                            v-for="(row,
-                                            index) in form.payments"
+                                            v-for="(
+                                                row, index
+                                            ) in form.payments"
                                             :key="index"
                                         >
                                             <td>
@@ -401,8 +576,9 @@
                                                         "
                                                     >
                                                         <el-option
-                                                            v-for="(option,
-                                                            idx) in payment_method_types"
+                                                            v-for="(
+                                                                option, idx
+                                                            ) in payment_method_types"
                                                             :key="idx"
                                                             :value="option.id"
                                                             :label="
@@ -423,8 +599,9 @@
                                                         filterable
                                                     >
                                                         <el-option
-                                                            v-for="(option,
-                                                            idx) in payment_destinations"
+                                                            v-for="(
+                                                                option, idx
+                                                            ) in payment_destinations"
                                                             :key="idx"
                                                             :value="option.id"
                                                             :label="
@@ -530,7 +707,7 @@
                                                     class="form-group"
                                                     :class="{
                                                         'has-danger':
-                                                            errors.exchange_rate_sale
+                                                            errors.exchange_rate_sale,
                                                     }"
                                                 >
                                                     <label class="control-label"
@@ -586,13 +763,27 @@
                                 </el-collapse>
                             </div>
                         </div>
-
+                        <div class="col-md-12 col-sm-12 mt-2" v-if="isProject">
+                            <div class="form-group" >
+                                <label class="control-label"
+                                    >Observaciones que iran en el pdf</label
+                                >
+                                <vue-ckeditor
+                                    v-model="form.observations"
+                                    :editors="editors"
+                                    type="classic"
+                                ></vue-ckeditor>
+                            </div>
+                        </div>
                         <div class="row mt-3">
                             <div class="col-md-12">
                                 <div class="table-responsive">
                                     <table class="table">
                                         <thead>
                                             <tr>
+                                                <th v-if="isProject">
+                                                    Cabecera
+                                                </th>
                                                 <th width="5%">#</th>
                                                 <th
                                                     class="font-weight-bold"
@@ -638,10 +829,36 @@
                                         </thead>
                                         <tbody v-if="form.items.length > 0">
                                             <tr
-                                                v-for="(row,
-                                                index) in form.items"
+                                                v-for="(
+                                                    row, index
+                                                ) in form.items"
                                                 :key="index"
                                             >
+                                                <td v-if="isProject">
+                                                    <template
+                                                        v-if="
+                                                            checkHeader(
+                                                                row,
+                                                                index
+                                                            ).header &&
+                                                            checkHeader(
+                                                                row,
+                                                                index
+                                                            ).header != '-'
+                                                        "
+                                                    >
+                                                        <small
+                                                            class="text-info font-weight-bold"
+                                                        >
+                                                            {{
+                                                                checkHeader(
+                                                                    row,
+                                                                    index
+                                                                ).header
+                                                            }}
+                                                        </small>
+                                                    </template>
+                                                </td>
                                                 <td>{{ index + 1 }}</td>
                                                 <td>
                                                     {{
@@ -657,7 +874,66 @@
                                                                   .presentation
                                                                   .description
                                                             : ""
-                                                    }}<br /><small>{{
+                                                    }}
+                                                    <template v-if="isProject">
+                                                        <template
+                                                            v-if="
+                                                                row.item
+                                                                    .brand &&
+                                                                row.item
+                                                                    .brand != ''
+                                                            "
+                                                        >
+                                                            <br />
+                                                            <small
+                                                                >Marca:
+                                                                {{
+                                                                    row.item
+                                                                        .brand
+                                                                }}</small
+                                                            >
+                                                        </template>
+                                                        <template
+                                                            v-if="
+                                                                row.item
+                                                                    .model &&
+                                                                row.item
+                                                                    .model != ''
+                                                            "
+                                                        >
+                                                            <br />
+                                                            <small
+                                                                >Modelo:
+                                                                {{
+                                                                    row.item
+                                                                        .model
+                                                                }}</small
+                                                            >
+                                                        </template>
+                                                        <template
+                                                            v-if="
+                                                                row.attributes.filter(
+                                                                    (a) =>
+                                                                        a.description ==
+                                                                        'Color'
+                                                                ).length > 0
+                                                            "
+                                                        >
+                                                            <br />
+                                                            <small>
+                                                                Color:
+                                                                {{
+                                                                    row.attributes.filter(
+                                                                        (a) =>
+                                                                            a.description ==
+                                                                            "Color"
+                                                                    )[0].value
+                                                                }}
+                                                            </small>
+                                                        </template>
+                                                    </template>
+
+                                                    <br /><small>{{
                                                         row.affectation_igv_type
                                                             .description
                                                     }}</small>
@@ -667,6 +943,17 @@
                                                 </td>
                                                 <td class="text-center">
                                                     {{ row.quantity }}
+                                                    <template v-if="isProject">
+                                                        <br />
+                                                        <el-tag
+                                                            size="mini"
+                                                            type="primary"
+                                                        >
+                                                            {{
+                                                                row.disponibilidad
+                                                            }}
+                                                        </el-tag>
+                                                    </template>
                                                 </td>
                                                 <!-- <td class="text-end">{{currency_type.symbol}} {{row.unit_price}}</td> -->
                                                 <td class="text-center">
@@ -704,7 +991,9 @@
                                                         "
                                                     >
                                                         <span
-                                                            style="font-size:10px;"
+                                                            style="
+                                                                font-size: 10px;
+                                                            "
                                                             >&#9998;</span
                                                         >
                                                     </button>
@@ -745,6 +1034,26 @@
                             <div class="col-md-8 mt-3"></div>
 
                             <div class="col-md-4">
+                                <div
+                                    class="row"
+                                    v-if="isProject && form.total > 0"
+                                >
+                                    <div class="col-lg-8 text-end">
+                                        <label class="text-end control-label">
+                                            DESCUENTO % :
+                                        </label>
+                                    </div>
+
+                                    <div class="col-lg-4 text-end">
+                                        <el-input-number
+                                            v-model="total_global_discount"
+                                            :min="0"
+                                            class="w-100"
+                                            controls-position="right"
+                                            @change="changeTotalGlobalDiscount"
+                                        ></el-input-number>
+                                    </div>
+                                </div>
                                 <p
                                     class="text-end"
                                     v-if="form.total_exportation > 0"
@@ -778,6 +1087,21 @@
                                     IGV: {{ currency_type.symbol }}
                                     {{ form.total_igv }}
                                 </p>
+                                <p
+                                    class="text-end"
+                                    v-if="
+                                        form.total_discount > 0 &&
+                                        this.isProject
+                                    "
+                                >
+                                    DESCUENTOS TOTALES:
+                                    {{ currency_type.symbol }}
+                                    {{
+                                        form.total_discount.toFixed(
+                                            decimalQuantity
+                                        )
+                                    }}
+                                </p>
                                 <h3 class="text-end" v-if="form.total > 0">
                                     <b>TOTAL A PAGAR: </b
                                     >{{ currency_type.symbol }} {{ form.total }}
@@ -802,6 +1126,7 @@
         </div>
 
         <quotation-form-item
+            :headers.sync="headers"
             :showDialog.sync="showDialogAddItem"
             :configuration="config"
             :currency-type-id-active="form.currency_type_id"
@@ -838,7 +1163,20 @@
         ></terms-condition>
     </div>
 </template>
+<style>
+.ck.ck-editor {
+    border: 1px solid #e7e3e3;
+}
+/* Ocultar el botón de Insertar imagen */
+.ck-file-dialog-button {
+    display: none;
+}
 
+/* Ocultar el botón de Insertar media */
+.ck.ck-dropdown {
+    display: none;
+}
+</style>
 <script>
 import TermsCondition from "./partials/terms_condition.vue";
 import QuotationFormItem from "./partials/item.vue";
@@ -848,23 +1186,37 @@ import { functions, exchangeRate } from "../../../mixins/functions";
 import {
     calculateRowItem,
     showNamePdfOfDescription,
-    sumAmountDiscountsNoBaseByItem
+    sumAmountDiscountsNoBaseByItem,
 } from "../../../helpers/functions";
 import Logo from "../companies/logo.vue";
 import { mapActions, mapState } from "vuex/dist/vuex.mjs";
-
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import VueCkeditor from "vue-ckeditor5";
 export default {
-    props: ["typeUser", "user", "saleOpportunityId", "configuration","quotations_optional","quotations_optional_value"],
+    props: [
+        "typeUser",
+        "user",
+        "saleOpportunityId",
+        "configuration",
+        "quotations_optional",
+        "quotations_optional_value",
+    ],
     components: {
         QuotationFormItem,
         PersonForm,
         QuotationOptions,
         Logo,
-        TermsCondition
+        TermsCondition,
+        "vue-ckeditor": VueCkeditor.component,
     },
     mixins: [functions, exchangeRate],
     data() {
         return {
+            editors: {
+                classic: ClassicEditor,
+            },
+            total_global_discount: 0,
+            headers: [],
             sellers: [],
             input_person: {},
             resource: "quotations",
@@ -894,17 +1246,23 @@ export default {
             loading_search: false,
             recordItem: null,
             total_discount_no_base: 0,
-            serie: null
+            serie: null,
+            isProject: false,
+            decimalQuantity: 2,
+            series: [],
+            all_series: [],
         };
     },
     async created() {
-        console.log(this.user);
         this.loadConfiguration();
         this.$store.commit("setConfiguration", this.configuration);
+        let { quotation_projects } = this.configuration;
+        this.isProject = quotation_projects;
         await this.initForm();
-        await this.$http.get(`/${this.resource}/tables`).then(response => {
+        await this.$http.get(`/${this.resource}/tables`).then((response) => {
             const data = response.data;
             this.currency_types = data.currency_types;
+            this.all_series = data.series;
             this.establishments = data.establishments;
             this.all_customers = data.customers;
             this.discount_types = data.discount_types;
@@ -926,7 +1284,7 @@ export default {
             let { type } = this.user;
             if (type == "seller") {
                 let seller = this.sellers.find(
-                    seller => seller.id == this.user.id
+                    (seller) => seller.id == this.user.id
                 );
                 if (seller) {
                     this.form.seller_id = seller.id;
@@ -941,10 +1299,13 @@ export default {
             this.changeCurrencyType();
             this.allCustomers();
             this.selectDestinationSale();
+            if (this.isProject) {
+                this.filterSeries();
+            }
         });
         await this.getPercentageIgv();
         this.loading_form = true;
-        this.$eventHub.$on("reloadDataPersons", customer_id => {
+        this.$eventHub.$on("reloadDataPersons", (customer_id) => {
             this.reloadDataCustomers(customer_id);
         });
         this.$eventHub.$on("initInputPerson", () => {
@@ -954,9 +1315,73 @@ export default {
         await this.createQuotationFromSO();
     },
     computed: {
-        ...mapState(["config"])
+        ...mapState(["config"]),
     },
+    mounted() {},
     methods: {
+        printHtml() {
+            console.log(this.form.observations);
+        },
+        disabledSeries() {
+            return (
+                this.configuration.restrict_series_selection_seller &&
+                this.typeUser !== "admin"
+            );
+        },
+        validProject() {
+            if (this.isProject) {
+                let { project_name, percentage } = this.form;
+                if (project_name == null || project_name == "") {
+                    this.$message({
+                        type: "warning",
+                        message: "Ingrese el nombre del proyecto",
+                    });
+                    return false;
+                }
+                if (isNaN(percentage)) {
+                    this.$message({
+                        type: "warning",
+                        message:
+                            "Ingrese un valor numérico en el campo porcentaje",
+                    });
+                    return false;
+                }
+            }
+            return true;
+        },
+        changeTotalGlobalDiscount() {
+            this.calculateTotal();
+        },
+        checkHeader(row, index) {
+            if (!row.header) {
+                return {
+                    header: "-",
+                };
+            }
+            if (index == 0 && row.header) {
+                return {
+                    header: row.header,
+                };
+            }
+            if (index != 0 && row.header) {
+                let same = this.form.items[index - 1].header == row.header;
+                if (same) {
+                    return {
+                        header: null,
+                    };
+                } else {
+                    let indexHeader = _.findIndex(this.headers, {
+                        header: row.header,
+                    });
+                    if (indexHeader == -1) {
+                        indexHeader = this.headers.length;
+                    }
+                    return {
+                        header: row.header,
+                    };
+                }
+            }
+        },
         ...mapActions(["loadConfiguration"]),
         clickAddItem() {
             this.recordItem = null;
@@ -970,7 +1395,7 @@ export default {
         changeCustomer() {
             this.customer_addresses = [];
             let customer = _.find(this.customers, {
-                id: this.form.customer_id
+                id: this.form.customer_id,
             });
             this.customer_addresses = customer.addresses;
 
@@ -979,7 +1404,7 @@ export default {
 
                 this.customer_addresses.unshift({
                     id: null,
-                    address: customer.address
+                    address: customer.address,
                 });
             }
         },
@@ -1011,7 +1436,7 @@ export default {
                 payment_method_type_id: "01",
                 reference: null,
                 payment_destination_id: this.getPaymentDestinationId(),
-                payment: 0
+                payment: 0,
             });
 
             this.setTotalDefaultPayment();
@@ -1042,7 +1467,7 @@ export default {
 
                 await this.$http
                     .get(`/sale-opportunities/record/${this.saleOpportunityId}`)
-                    .then(response => {
+                    .then((response) => {
                         sale_opportunity = response.data.data.sale_opportunity;
                         this.reloadDataCustomers(sale_opportunity.customer_id);
                     });
@@ -1087,7 +1512,7 @@ export default {
 
                 this.$http
                     .get(`/${this.resource}/search/customers?${parameters}`)
-                    .then(response => {
+                    .then((response) => {
                         this.customers = response.data.customers;
                         this.loading_search = false;
                         /* if(this.customers.length == 0){this.allCustomers()} */
@@ -1102,6 +1527,9 @@ export default {
         initForm() {
             this.errors = {};
             this.form = {
+                series_id:null,
+                observations:
+                    "<p>* PRECIOS NO INCLUYEN IGV. VALIDEZ DE LA OFERTA:&nbsp;</p><p>* FORMA DE PAGO: &nbsp;DE ADELANTO, SALDO ANTES DE LA ENTREGA &nbsp; &nbsp;</p><p>* PLAZO DE ENTREGA PRODUCTOS: &nbsp;DEPENDIENDO LA DISPONIBILIDAD DE FABRICA &nbsp; &nbsp;</p><p>* PRECIOS EXPRESADOS EN&nbsp;</p><p>* LA COTIZACION NO INCLUYE ACARREO DE MATERIAL. &nbsp; &nbsp;</p><p>* ESTA COTIZACION NO INCLUYE EMBALAJE ESPECIAL DE MATERIAL, SI FUERA REQUERIDO SE COTIZARÁ. &nbsp; &nbsp;</p><p>* FORMA DE PAGO: TRANSFERENCIA &nbsp; &nbsp;</p><p><strong>Razón Social: AQUA CONCEPT / RUC 20608989324 &nbsp; &nbsp;</strong></p><p><strong>SCOTIABANK &nbsp; &nbsp;</strong></p><p><strong>Cuenta Ahorro soles &nbsp;</strong> &nbsp;</p><p>139-0286506 &nbsp; &nbsp;</p><p>CCI: 009-038-201390286506-13 &nbsp; &nbsp;</p><p><strong>Cuenta ahorro dólares&nbsp;</strong> &nbsp;&nbsp;</p><p>139-0290034</p><p>CCI: 009-038-211390290034-18 &nbsp; &nbsp;</p>",
                 seller_id: null,
                 description: "",
                 prefix: "COT",
@@ -1146,20 +1574,33 @@ export default {
                 terms_condition: null,
                 active_terms_condition: false,
                 actions: {
-                    format_pdf: "a4"
+                    format_pdf: "a4",
                 },
                 payments: [],
                 sale_opportunity_id: null,
                 contact: null,
                 phone: null,
-                quotations_optional:this.quotations_optional,
-                quotations_optional_value:this.quotations_optional_value
+                quotations_optional: this.quotations_optional,
+                quotations_optional_value: this.quotations_optional_value,
             };
 
             this.total_discount_no_base = 0;
             this.initInputPerson();
             // no se agrega pago por defecto para controlar flujo caja pos
             // this.clickAddPayment()
+        },
+        filterSeries() {
+            this.form.series_id = null;
+            this.series = _.filter(this.all_series, {
+                establishment_id: this.form.establishment_id,
+                document_type_id: "COT",
+            });
+            console.log(
+                "🚀 ~ file: form.vue:1555 ~ filterSeries ~ this.series:",
+                this.series
+            );
+            this.form.series_id =
+                this.series.length > 0 ? this.series[0].id : null;
         },
         resetForm() {
             this.activePanel = 0;
@@ -1180,26 +1621,37 @@ export default {
         },
         changeEstablishment() {
             this.establishment = _.find(this.establishments, {
-                id: this.form.establishment_id
+                id: this.form.establishment_id,
             });
         },
         cleanCustomer() {
             this.form.customer_id = null;
         },
         async changeDateOfIssue() {
-            await this.searchExchangeRateByDate(this.form.date_of_issue).then(
-                response => {
+            try {
+                await this.searchExchangeRateByDate(
+                    this.form.date_of_issue
+                ).then((response) => {
                     this.form.exchange_rate_sale = response;
-                }
-            );
+                });
+            } catch (e) {
+                this.form.exchange_rate_sale = 1;
+            }
             await this.getPercentageIgv();
             this.changeCurrencyType();
         },
         allCustomers() {
             this.customers = this.all_customers;
         },
+        setHeaders() {
+            let items = _.orderBy(this.form.items, ["header"], ["asc"]);
+            let itemsSC = _.filter(items, { header: "S/C" });
+            let itemsNotSC = _.filter(items, (item) => {
+                return item.header != "S/C";
+            });
+            this.form.items = [...itemsNotSC, ...itemsSC];
+        },
         addRow(row) {
-            console.log(row);
             if (this.recordItem) {
                 this.form.items[this.recordItem.indexi] = row;
                 this.recordItem = null;
@@ -1208,6 +1660,9 @@ export default {
             }
 
             this.calculateTotal();
+            if (this.isProject) {
+                this.setHeaders();
+            }
         },
         clickRemoveItem(index) {
             this.form.items.splice(index, 1);
@@ -1215,18 +1670,25 @@ export default {
         },
         changeCurrencyType() {
             this.currency_type = _.find(this.currency_types, {
-                id: this.form.currency_type_id
+                id: this.form.currency_type_id,
             });
             let items = [];
-            this.form.items.forEach(row => {
-                items.push(
+            this.form.items.forEach((row) => {
+                 let newItem =
                     calculateRowItem(
                         row,
                         this.form.currency_type_id,
                         this.form.exchange_rate_sale,
                         this.percentage_igv
                     )
-                );
+                if(this.isProject){
+                newItem.header = row.header;
+                newItem.disponibilidad = row.disponibilidad;
+                console.log("🚀 ~ file: form.vue:1695 ~ this.form.items.forEach ~ newItem:", newItem)
+                
+                }
+                items.push(newItem);
+
             });
             this.form.items = items;
             this.calculateTotal();
@@ -1245,7 +1707,7 @@ export default {
             let total_igv_free = 0;
             this.total_discount_no_base = 0;
 
-            this.form.items.forEach(row => {
+            this.form.items.forEach((row) => {
                 total_discount += parseFloat(row.total_discount);
                 total_charge += parseFloat(row.total_charge);
 
@@ -1294,9 +1756,8 @@ export default {
                 }
 
                 //sum discount no base
-                this.total_discount_no_base += sumAmountDiscountsNoBaseByItem(
-                    row
-                );
+                this.total_discount_no_base +=
+                    sumAmountDiscountsNoBaseByItem(row);
             });
 
             this.form.total_igv_free = _.round(total_igv_free, 2);
@@ -1312,8 +1773,53 @@ export default {
 
             this.form.subtotal = _.round(total, 2);
             this.form.total = _.round(total - this.total_discount_no_base, 2);
-
+            if (this.isProject) {
+                this.discountGlobal();
+            }
             this.setTotalDefaultPayment();
+        },
+        discountGlobal() {
+            this.deleteDiscountGlobal();
+
+            //input donde se ingresa monto o porcentaje
+            let input_global_discount = parseFloat(this.total_global_discount);
+
+            if (input_global_discount > 0) {
+                let base = parseFloat(this.form.total);
+                let amount = 0;
+                let factor = 0;
+
+                factor = _.round(input_global_discount / 100, 5);
+                amount = factor * base;
+
+                this.form.total_discount = _.round(amount, 2);
+
+                this.form.total = _.round(this.form.total - amount, 2);
+
+                this.setGlobalDiscount(factor, _.round(amount, 2), base);
+            }
+        },
+        deleteDiscountGlobal() {
+            let discount = _.find(this.form.discounts, {
+                discount_type_id: this.config.global_discount_type_id,
+            });
+            let index = this.form.discounts.indexOf(discount);
+
+            if (index > -1) {
+                this.form.discounts.splice(index, 1);
+                this.form.total_discount = 0;
+            }
+        },
+        setGlobalDiscount(factor, amount, base) {
+            this.form.discounts.push({
+                discount_type_id: "03",
+                description:
+                    "Descuentos globales que no afectan la base imponible del IGV/IVAP",
+                factor: factor,
+                amount: amount,
+                base: base,
+                is_amount: false,
+            });
         },
         validate_payments() {
             //eliminando items de pagos
@@ -1325,28 +1831,29 @@ export default {
             let error_by_item = 0;
             let acum_total = 0;
 
-            this.form.payments.forEach(item => {
+            this.form.payments.forEach((item) => {
                 acum_total += parseFloat(item.payment);
                 if (item.payment <= 0 || item.payment == null) error_by_item++;
             });
 
             return {
                 error_by_item: error_by_item,
-                acum_total: acum_total
+                acum_total: acum_total,
             };
         },
         validatePaymentDestination() {
             let error_by_item = 0;
 
-            this.form.payments.forEach(item => {
+            this.form.payments.forEach((item) => {
                 if (item.payment_destination_id == null) error_by_item++;
             });
 
             return {
-                error_by_item: error_by_item
+                error_by_item: error_by_item,
             };
         },
         async submit() {
+            if (!this.validProject()) return;
             if (this.serie) {
                 this.form.prefix = this.serie;
             }
@@ -1360,7 +1867,8 @@ export default {
                 );
             }
 
-            let validate_payment_destination = await this.validatePaymentDestination();
+            let validate_payment_destination =
+                await this.validatePaymentDestination();
 
             if (validate_payment_destination.error_by_item > 0) {
                 return this.$message.error(
@@ -1372,7 +1880,7 @@ export default {
 
             await this.$http
                 .post(`/${this.resource}`, this.form)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.resetForm();
                         this.quotationNewId = response.data.data.id;
@@ -1380,9 +1888,7 @@ export default {
 
                         if (this.saleOpportunityId) {
                             this.$message.success(
-                                `La cotización ${
-                                    response.data.data.number_full
-                                } fue generada`
+                                `La cotización ${response.data.data.number_full} fue generada`
                             );
                             this.close();
                         } else {
@@ -1392,7 +1898,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 422) {
                         this.errors = error.response.data;
                     } else {
@@ -1409,7 +1915,7 @@ export default {
         reloadDataCustomers(customer_id) {
             this.$http
                 .get(`/${this.resource}/search/customer/${customer_id}`)
-                .then(response => {
+                .then((response) => {
                     this.customers = response.data.customers;
                     this.form.customer_id = customer_id;
                 });
@@ -1420,15 +1926,15 @@ export default {
         async saveCashDocument(id) {
             await this.$http
                 .post(`/cash/cash_document`, {
-                    quotation_id: id
+                    quotation_id: id,
                 })
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                     } else {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.log(error);
                 });
         },
@@ -1456,9 +1962,9 @@ export default {
         initInputPerson() {
             this.input_person = {
                 number: null,
-                identity_document_type_id: null
+                identity_document_type_id: null,
             };
-        }
-    }
+        },
+    },
 };
 </script>

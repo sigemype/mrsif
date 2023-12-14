@@ -18,6 +18,7 @@ class PersonResource extends JsonResource
         return $this->getCollectionData(true);
         /** Pasado al modelo  */
         return [
+            'is_driver' => (bool) $this->is_driver,
             'id' => $this->id,
             'type' => $this->type,
             'identity_document_type_id' => $this->identity_document_type_id,

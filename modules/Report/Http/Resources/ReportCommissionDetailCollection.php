@@ -19,9 +19,12 @@ class ReportCommissionDetailCollection extends ResourceCollection
     {
         return $this->collection->transform(function ($row, $key) {
             //dd(request()->input('item_id'),request()->input('date_end'));
+            $items = Item::find($row->item_id); 
+
             $type_document = '';
             $quantity = $row->quantity;
-            $unit_price = $row->unit_price;
+            $purchase_unit_price = $items->purchase_unit_price * $quantity;
+            $unit_price = $row->unit_price * $quantity;
             $presentation_name = null;
             $relation = $row->document_id ? $row->document : $row->sale_note;
             if ($row->document_id) {
@@ -31,25 +34,35 @@ class ReportCommissionDetailCollection extends ResourceCollection
                 if (isset($row->item->presentation->id)) {
                     $presentation = $row->item->presentation;
                     $presentation_name = $presentation->description;
-                    $quantity = $presentation->quantity_unit;
+                    // $quantity = $presentation->quantity_unit;
                     $unit_price = number_format(floatval($unit_price) , 2, ".", "");
                     // $unit_price = 
+                    $purchase_unit_price = $items->purchase_unit_price*$presentation->quantity_unit ;
+                }else{
+                    $unit_price = number_format(floatval($unit_price) , 2, ".", "");
                 }
              } else if ($row->sale_note_id) {
                 $user_id =$row->sale_note->user->id;
                 $user = $row->sale_note->user->name;
 
                 $type_document = 'NOTA DE VENTA';
+                if (isset($row->item->presentation->id)) {
+                    $presentation = $row->item->presentation;
+                    $presentation_name = $presentation->description;
+                    // $quantity = $presentation->quantity_unit;
+                    $purchase_unit_price = $items->purchase_unit_price*$presentation->quantity_unit ;
+                }else{
+                    $unit_price = number_format(floatval($unit_price) , 2, ".", "");
+                    // $unit_price = 
+                }
             }
             $data_items_purchase_unit_price =0;
-            $items = Item::find($row->item_id); 
             if(request()->input('item_id')!==null && request()->input('unit_type_id')!==null){
                 $data_items = ItemUnitType::where('item_id',request()->input('item_id'))->where('unit_type_id',request()->input('unit_type_id'))->first();
                 $data_items_purchase_unit_price =  $data_items!=null ? $data_items->purchase_unit_price : 0.00;
-                $purchase_unit_price = $items->purchase_unit_price*$data_items->factor_default;
-            }else{
-                $purchase_unit_price = $items->purchase_unit_price;
+                $purchase_unit_price = $items->purchase_unit_price*$data_items->quantity_unit ;
             }
+
            
             return [
                 'id' => $row->id,
@@ -64,9 +77,9 @@ class ReportCommissionDetailCollection extends ResourceCollection
                 'quantity' => $quantity,
                 'presentation_name' => $presentation_name,
                 'purchase_unit_price' => number_format($purchase_unit_price,2),
-                'unit_price' => $unit_price,
-                'unit_gain' => ( $unit_price -   $purchase_unit_price),
-                'overall_profit' => (( $unit_price * $quantity) - (number_format($purchase_unit_price,2) * $quantity)),
+                'unit_price' => $unit_price ,
+                'unit_gain' => number_format(($unit_price - $purchase_unit_price)/$quantity,2),
+                'overall_profit' => (( $unit_price) - ($purchase_unit_price)),
             ];
         });
     }

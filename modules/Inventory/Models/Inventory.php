@@ -2,6 +2,7 @@
 
 namespace Modules\Inventory\Models;
 
+use App\Models\Tenant\InventoryReference;
 use App\Models\Tenant\Item;
 use App\Models\Tenant\ModelTenant;
 use Modules\Inventory\Models\InventoryKardex;
@@ -66,6 +67,7 @@ class Inventory extends ModelTenant
         'system_stock' => 'float',
     ];
     protected $fillable = [
+        'inventory_reference_id',
         'type',
         'description',
         'item_id',
@@ -140,7 +142,10 @@ class Inventory extends ModelTenant
     {
         return $this->morphMany(ItemLot::class, 'item_loteable');
     }
-
+    public function inventory_reference()
+    {
+        return $this->belongsTo(InventoryReference::class, 'inventory_reference_id');
+    }
     /**
      * Obtener datos para reporte movimientos
      *
@@ -177,8 +182,16 @@ class Inventory extends ModelTenant
         if ($this->warehouse) {
             $warehouse_name = $this->warehouse->description;
         }
-
+        $item = Item::query()->where('id', $this->item_id)->first();
+        $total_sale = $item->sale_unit_price * ($output == "-"? 0 : $output);
+        $total_purchase = $item->purchase_unit_price * ($input == "-"? 0 : $input );
+        $total = $total_sale - $total_purchase;
         return [
+            'total' => number_format($total,2),
+            'total_sale' => number_format($total_sale,2),
+            'total_purchase' => number_format($total_purchase,2),
+            'sale_price' => number_format($item->sale_unit_price,2),
+            'purchase_price' => number_format($item->purchase_unit_price,2),
             'description' => $this->description,
             'item_id' => $this->item_id,
             'item_description' => $this->item->getInternalIdDescription(),
@@ -190,7 +203,8 @@ class Inventory extends ModelTenant
             'date_time' => $this->created_at->format('Y-m-d H:i:s'),
             'guide_number' => $guide_number,
             'guide_date_of_issue' => $guide_date_of_issue,
-            'warehouse_name' => $warehouse_name
+            'warehouse_name' => $warehouse_name,
+            'reference' => optional($this->inventory_reference)->description,
         ];
 
     }
@@ -208,7 +222,7 @@ class Inventory extends ModelTenant
      * @param  $order_inventory_transaction_id
      */
     public function scopeWhereFilterReportMovement($query, $warehouse_id, $inventory_transaction_id, $date_start,
-                                                   $date_end, $item_id, $order_inventory_transaction_id, $movement_type)
+                                                   $date_end, $item_id, $order_inventory_transaction_id, $movement_type, $inventory_reference_id = null)
     {
         $_order_inventory_transaction_id = $order_inventory_transaction_id == 'true';
 
@@ -218,7 +232,9 @@ class Inventory extends ModelTenant
         if ($warehouse_id) {
             $query->where('warehouse_id', $warehouse_id);
         }
-
+        if ($inventory_reference_id) {
+            $query->where('inventory_reference_id', $inventory_reference_id);
+        }
         if ($movement_type !== 'all') {
             $query->whereHas('transaction', function ($q) use ($movement_type) {
                 $q->where('type', $movement_type);

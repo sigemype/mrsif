@@ -23,6 +23,8 @@ class InventoryResource extends JsonResource
             'quantity' => $this->stock,
             'warehouse_new_id' => null,
             'quantity_move' => 0,
+            'has_sizes' => (bool)$this->item->has_sizes,
+            'sizes' => $this->item->sizes->where('warehouse_id', $this->warehouse_id)->toArray(),
             'quantity_real' => 0,
             'lots_enabled' => (bool)$this->item->lots_enabled,
             'series_enabled' => (bool)$this->item->series_enabled,

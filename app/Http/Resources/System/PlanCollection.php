@@ -21,6 +21,7 @@ class PlanCollection extends ResourceCollection
                 'pricing' => $row->pricing,
                 'limit_users' => $row->limit_users,
                 'limit_documents' => $row->limit_documents,
+                'limit_items' => $row->limit_items,
                 // 'plan_documents' => $row->plan_documents, 
                 'locked' => (bool) $row->locked, 
                 

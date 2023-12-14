@@ -23,6 +23,11 @@ class ConfigurationResource extends JsonResource
         return $this->getCollectionData();
         /** Se ha movido al modelo */
         return [
+            'search_by_factory_code' => (bool)$this->search_by_factory_code,
+            'purchase_affectation_igv_type_id' => $this->purchase_affectation_igv_type_id,
+            'locked_items' => (bool) $this->locked_items,
+            'package_handlers' => (bool) $this->package_handlers,
+            'quotation_projects' => (bool) $this->quotation_projects,
             'show_no_stock' => (bool) $this->show_no_stock,
             'admin_seller_cash' => (bool) $this->admin_seller_cash,
             'document_no_stock' => (bool) $this->document_no_stock,

@@ -71,9 +71,8 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
                 <h6>{{ ($establishment->trade_address !== '-')? 'D. Comercial: '.$establishment->trade_address : '' }}</h6>
                 @endisset
 
-                <h6>{{ ($establishment->telephone !== '-')? 'Telf. '.$establishment->telephone : '' }}</h6>
+                <h6>{{ ($establishment->telephone !== '-')? 'Telf. '.$establishment->telephone : '' }} {{ ($establishment->email !== '-')? 'Email: '.$establishment->email : '' }}</h6>
 
-                <h6>{{ ($establishment->email !== '-')? 'Email: '.$establishment->email : '' }}</h6>
 
                 @isset($establishment->web_address)
                 <h6>{{ ($establishment->web_address !== '-')? 'Web: '.$establishment->web_address : '' }}</h6>
@@ -97,13 +96,13 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
                 <table class="full-width">
                     <tr>
                         <td colspan="2" class="font-xlg">
-                            <strong>SEÑOR(ES): </strong>
+                            <strong>Señor(es):</strong>
                             {{ $customer->name }}
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2" class="font-xlg">
-                            <strong>DIRECCIÓN: </strong>
+                            <strong>Dirección: </strong>
                             @if ($customer->address !== '')
                             <span style="text-transform: uppercase;">
                                 {{ $customer->address }}
@@ -122,22 +121,22 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
                     </tr>
                     <tr>
                         <td colspan="" class="font-xlg">
-                            <strong>MONEDA: </strong>
+                            <strong>Moneda:</strong>
                             <span class="text-upp">{{ $document->currency_type->description }}</span>
                         </td>
                         <td colspan="" class="font-xlg">
-                            <strong>CONDICIÓN DE PAGO: </strong>
+                            <strong>Condición de Pago: </strong>
                             <span class="text-upp">{{ $condition }}</span>
                         </td>
                     </tr>
                     <tr>
                         <td class="font-xlg">
-                            <strong>FECHA: </strong>
+                            <strong>Fecha:</strong>
                             {{$document->date_of_issue->format('Y-m-d')}}
                         </td>
                         <td class="font-xlg">
                             @if($invoice)
-                            <strong>FECHA VENC.:</strong>
+                            <strong>Fecha venc.:</strong>
                             {{$invoice->date_of_due->format('Y-m-d')}}
                             @endif
                         </td>
@@ -151,12 +150,12 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     </table>
     <table class="full-width my-4 text-center" border="1">
         <tr>
-            <td width="16.6%" class="desc">UBIGEO</td>
+            <td width="16.6%" class="desc">Ubigeo</td>
             <td width="16.6%" class="desc">O/C</td>
-            <td width="16.6%" class="desc">CONDICIONES DE PAGO</td>
-            <td width="16.6%" class="desc">VENDEDOR</td>
-            <td width="16.6%" class="desc">GUIA DE REMISIÓN</td>
-            <td width="16.6%" class="desc">AGENCIA DE TRANSPORTE</td>
+            <td width="16.6%" class="desc">Condiciones de pago</td>
+            <td width="16.6%" class="desc">Vendedor</td>
+            <td width="16.6%" class="desc">Guia de remisión</td>
+            <td width="16.6%" class="desc">Agencia de transporte</td>
         </tr>
         <tr>
             <td class="desc"></td>
@@ -205,13 +204,13 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     <table class="full-width mt-0 mb-0">
         <thead>
             <tr class="">
-                <th class="border-top-bottom text-center py-1 desc" width="12%">CÓDIGO</th>
-                <th class="border-top-bottom text-center py-1 desc" width="40%">DESCRIPCIÓN</th>
-                <th class="border-top-bottom text-center py-1 desc" width="8%">CANT.</th>
+                <th class="border-top-bottom text-center py-1 desc" width="12%">Código</th>
+                <th class="border-top-bottom text-center py-1 desc" width="40%">Descripción</th>
+                <th class="border-top-bottom text-center py-1 desc" width="8%">Cant.</th>
                 <th class="border-top-bottom text-center py-1 desc" width="8%">U.M.</th>
                 <th class="border-top-bottom text-right py-1 desc" width="12%">P.U</th>
-                <th class="border-top-bottom text-center py-1 desc" width="8%">DESC</th>
-                <th class="border-top-bottom text-center py-1 desc" width="12%">IMPORTE</th>
+                <th class="border-top-bottom text-center py-1 desc" width="8%">Desc</th>
+                <th class="border-top-bottom text-center py-1 desc" width="12%">Importe</th>
             </tr>
         </thead>
         <tbody class="">
@@ -328,7 +327,7 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     <table class="full-width">
         <tr>
             <td>
-                <strong>PAGOS:</strong>
+                <strong>Pagos:</strong>
             </td>
         </tr>
             @php
@@ -352,7 +351,7 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
             </td>
             <td class="text-center align-top">NIU</td>
             <td class="text-left align-top">
-                ANTICIPO: {{($p->document_type_id == '02')? 'FACTURA':'BOLETA'}} NRO. {{$p->number}}
+                Anticipo: {{($p->document_type_id == '02')? 'Factura':'Boleta'}} Nro. {{$p->number}}
 </td>
 <td class="text-center align-top"></td>
 <td class="text-center align-top"></td>
@@ -370,43 +369,43 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
 
 @if($document->total_exportation > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">OP. EXPORTACIÓN: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Op. Exportación: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_exportation, 2) }}</td>
 </tr>
 @endif
 @if($document->total_free > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">OP. GRATUITAS: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Op. Gratuitas: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_free, 2) }}</td>
 </tr>
 @endif
 @if($document->total_unaffected > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">OP. INAFECTAS: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Op. Inafectas: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_unaffected, 2) }}</td>
 </tr>
 @endif
 @if($document->total_exonerated > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">OP. EXONERADAS: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Op. Exoneradas: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_exonerated, 2) }}</td>
 </tr>
 @endif
 @if($document->total_taxed > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">OP. GRAVADAS: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Op. Gravadas: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_taxed, 2) }}</td>
 </tr>
 @endif
 @if($document->total_discount > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento TOTAL')}}: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
 </tr>
 @endif
 @if($document->total_plastic_bag_taxes > 0)
 <tr>
-    <td colspan="7" class="text-right font-bold">ICBPER: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Icbper: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total_plastic_bag_taxes, 2) }}</td>
 </tr>
 @endif
@@ -417,26 +416,26 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
 
 @if($document->perception)
 <tr>
-    <td colspan="7" class="text-right font-bold"> IMPORTE TOTAL: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold"> Importe total: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
 </tr>
 <tr>
-    <td colspan="7" class="text-right font-bold">PERCEPCIÓN: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Percepción: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->perception->amount, 2) }}</td>
 </tr>
 <tr>
-    <td colspan="7" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format(($document->total + $document->perception->amount), 2) }}</td>
 </tr>
 @else
 <tr>
-    <td colspan="7" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
 </tr>
 @endif
 
 @if($balance < 0) <tr>
-    <td colspan="7" class="text-right font-bold">VUELTO: {{ $document->currency_type->symbol }}</td>
+    <td colspan="7" class="text-right font-bold">Vuelto: {{ $document->currency_type->symbol }}</td>
     <td class="text-right font-bold">{{ number_format(abs($balance),2, ".", "") }}</td>
     </tr>
 
@@ -446,7 +445,7 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     @if ($document->prepayments)
         @foreach($document->prepayments as $p)
         <tr>
-            <td width="120px">ANTICIPO</td>
+            <td width="120px">Anticipo</td>
             <td width="8px">:</td>
             <td>{{$p->number}}</td>
     </tr>
@@ -454,19 +453,19 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     @endif
     @if ($document->purchase_order)
     <tr>
-        <td width="120px">ORDEN DE COMPRA</td>
+        <td width="120px">Orden de compra</td>
         <td width="8px">:</td>
         <td>{{ $document->purchase_order }}</td>
     </tr>
     @endif
     @if ($document->quotation_id)
     <tr>
-        <td width="120px">COTIZACIÓN</td>
+        <td width="120px">Cotización</td>
         <td width="8px">:</td>
         <td>{{ $document->quotation->identifier }}</td>
 
         @isset($document->quotation->delivery_date)
-        <td width="120px">T. ENTREGA</td>
+        <td width="120px">T. Entrega</td>
         <td width="8px">:</td>
         <td>{{ $document->quotation->delivery_date}}</td>
         @endisset
@@ -475,24 +474,24 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     @endif
     @isset($document->quotation->sale_opportunity)
     <tr>
-        <td width="120px">O. VENTA</td>
+        <td width="120px">O. Venta</td>
         <td width="8px">:</td>
         <td>{{ $document->quotation->sale_opportunity->number_full}}</td>
     </tr>
     @endisset
     @if(!is_null($document_base))
     <tr>
-        <td width="120px">DOC. AFECTADO</td>
+        <td width="120px">Doc. Afectado</td>
         <td width="8px">:</td>
         <td>{{ $affected_document_number }}</td>
     </tr>
     <tr>
-        <td>TIPO DE NOTA</td>
+        <td>Tipo de nota</td>
         <td>:</td>
         <td>{{ ($document_base->note_type === 'credit')?$document_base->note_credit_type->description:$document_base->note_debit_type->description}}</td>
     </tr>
     <tr>
-        <td>DESCRIPCIÓN</td>
+        <td>Descripción</td>
         <td>:</td>
         <td>{{ $document_base->note_description }}</td>
     </tr>
@@ -513,39 +512,39 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
 
     {{-- <table class="full-width mt-5">
     <tr>
-        <td width="120px">FECHA DE EMISIÓN</td>
+        <td width="120px">Fecha de emisión</td>
         <td width="8px">:</td>
         <td></td>
 
         @if ($document->detraction)
 
-            <td width="120px">N. CTA DETRACCIONES</td>
+            <td width="120px">N. Cta detracciones</td>
             <td width="8px">:</td>
             <td>{{ $document->detraction->bank_account}}</td>
     @endif
     </tr>
     @if($invoice)
     <tr>
-        <td>FECHA DE VENCIMIENTO</td>
+        <td>F. de vencimiento</td>
         <td width="8px">:</td>
         <td></td>
     </tr>
     @endif
 
     @if ($document->detraction)
-    <td width="140px">B/S SUJETO A DETRACCIÓN</td>
+    <td width="140px">B/S Sujeto a detracción</td>
     <td width="8px">:</td>
     @inject('detractionType', 'App\Services\DetractionTypeService')
     <td width="220px">{{$document->detraction->detraction_type_id}} - {{ $detractionType->getDetractionTypeDescription($document->detraction->detraction_type_id ) }}</td>
 
     @endif
     <tr>
-        <td>CLIENTE:</td>
+        <td>Cliente:</td>
         <td>:</td>
         <td></td>
 
         @if ($document->detraction)
-        <td width="120px">MÉTODO DE PAGO</td>
+        <td width="120px">Método de pago</td>
         <td width="8px">:</td>
         <td width="220px">{{ $detractionType->getPaymentMethodTypeDescription($document->detraction->payment_method_id ) }}</td>
         @endif
@@ -558,7 +557,7 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
 
         @if ($document->detraction)
 
-        <td width="120px">P. DETRACCIÓN</td>
+        <td width="120px">P. Detracción</td>
         <td width="8px">:</td>
         <td>{{ $document->detraction->percentage}}%</td>
         @endif
@@ -569,7 +568,7 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     <tr>
         <td colspan="3">
         </td>
-        <td width="120px">CONSTANCIA DE PAGO</td>
+        <td width="120px">Constancia de pago</td>
         <td width="8px">:</td>
         <td>{{ $document->detraction->pay_constancy}}</td>
     </tr>
@@ -580,7 +579,7 @@ $paymentDetailed = TemplateHelper::getDetailedPayment($document)
     {{--<table class="full-width mt-3">--}}
     {{--@if ($document->purchase_order)--}}
     {{--<tr>--}}
-    {{--<td width="25%">Orden de Compra: </td>--}}
+    {{--<td width="25%">Orden de compra: </td>--}}
     {{--<td>:</td>--}}
     {{--<td class="text-left">{{ $document->purchase_order }}</td>--}}
     {{--</tr>--}}

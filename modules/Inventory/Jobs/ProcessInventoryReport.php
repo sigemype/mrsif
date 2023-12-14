@@ -91,7 +91,6 @@ class ProcessInventoryReport implements ShouldQueue
                     $establishment = Establishment::query()->first();
                 }
                 //ini_set('max_execution_time', 0);
-
                 $records = $this->getRecordsTranform($this->warehouse_id, $this->filter);
 
                 if (!is_object($tray)) {
@@ -162,7 +161,7 @@ class ProcessInventoryReport implements ShouldQueue
                     $path = 'download_tray_pdf';
                 } else {
 
-                    Log::debug($records);
+                    // Log::debug($records);
                     $filename = 'INVENTORY_ReporteInv_' . date('YmdHis') . '-' . $tray->user_id;
                     Log::debug("Render excel init");
                     $inventoryExport = new InventoryExport();
@@ -194,31 +193,82 @@ class ProcessInventoryReport implements ShouldQueue
         Log::debug("ProcessInventoryReport Finish transaction");
     }
 
+       
+    function stripInvalidXml($value) {
+        $ret = '';
+    
+        if (empty($value)) {
+            return $ret;
+        }
+    
+        $length = strlen($value);
+    
+        for ($i = 0; $i < $length; $i++) {
+            $current = ord($value[$i]);
+    
+            if (
+                ($current == 0x9) ||
+                ($current == 0xA) ||
+                ($current == 0xD) ||
+                (($current >= 0x20) && ($current <= 0xD7FF)) ||
+                (($current >= 0xE000) && ($current <= 0xFFFD)) ||
+                (($current >= 0x10000) && ($current <= 0x10FFFF))
+            ) {
+                $ret .= chr($current);
+            } else {
+                $ret .= ' ';
+            }
+        }
+    
+        return $ret;
+    }
+    
+
     public function getRecordsTranform($warehouse_id, $filter)
     {
         Log::debug("warehouse_id" . $warehouse_id);
 
         Log::debug("getRecordsTranform init" . date('H:i:s'));
-        $records = $this->getRecords($warehouse_id, $filter);
+        $must_sales = array_key_exists('must_sales', $this->params) ? ($this->params['must_sales'] == "true" ? true : false) : false;
 
+        $records = $this->getRecords($warehouse_id, $filter);
+        if ($must_sales) {
+            $records->orderBy('kardex_quantity', 'desc');
+        }
         $data = [];
 
         $records->chunk(1000, function ($items) use (&$data) {
             foreach ($items as $row) {
                 $item = $row->item;
                 $data[] = [
-                    'barcode' => $item->barcode,
-                    'internal_id' => $item->internal_id,
-                    'name' => $item->description,
-                    'description' => $item->name,
-                    'item_category_name' => optional($item->category)->name,
+                    'laboratory' => optional($item->cat_digemid)->nom_titular,
+                'num_reg_san' => optional($item->cat_digemid)->num_reg_san,
+                'kardex_quantity' => (float) $row->kardex_quantity ?? 0,
+                'lots_group' => $item->lots_group->transform(function ($row, $key) {
+                    return [
+                        'id' => $row->id,
+                        'code' => $row->code,
+                        'quantity' => $row->quantity,
+                        'date_of_due' => $row->date_of_due,
+                    ];
+                }),
+                    'sale_unit_price' => $item->sale_unit_price,
                     'stock_min' => $item->stock_min,
                     'stock' => $row->stock,
-                    'sale_unit_price' => $item->sale_unit_price,
                     'purchase_unit_price' => $item->purchase_unit_price,
                     'profit' => number_format($item->sale_unit_price - $item->purchase_unit_price, 2, '.', ''),
+                    'barcode' => $item->barcode,
+                    'internal_id' => $item->internal_id,
+
+                    'name' => $this->stripInvalidXml($item->description),
+            
+                    'description' => htmlspecialchars($item->name, ENT_XML1),
+
+                    'item_category_name' => optional($item->category)->name,
+
+
                     'model' => $item->model,
-                    'brand_name' => $item->brand->name,
+                    'brand_name' => optional($item->brand)->name,
                     'date_of_due' => optional($item->date_of_due)->format('d/m/Y'),
                     'warehouse_name' => $row->warehouse->description
                 ];
@@ -235,9 +285,10 @@ class ProcessInventoryReport implements ShouldQueue
 
         $query = ItemWarehouse::with(['warehouse', 'item' => function ($query) {
             $query->select('id', 'barcode', 'internal_id', 'description', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
-            $query->with(['category', 'brand']);
+            $query->with(['category', 'brand', 'cat_digemid','lots_group']);
             $query->without(['item_type', 'unit_type', 'currency_type', 'warehouses', 'item_unit_types', 'tags']);
         }])
+            ->select('*', \DB::raw('(SELECT SUM(quantity) FROM kardex WHERE kardex.item_id = item_warehouse.item_id AND type = "sale") as kardex_quantity'))
             ->whereHas('item', function ($q) {
                 $q->where([
                     ['item_type_id', '01'],
@@ -262,9 +313,10 @@ class ProcessInventoryReport implements ShouldQueue
 
             $query = ItemWarehouse::with(['warehouse', 'item' => function ($query) {
                 $query->select('id', 'barcode', 'internal_id', 'description', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
-                $query->with(['category', 'brand']);
+                $query->with(['category', 'brand', 'cat_digemid','lots_group']);
                 $query->without(['item_type', 'unit_type', 'currency_type', 'warehouses', 'item_unit_types', 'tags']);
             }])
+                ->select('*', \DB::raw('(SELECT SUM(quantity) FROM kardex WHERE kardex.item_id = item_warehouse.item_id AND type = "sale") as kardex_quantity'))
                 ->whereHas('item', function ($q) {
                     $q->where([
                         ['item_type_id', '01'],
@@ -281,9 +333,10 @@ class ProcessInventoryReport implements ShouldQueue
 
             $query = ItemWarehouse::with(['warehouse', 'item' => function ($query) {
                 $query->select('id', 'barcode', 'internal_id', 'description', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
-                $query->with(['category', 'brand']);
+                $query->with(['category', 'brand', 'cat_digemid','lots_group']);
                 $query->without(['item_type', 'unit_type', 'currency_type', 'warehouses', 'item_unit_types', 'tags']);
             }])
+                ->select('*', \DB::raw('(SELECT SUM(quantity) FROM kardex WHERE kardex.item_id = item_warehouse.item_id AND type = "sale") as kardex_quantity'))
                 ->whereHas('item', function ($q) {
                     $q->where([
                         ['item_type_id', '01'],

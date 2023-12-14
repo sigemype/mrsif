@@ -19,9 +19,7 @@
                             <logo
                                 :path_logo="
                                     company.logo != null
-                                        ? `/storage/uploads/logos/${
-                                              company.logo
-                                          }`
+                                        ? `/storage/uploads/logos/${company.logo}`
                                         : ''
                                 "
                                 :position_class="'text-left'"
@@ -31,7 +29,7 @@
                         <div
                             class="col-xl-6 col-md-6 col-12 pl-2 align-self-center"
                         >
-                            <address class="mb-0" style="line-height: initial;">
+                            <address class="mb-0" style="line-height: initial">
                                 <span class="font-weight-bold">{{
                                     company.name
                                 }}</span>
@@ -54,12 +52,12 @@
                                         <div
                                             :class="{
                                                 'has-danger':
-                                                    errors.date_of_issue
+                                                    errors.date_of_issue,
                                             }"
                                             class="form-group"
                                         >
                                             <label class="control-label"
-                                                >Fec. Emissssssión</label
+                                                >Fec. Emisión</label
                                             >
                                             <el-date-picker
                                                 v-model="form.date_of_issue"
@@ -80,7 +78,8 @@
                                     <div class="col-lg-6 align-self-end">
                                         <div
                                             :class="{
-                                                'has-danger': errors.date_of_due
+                                                'has-danger':
+                                                    errors.date_of_due,
                                             }"
                                             class="form-group"
                                         >
@@ -110,7 +109,7 @@
                             <div class="col-lg-4 align-self-end">
                                 <div
                                     :class="{
-                                        'has-danger': errors.document_type_id
+                                        'has-danger': errors.document_type_id,
                                     }"
                                     class="form-group"
                                 >
@@ -142,7 +141,7 @@
                             <div class="col-lg-2 d-none">
                                 <div
                                     :class="{
-                                        'has-danger': errors.establishment_id
+                                        'has-danger': errors.establishment_id,
                                     }"
                                     class="form-group"
                                 >
@@ -192,7 +191,7 @@
                             <div class="col-lg-2 align-self-end">
                                 <div
                                     :class="{
-                                        'has-danger': errors.operation_type_id
+                                        'has-danger': errors.operation_type_id,
                                     }"
                                     class="form-group"
                                 >
@@ -204,7 +203,7 @@
                                                     '1001' ||
                                                     form.operation_type_id ==
                                                         '1004') &&
-                                                    has_data_detraction
+                                                has_data_detraction
                                             "
                                         >
                                             <a
@@ -239,7 +238,7 @@
                             <div class="col-lg-2 align-self-end">
                                 <div
                                     :class="{
-                                        'has-danger': errors.currency_type_id
+                                        'has-danger': errors.currency_type_id,
                                     }"
                                     class="form-group"
                                 >
@@ -265,7 +264,7 @@
                             <div class="col-lg-2 align-self-end">
                                 <div
                                     :class="{
-                                        'has-danger': errors.exchange_rate_sale
+                                        'has-danger': errors.exchange_rate_sale,
                                     }"
                                     class="form-group"
                                 >
@@ -429,7 +428,7 @@
                                             <template
                                                 v-if="
                                                     row.total_plastic_bag_taxes >
-                                                        0
+                                                    0
                                                 "
                                             >
                                                 <br /><small
@@ -452,7 +451,7 @@
 
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             {{ row.quantity }}
@@ -460,7 +459,7 @@
 
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             {{ currency_type.symbol }}
@@ -472,7 +471,7 @@
                                         </td>
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             {{ currency_type.symbol }}
@@ -485,7 +484,7 @@
 
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             {{ currency_type.symbol }}
@@ -493,7 +492,7 @@
                                         </td>
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             {{ currency_type.symbol }}
@@ -501,7 +500,7 @@
                                         </td>
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             <template
@@ -544,7 +543,7 @@
                                                 type="button"
                                                 @click="ediItem(row, index)"
                                             >
-                                                <span style="font-size:10px;"
+                                                <span style="font-size: 10px"
                                                     >&#9998;</span
                                                 >
                                             </button>
@@ -555,23 +554,25 @@
                                     <tr>
                                         <td
                                             class="text-end"
-                                            style="height: 40px !important;"
+                                            style="height: 40px !important"
                                         >
                                             >
                                             <div class="row table-responsive">
                                                 <table
                                                     class="table-sm text-end hidden-sm-down"
-                                                    style="width: 100%;"
+                                                    style="width: 100%"
                                                 >
                                                     <tr
                                                         v-if="
                                                             form.total > 0 &&
-                                                                enabled_discount_global
+                                                            enabled_discount_global
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             DESCUENTO
                                                             <template
@@ -595,7 +596,9 @@
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             <el-input-number
                                                                 v-model="
@@ -618,18 +621,22 @@
                                                     <tr
                                                         v-if="
                                                             form.total_exportation >
-                                                                0
+                                                            0
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             OP.EXPORTACIÓN:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -646,13 +653,17 @@
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             OP.GRATUITAS:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -665,18 +676,22 @@
                                                     <tr
                                                         v-if="
                                                             form.total_unaffected >
-                                                                0
+                                                            0
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             OP.INAFECTAS:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -689,7 +704,7 @@
                                                     <tr
                                                         v-if="
                                                             form.total_exonerated >
-                                                                0
+                                                            0
                                                         "
                                                     >
                                                         <td>OP.EXONERADAS:</td>
@@ -709,13 +724,17 @@
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             OP.GRAVADA:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -728,18 +747,22 @@
                                                     <tr
                                                         v-if="
                                                             form.total_prepayment >
-                                                                0
+                                                            0
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             ANTICIPOS:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -757,13 +780,17 @@
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             IGV:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -778,13 +805,17 @@
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             ISC:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -795,18 +826,22 @@
                                                     <tr
                                                         v-if="
                                                             form.total_plastic_bag_taxes >
-                                                                0
+                                                            0
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             ICBPER:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -820,19 +855,23 @@
                                                     <tr
                                                         v-if="
                                                             form.subtotal > 0 &&
-                                                                form.total_discount >
-                                                                    0
+                                                            form.total_discount >
+                                                                0
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             SUBTOTAL:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -844,18 +883,22 @@
                                                     <tr
                                                         v-if="
                                                             form.total_discount >
-                                                                0
+                                                            0
                                                         "
                                                     >
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             DESCUENTOS TOTALES:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -869,13 +912,17 @@
                                                     <tr v-if="form.total > 0">
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             OTROS CARGOS:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -912,7 +959,9 @@
                                                         >
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 <strong
                                                                     >IMPORTE
@@ -921,7 +970,9 @@
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
@@ -937,18 +988,22 @@
                                                         >
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 M. RETENCIÓN ({{
                                                                     form
                                                                         .retention
                                                                         .percentage *
-                                                                        100
+                                                                    100
                                                                 }}%):
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
@@ -967,7 +1022,9 @@
                                                         >
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 <strong
                                                                     >TOTAL A
@@ -976,16 +1033,18 @@
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
                                                                 }}
                                                                 {{
                                                                     form.total -
-                                                                        form
-                                                                            .retention
-                                                                            .amount
+                                                                    form
+                                                                        .retention
+                                                                        .amount
                                                                 }}
                                                             </td>
                                                         </tr>
@@ -993,7 +1052,9 @@
                                                     <tr v-if="form.total > 0">
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             <strong
                                                                 >TOTAL A
@@ -1002,7 +1063,9 @@
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             {{
                                                                 currency_type.symbol
@@ -1021,7 +1084,9 @@
                                                             "
                                                         >
                                                             <td
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 <strong
                                                                     >IMPORTE
@@ -1030,7 +1095,9 @@
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
@@ -1046,18 +1113,22 @@
                                                         >
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 M. RETENCIÓN ({{
                                                                     form
                                                                         .retention
                                                                         .percentage *
-                                                                        100
+                                                                    100
                                                                 }}%):
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
@@ -1076,7 +1147,9 @@
                                                         >
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 <strong
                                                                     >TOTAL A
@@ -1085,16 +1158,18 @@
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
                                                                 }}
                                                                 {{
                                                                     form.total -
-                                                                        form
-                                                                            .retention
-                                                                            .amount
+                                                                    form
+                                                                        .retention
+                                                                        .amount
                                                                 }}
                                                             </td>
                                                         </tr>
@@ -1111,7 +1186,9 @@
                                                         >
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 <strong
                                                                     >TOTAL A
@@ -1120,7 +1197,9 @@
                                                             </td>
                                                             <td
                                                                 class="text-end"
-                                                                style="height: 40px !important;"
+                                                                style="
+                                                                    height: 40px !important;
+                                                                "
                                                             >
                                                                 {{
                                                                     currency_type.symbol
@@ -1133,13 +1212,17 @@
                                                     <tr v-if="form.total > 0">
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             CONDICIÓN DE PAGO:
                                                         </td>
                                                         <td
                                                             class="text-end"
-                                                            style="height: 40px !important;"
+                                                            style="
+                                                                height: 40px !important;
+                                                            "
                                                         >
                                                             <el-select
                                                                 v-model="
@@ -1147,7 +1230,9 @@
                                                                 "
                                                                 dusk="document_type_id"
                                                                 popper-class="el-select-document_type"
-                                                                style="max-width: 200px;"
+                                                                style="
+                                                                    max-width: 200px;
+                                                                "
                                                                 @change="
                                                                     changePaymentCondition
                                                                 "
@@ -1178,13 +1263,13 @@
                                                     <template
                                                         v-if="
                                                             form.detraction ||
-                                                                form.retention
+                                                            form.retention
                                                         "
                                                     >
                                                         <tr
                                                             v-if="
                                                                 form.total_pending_payment >
-                                                                    0
+                                                                0
                                                             "
                                                         >
                                                             <!-- <tr v-if="form.detraction.amount > 0 && form.total_pending_payment > 0"> -->
@@ -1212,7 +1297,7 @@
                                                             <div
                                                                 v-if="
                                                                     form.payment_condition_id ===
-                                                                        '03'
+                                                                    '03'
                                                                 "
                                                                 class="table-responsive"
                                                             >
@@ -1220,7 +1305,7 @@
                                                                     v-if="
                                                                         form.fee
                                                                             .length >
-                                                                            0
+                                                                        0
                                                                     "
                                                                     class="text-left table"
                                                                     width="100%"
@@ -1229,25 +1314,33 @@
                                                                         <tr>
                                                                             <th
                                                                                 class="text-left"
-                                                                                style="width: 100px"
+                                                                                style="
+                                                                                    width: 100px;
+                                                                                "
                                                                             >
                                                                                 Fecha
                                                                             </th>
                                                                             <th
                                                                                 class="text-left"
-                                                                                style="width: 100px"
+                                                                                style="
+                                                                                    width: 100px;
+                                                                                "
                                                                             >
                                                                                 Monto
                                                                             </th>
                                                                             <th
-                                                                                style="width: 30px"
+                                                                                style="
+                                                                                    width: 30px;
+                                                                                "
                                                                             ></th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         <tr
-                                                                            v-for="(row,
-                                                                            index) in form.fee"
+                                                                            v-for="(
+                                                                                row,
+                                                                                index
+                                                                            ) in form.fee"
                                                                             :key="
                                                                                 index
                                                                             "
@@ -1278,7 +1371,7 @@
                                                                                 <button
                                                                                     v-if="
                                                                                         index >
-                                                                                            0
+                                                                                        0
                                                                                     "
                                                                                     class="btn waves-effect waves-light btn-sm btn-danger"
                                                                                     type="button"
@@ -1311,7 +1404,9 @@
                                                                                             class="fa fa-plus font-weight-bold text-info"
                                                                                         ></i>
                                                                                         <span
-                                                                                            style="color: #777777"
+                                                                                            style="
+                                                                                                color: #777777;
+                                                                                            "
                                                                                             >Agregar
                                                                                             cuota</span
                                                                                         ></a
@@ -1326,7 +1421,7 @@
                                                             <div
                                                                 v-if="
                                                                     form.payment_condition_id ===
-                                                                        '02'
+                                                                    '02'
                                                                 "
                                                                 class="table-responsive"
                                                             >
@@ -1334,7 +1429,7 @@
                                                                     v-if="
                                                                         form.fee
                                                                             .length >
-                                                                            0
+                                                                        0
                                                                     "
                                                                     class="text-left table"
                                                                     width="100%"
@@ -1346,9 +1441,11 @@
                                                                                     form
                                                                                         .fee
                                                                                         .length >
-                                                                                        0
+                                                                                    0
                                                                                 "
-                                                                                style="width: 120px"
+                                                                                style="
+                                                                                    width: 120px;
+                                                                                "
                                                                             >
                                                                                 Método
                                                                                 de
@@ -1356,25 +1453,33 @@
                                                                             </th>
                                                                             <th
                                                                                 class="text-left"
-                                                                                style="width: 100px"
+                                                                                style="
+                                                                                    width: 100px;
+                                                                                "
                                                                             >
                                                                                 Fecha
                                                                             </th>
                                                                             <th
                                                                                 class="text-left"
-                                                                                style="width: 100px"
+                                                                                style="
+                                                                                    width: 100px;
+                                                                                "
                                                                             >
                                                                                 Monto
                                                                             </th>
                                                                             <th
-                                                                                style="width: 30px"
+                                                                                style="
+                                                                                    width: 30px;
+                                                                                "
                                                                             ></th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         <tr
-                                                                            v-for="(row,
-                                                                            index) in form.fee"
+                                                                            v-for="(
+                                                                                row,
+                                                                                index
+                                                                            ) in form.fee"
                                                                             :key="
                                                                                 index
                                                                             "
@@ -1435,8 +1540,8 @@
                                                             <div
                                                                 v-if="
                                                                     !is_receivable &&
-                                                                        form.payment_condition_id ===
-                                                                            '01'
+                                                                    form.payment_condition_id ===
+                                                                        '01'
                                                                 "
                                                                 class="table-responsive"
                                                             >
@@ -1450,9 +1555,11 @@
                                                                                     form
                                                                                         .payments
                                                                                         .length >
-                                                                                        0
+                                                                                    0
                                                                                 "
-                                                                                style="width: 120px"
+                                                                                style="
+                                                                                    width: 120px;
+                                                                                "
                                                                             >
                                                                                 Método
                                                                                 de
@@ -1468,9 +1575,11 @@
                                                                                         form
                                                                                             .payments
                                                                                             .length >
-                                                                                            0
+                                                                                        0
                                                                                     "
-                                                                                    style="width: 120px"
+                                                                                    style="
+                                                                                        width: 120px;
+                                                                                    "
                                                                                 >
                                                                                     Destino
                                                                                     <el-tooltip
@@ -1489,9 +1598,11 @@
                                                                                         form
                                                                                             .payments
                                                                                             .length >
-                                                                                            0
+                                                                                        0
                                                                                     "
-                                                                                    style="width: 100px"
+                                                                                    style="
+                                                                                        width: 100px;
+                                                                                    "
                                                                                 >
                                                                                     Referencia
                                                                                 </th>
@@ -1500,22 +1611,28 @@
                                                                                         form
                                                                                             .payments
                                                                                             .length >
-                                                                                            0
+                                                                                        0
                                                                                     "
-                                                                                    style="width: 100px"
+                                                                                    style="
+                                                                                        width: 100px;
+                                                                                    "
                                                                                 >
                                                                                     Monto
                                                                                 </th>
                                                                                 <th
-                                                                                    style="width: 30px"
+                                                                                    style="
+                                                                                        width: 30px;
+                                                                                    "
                                                                                 ></th>
                                                                             </template>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         <tr
-                                                                            v-for="(row,
-                                                                            index) in form.payments"
+                                                                            v-for="(
+                                                                                row,
+                                                                                index
+                                                                            ) in form.payments"
                                                                             :key="
                                                                                 index
                                                                             "
@@ -1621,7 +1738,9 @@
                                                                                             class="fa fa-plus font-weight-bold text-info"
                                                                                         ></i>
                                                                                         <span
-                                                                                            style="color: #777777"
+                                                                                            style="
+                                                                                                color: #777777;
+                                                                                            "
                                                                                             >Agregar
                                                                                             pago</span
                                                                                         ></a
@@ -1659,12 +1778,12 @@
                             <div class="col-12 text-center table-responsive">
                                 <table
                                     class="table table-sm text-end"
-                                    style="width: 100%;"
+                                    style="width: 100%"
                                 >
                                     <tr
                                         v-if="
                                             form.total > 0 &&
-                                                enabled_discount_global
+                                            enabled_discount_global
                                         "
                                     >
                                         <td>
@@ -1672,9 +1791,7 @@
                                             <template v-if="is_amount">
                                                 MONTO</template
                                             >
-                                            <template v-else>
-                                                %</template
-                                            >
+                                            <template v-else> %</template>
                                             <el-checkbox
                                                 v-model="is_amount"
                                                 class="ml-1 mr-1"
@@ -1713,7 +1830,7 @@
                                             <td>
                                                 M. RETENCIÓN ({{
                                                     form.retention.percentage *
-                                                        100
+                                                    100
                                                 }}%):
                                             </td>
                                             <td>
@@ -1790,7 +1907,7 @@
                                     <tr
                                         v-if="
                                             form.subtotal > 0 &&
-                                                form.total_discount > 0
+                                            form.total_discount > 0
                                         "
                                     >
                                         <td>SUBTOTAL:</td>
@@ -1845,7 +1962,7 @@
                                                 "
                                                 dusk="document_type_id"
                                                 popper-class="el-select-document_type"
-                                                style="max-width: 200px;"
+                                                style="max-width: 200px"
                                                 @change="changePaymentCondition"
                                             >
                                                 <el-option
@@ -1894,7 +2011,7 @@
                                             <div
                                                 v-if="
                                                     form.payment_condition_id ===
-                                                        '03'
+                                                    '03'
                                                 "
                                             >
                                                 <table
@@ -1906,25 +2023,32 @@
                                                         <tr>
                                                             <th
                                                                 class="text-left"
-                                                                style="width: 100px"
+                                                                style="
+                                                                    width: 100px;
+                                                                "
                                                             >
                                                                 Fecha
                                                             </th>
                                                             <th
                                                                 class="text-left"
-                                                                style="width: 100px"
+                                                                style="
+                                                                    width: 100px;
+                                                                "
                                                             >
                                                                 Monto
                                                             </th>
                                                             <th
-                                                                style="width: 30px"
+                                                                style="
+                                                                    width: 30px;
+                                                                "
                                                             ></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr
-                                                            v-for="(row,
-                                                            index) in form.fee"
+                                                            v-for="(
+                                                                row, index
+                                                            ) in form.fee"
                                                             :key="index"
                                                         >
                                                             <td>
@@ -1953,7 +2077,7 @@
                                                                 <button
                                                                     v-if="
                                                                         index >
-                                                                            0
+                                                                        0
                                                                     "
                                                                     class="btn waves-effect waves-light btn-sm btn-danger"
                                                                     type="button"
@@ -1984,7 +2108,9 @@
                                                                             class="fa fa-plus font-weight-bold text-info"
                                                                         ></i>
                                                                         <span
-                                                                            style="color: #777777"
+                                                                            style="
+                                                                                color: #777777;
+                                                                            "
                                                                             >Agregar
                                                                             cuota</span
                                                                         ></a
@@ -1999,7 +2125,7 @@
                                             <div
                                                 v-if="
                                                     form.payment_condition_id ===
-                                                        '02'
+                                                    '02'
                                                 "
                                             >
                                                 <table
@@ -2013,33 +2139,42 @@
                                                                 v-if="
                                                                     form.fee
                                                                         .length >
-                                                                        0
+                                                                    0
                                                                 "
-                                                                style="width: 120px"
+                                                                style="
+                                                                    width: 120px;
+                                                                "
                                                             >
                                                                 Método de pago
                                                             </th>
                                                             <th
                                                                 class="text-left"
-                                                                style="width: 100px"
+                                                                style="
+                                                                    width: 100px;
+                                                                "
                                                             >
                                                                 Fecha
                                                             </th>
                                                             <th
                                                                 class="text-left"
-                                                                style="width: 100px"
+                                                                style="
+                                                                    width: 100px;
+                                                                "
                                                             >
                                                                 Monto
                                                             </th>
                                                             <th
-                                                                style="width: 30px"
+                                                                style="
+                                                                    width: 30px;
+                                                                "
                                                             ></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr
-                                                            v-for="(row,
-                                                            index) in form.fee"
+                                                            v-for="(
+                                                                row, index
+                                                            ) in form.fee"
                                                             :key="index"
                                                         >
                                                             <td>
@@ -2098,8 +2233,8 @@
                                             <div
                                                 v-if="
                                                     !is_receivable &&
-                                                        form.payment_condition_id ===
-                                                            '01'
+                                                    form.payment_condition_id ===
+                                                        '01'
                                                 "
                                             >
                                                 <table class="text-left">
@@ -2110,9 +2245,11 @@
                                                                     form
                                                                         .payments
                                                                         .length >
-                                                                        0
+                                                                    0
                                                                 "
-                                                                style="width: 120px"
+                                                                style="
+                                                                    width: 120px;
+                                                                "
                                                             >
                                                                 Método de pago
                                                             </th>
@@ -2126,9 +2263,11 @@
                                                                         form
                                                                             .payments
                                                                             .length >
-                                                                            0
+                                                                        0
                                                                     "
-                                                                    style="width: 120px"
+                                                                    style="
+                                                                        width: 120px;
+                                                                    "
                                                                 >
                                                                     Destino
                                                                     <el-tooltip
@@ -2147,9 +2286,11 @@
                                                                         form
                                                                             .payments
                                                                             .length >
-                                                                            0
+                                                                        0
                                                                     "
-                                                                    style="width: 100px"
+                                                                    style="
+                                                                        width: 100px;
+                                                                    "
                                                                 >
                                                                     Referencia
                                                                 </th>
@@ -2158,22 +2299,27 @@
                                                                         form
                                                                             .payments
                                                                             .length >
-                                                                            0
+                                                                        0
                                                                     "
-                                                                    style="width: 100px"
+                                                                    style="
+                                                                        width: 100px;
+                                                                    "
                                                                 >
                                                                     Monto
                                                                 </th>
                                                                 <th
-                                                                    style="width: 30px"
+                                                                    style="
+                                                                        width: 30px;
+                                                                    "
                                                                 ></th>
                                                             </template>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr
-                                                            v-for="(row,
-                                                            index) in form.payments"
+                                                            v-for="(
+                                                                row, index
+                                                            ) in form.payments"
                                                             :key="index"
                                                         >
                                                             <td>
@@ -2275,7 +2421,9 @@
                                                                             class="fa fa-plus font-weight-bold text-info"
                                                                         ></i>
                                                                         <span
-                                                                            style="color: #777777"
+                                                                            style="
+                                                                                color: #777777;
+                                                                            "
                                                                             >Agregar
                                                                             pago</span
                                                                         ></a
@@ -2296,7 +2444,7 @@
                     </div>
                     <!-- @todo: Mejorar evitando duplicar codigo -->
                     <!-- Ocultar en cel -->
-                    <div class="card-footer text-end  hidden-sm-down">
+                    <div class="card-footer text-end hidden-sm-down">
                         <button class="btn btn-light" @click.prevent="close()">
                             Cancelar
                         </button>
@@ -2403,7 +2551,7 @@
                                             <el-select
                                                 v-if="
                                                     form.has_prepayment ||
-                                                        prepayment_deduction
+                                                    prepayment_deduction
                                                 "
                                                 v-model="
                                                     form.affectation_type_prepayment
@@ -2439,8 +2587,9 @@
                                             <div class="form-group">
                                                 <table style="width: 100%">
                                                     <tr
-                                                        v-for="(row,
-                                                        index) in form.prepayments"
+                                                        v-for="(
+                                                            row, index
+                                                        ) in form.prepayments"
                                                         :key="index"
                                                     >
                                                         <td>
@@ -2510,7 +2659,9 @@
                                                             class="fa fa-plus font-weight-bold text-info"
                                                         ></i>
                                                         <span
-                                                            style="color: #777777"
+                                                            style="
+                                                                color: #777777;
+                                                            "
                                                             >Agregar comprobante
                                                             anticipado</span
                                                         ></a
@@ -2523,7 +2674,7 @@
                                     <div
                                         v-if="
                                             config.active_allowance_charge &&
-                                                form.total > 0
+                                            form.total > 0
                                         "
                                         class="col-12 py-2 px-0"
                                     >
@@ -2593,8 +2744,9 @@
                                                             style="width: 100%"
                                                         >
                                                             <tr
-                                                                v-for="(guide,
-                                                                index) in form.guides"
+                                                                v-for="(
+                                                                    guide, index
+                                                                ) in form.guides"
                                                                 :key="index"
                                                             >
                                                                 <td>
@@ -2657,7 +2809,9 @@
                                                                                 class="fa fa-plus font-weight-bold text-info"
                                                                             ></i>
                                                                             <span
-                                                                                style="color: #777777"
+                                                                                style="
+                                                                                    color: #777777;
+                                                                                "
                                                                                 >Agregar
                                                                                 guía</span
                                                                             ></a
@@ -2681,8 +2835,9 @@
                                                             style="width: 100%"
                                                         >
                                                             <tr
-                                                                v-for="(guide,
-                                                                index) in form.guides"
+                                                                v-for="(
+                                                                    guide, index
+                                                                ) in form.guides"
                                                                 :key="index"
                                                             >
                                                                 <td>
@@ -2745,7 +2900,9 @@
                                                                                 class="fa fa-plus font-weight-bold text-info"
                                                                             ></i>
                                                                             <span
-                                                                                style="color: #777777"
+                                                                                style="
+                                                                                    color: #777777;
+                                                                                "
                                                                                 >Agregar
                                                                                 guía</span
                                                                             ></a
@@ -2762,7 +2919,7 @@
                                             <div
                                                 :class="{
                                                     'has-danger':
-                                                        errors.purchase_order
+                                                        errors.purchase_order,
                                                 }"
                                                 class="form-group"
                                             >
@@ -2804,7 +2961,7 @@
                                             <div
                                                 :class="{
                                                     'has-danger':
-                                                        errors.plate_number
+                                                        errors.plate_number,
                                                 }"
                                                 class="form-group"
                                             >
@@ -2973,7 +3130,7 @@ import DocumentOptions from "../documents/partials/options.vue";
 import { exchangeRate, functions } from "../../../mixins/functions";
 import {
     calculateRowItem,
-    showNamePdfOfDescription
+    showNamePdfOfDescription,
 } from "../../../helpers/functions";
 import Logo from "../companies/logo.vue";
 import DocumentHotelForm from "../../../../../modules/BusinessTurn/Resources/assets/js/views/hotels/form.vue";
@@ -2994,7 +3151,7 @@ export default {
         DocumentHotelForm,
         Keypress,
         DocumentDetraction,
-        DocumentTransportForm
+        DocumentTransportForm,
     },
     mixins: [functions, exchangeRate],
     data() {
@@ -3002,19 +3159,19 @@ export default {
             datEmision: {
                 disabledDate(time) {
                     return time.getTime() > moment();
-                }
+                },
             },
             multiple: [
                 {
                     keyCode: 78, // N
                     modifiers: ["altKey"],
-                    preventDefault: true
+                    preventDefault: true,
                 },
                 {
                     keyCode: 71, // g
                     modifiers: ["altKey"],
-                    preventDefault: true
-                }
+                    preventDefault: true,
+                },
             ],
             // default_document_type: null,
             // default_series_type: null,
@@ -3080,50 +3237,50 @@ export default {
             payment_conditions: [],
             affectation_igv_types: [],
             total_discount_no_base: 0,
-            show_has_retention: true
+            show_has_retention: true,
         };
     },
     computed: {
         ...mapState(["config", "series", "all_series"]),
-        credit_payment_metod: function() {
+        credit_payment_metod: function () {
             return _.filter(this.payment_method_types, { is_credit: true });
         },
-        cash_payment_metod: function() {
+        cash_payment_metod: function () {
             return _.filter(this.payment_method_types, { is_credit: false });
         },
-        existDiscountsNoBase: function() {
+        existDiscountsNoBase: function () {
             return this.total_discount_no_base > 0 ? true : false;
         },
-        isUpdateDocument: function() {
+        isUpdateDocument: function () {
             return this.documentId ? true : false;
         },
-        isCreditPaymentCondition: function() {
+        isCreditPaymentCondition: function () {
             return ["02", "03"].includes(this.form.payment_condition_id);
         },
-        detractionDecimalQuantity: function() {
+        detractionDecimalQuantity: function () {
             return this.configuration.detraction_amount_rounded_int ? 0 : 2;
         },
-        isAutoPrint: function() {
+        isAutoPrint: function () {
             if (this.configuration) {
                 return this.configuration.auto_print;
             }
 
             return false;
         },
-        hidePreviewPdf: function() {
+        hidePreviewPdf: function () {
             if (this.configuration) {
                 return this.configuration.hide_pdf_view_documents;
             }
 
             return false;
-        }
+        },
     },
     async created() {
         this.loadConfiguration();
         this.$store.commit("setConfiguration", this.configuration);
 
         await this.initForm();
-        await this.$http.get(`/${this.resource}/tables`).then(response => {
+        await this.$http.get(`/${this.resource}/tables`).then((response) => {
             this.document_types = response.data.document_types_invoice;
             this.document_types_guide = response.data.document_types_guide;
             this.currency_types = response.data.currency_types;
@@ -3183,7 +3340,7 @@ export default {
         });
         await this.getPercentageIgv();
         this.loading_form = true;
-        this.$eventHub.$on("reloadDataPersons", customer_id => {
+        this.$eventHub.$on("reloadDataPersons", (customer_id) => {
             this.reloadDataCustomers(customer_id);
         });
         this.$eventHub.$on("initInputPerson", () => {
@@ -3194,7 +3351,7 @@ export default {
             this.loading_submit = true;
             await this.$http
                 .get(`/documents/${this.documentId}/show`)
-                .then(response => {
+                .then((response) => {
                     this.onSetFormData(response.data.data);
                 })
                 .finally(() => (this.loading_submit = false));
@@ -3203,18 +3360,18 @@ export default {
         const itemsFromDispatches = localStorage.getItem("items");
         if (itemsFromDispatches) {
             const itemsParsed = JSON.parse(itemsFromDispatches);
-            const items = itemsParsed.map(i => i.item_id);
+            const items = itemsParsed.map((i) => i.item_id);
             const params = {
-                items_id: items
+                items_id: items,
             };
             localStorage.removeItem("items");
             await this.$http
                 .get("/documents/search-items", { params })
-                .then(response => {
-                    const itemsResponse = response.data.items.map(i => {
+                .then((response) => {
+                    const itemsResponse = response.data.items.map((i) => {
                         return this.setItemFromResponse(i, itemsParsed);
                     });
-                    this.form.items = itemsResponse.map(i => {
+                    this.form.items = itemsResponse.map((i) => {
                         return calculateRowItem(
                             i,
                             this.form.currency_type_id,
@@ -3228,18 +3385,18 @@ export default {
         const itemsFromNotes = localStorage.getItem("itemsForNotes");
         if (itemsFromNotes) {
             const itemsParsed = JSON.parse(itemsFromNotes);
-            const items = itemsParsed.map(i => i.id);
+            const items = itemsParsed.map((i) => i.id);
             const params = {
-                items_id: items
+                items_id: items,
             };
             localStorage.removeItem("itemsForNotes");
             await this.$http
                 .get("/documents/search-items", { params })
-                .then(response => {
-                    const itemsResponse = response.data.items.map(i => {
+                .then((response) => {
+                    const itemsResponse = response.data.items.map((i) => {
                         return this.setItemFromResponse(i, itemsParsed);
                     });
-                    this.form.items = itemsResponse.map(i => {
+                    this.form.items = itemsResponse.map((i) => {
                         return calculateRowItem(
                             i,
                             this.form.currency_type_id,
@@ -3269,9 +3426,8 @@ export default {
             this.changeCurrencyType();
             localStorage.removeItem("client");
         }
-        const dispatchesNumbersFromDispatches = localStorage.getItem(
-            "dispatches"
-        );
+        const dispatchesNumbersFromDispatches =
+            localStorage.getItem("dispatches");
         if (dispatchesNumbersFromDispatches) {
             this.form.dispatches_relateds = JSON.parse(
                 dispatchesNumbersFromDispatches
@@ -3301,11 +3457,10 @@ export default {
                     { id: this.form.items[index].affectation_igv_type_id }
                 );
             } else {
-                this.form.items[
-                    index
-                ].affectation_igv_type_id = this.form.items[
-                    index
-                ].item.original_affectation_igv_type_id;
+                this.form.items[index].affectation_igv_type_id =
+                    this.form.items[
+                        index
+                    ].item.original_affectation_igv_type_id;
                 this.form.items[index].affectation_igv_type = await _.find(
                     this.affectation_igv_types,
                     { id: this.form.items[index].affectation_igv_type_id }
@@ -3330,7 +3485,7 @@ export default {
 
                 // prepare - validate prop presentation and others
                 this.form.items = await this.onPrepareItems(itemsParsed).map(
-                    element => {
+                    (element) => {
                         element.item.presentation = element.item.presentation
                             ? element.item.presentation
                             : [];
@@ -3352,7 +3507,7 @@ export default {
                     description: "Gravado - Operación Onerosa",
                     exportation: 0,
                     free: 0,
-                    id: "10"
+                    id: "10",
                 };
             }
             item.presentation = {};
@@ -3386,7 +3541,7 @@ export default {
                 stock: item.stock,
                 unit_price: item.sale_unit_price,
                 unit_type_id: item.unit_type_id,
-                warehouses: item.warehouses
+                warehouses: item.warehouses,
             };
             item.IdLoteSelected = null;
             if (item.affectation_igv_type_id === undefined) {
@@ -3402,7 +3557,7 @@ export default {
             item.quantity = 1;
 
             let tempItem = itemsParsed.find(
-                ip => ip.item_id == item.id || ip.id == item.id
+                (ip) => ip.item_id == item.id || ip.id == item.id
             );
             if (tempItem !== undefined) {
                 item.quantity = tempItem.quantity;
@@ -3420,7 +3575,7 @@ export default {
             // if (this.default_series_type === undefined) this.default_series_type = null;
 
             let alt = _.find(this.document_types, {
-                id: this.default_document_type
+                id: this.default_document_type,
             });
             if (this.default_document_type !== null && alt !== undefined) {
                 this.form.document_type_id = this.default_document_type;
@@ -3433,7 +3588,7 @@ export default {
         },
         async onSetFormData(data) {
             this.currency_type = await _.find(this.currency_types, {
-                id: data.currency_type_id
+                id: data.currency_type_id,
             });
 
             this.form.establishment_id = data.establishment_id;
@@ -3448,9 +3603,10 @@ export default {
             this.form.customer_id = data.customer_id;
             this.form.currency_type_id = data.currency_type_id;
             this.form.exchange_rate_sale = data.exchange_rate_sale;
-            this.form.additional_information = this.onPrepareAdditionalInformation(
-                data.additional_information
-            );
+            this.form.additional_information =
+                this.onPrepareAdditionalInformation(
+                    data.additional_information
+                );
             this.form.external_id = data.external_id;
             this.form.filename = data.filename;
             this.form.group_id = data.group_id;
@@ -3521,7 +3677,7 @@ export default {
             this.form.customer = data.customer;
             this.form.has_prepayment = false;
             this.form.actions = {
-                format_pdf: "a4"
+                format_pdf: "a4",
             };
             this.form.hotel = {};
             this.form.transport = {};
@@ -3529,12 +3685,12 @@ export default {
             this.form.type = "invoice";
             this.form.invoice = {
                 operation_type_id: data.invoice.operation_type_id,
-                date_of_due: data.invoice.date_of_due
+                date_of_due: data.invoice.date_of_due,
             };
             // this.form.payment_condition_id = '01';
 
             let is_credit_installments = await _.find(data.fee, {
-                payment_method_type_id: null
+                payment_method_type_id: null,
             });
             this.form.payment_condition_id = is_credit_installments
                 ? "03"
@@ -3566,7 +3722,7 @@ export default {
         async prepareDataCustomer() {
             this.customer_addresses = [];
             let customer = await _.find(this.customers, {
-                id: this.form.customer_id
+                id: this.form.customer_id,
             });
             this.customer_addresses = customer.addresses;
 
@@ -3577,7 +3733,7 @@ export default {
             if (customer.address) {
                 this.customer_addresses.unshift({
                     id: null,
-                    address: customer.address
+                    address: customer.address,
                 });
             }
         },
@@ -3601,7 +3757,7 @@ export default {
                 if (!legend)
                     this.form.legends.push({
                         code: "2006",
-                        value: legend_value
+                        value: legend_value,
                     });
             }
         },
@@ -3612,7 +3768,7 @@ export default {
                     this.payment_destinations.length > 0
                 ) {
                     let cash = _.find(this.payment_destinations, {
-                        id: "cash"
+                        id: "cash",
                     });
                     if (cash) {
                         if (this.form.payments[0] !== undefined) {
@@ -3624,8 +3780,10 @@ export default {
                             // })
                         }
                     } else {
-                        this.form.payment_destination_id = this.payment_destinations[0].id;
-                        this.form.payments[0].payment_destination_id = this.payment_destinations[0].id;
+                        this.form.payment_destination_id =
+                            this.payment_destinations[0].id;
+                        this.form.payments[0].payment_destination_id =
+                            this.payment_destinations[0].id;
                     }
                 }
             }
@@ -3652,7 +3810,7 @@ export default {
             return obs;
         },
         onPrepareItems(items) {
-            return items.map(i => {
+            return items.map((i) => {
                 i.unit_price_value = i.unit_value;
                 i.input_unit_price_value = i.item.has_igv
                     ? i.unit_price
@@ -3674,7 +3832,7 @@ export default {
         onPrepareIndividualItem(data) {
             let new_item = data.item;
             let currency_type = _.find(this.currency_types, {
-                id: this.form.currency_type_id
+                id: this.form.currency_type_id,
             });
 
             new_item.currency_type_id = currency_type.id;
@@ -3689,7 +3847,7 @@ export default {
         },
         onSetSeriesId(documentType, serie) {
             const find = this.all_series.find(
-                s => s.document_type_id == documentType && s.number == serie
+                (s) => s.document_type_id == documentType && s.number == serie
             );
             if (find) {
                 return find.id;
@@ -3698,7 +3856,7 @@ export default {
         },
         onSetSeries(documentType, serie) {
             const find = this.all_series.find(
-                s => s.document_type_id == documentType && s.number == serie
+                (s) => s.document_type_id == documentType && s.number == serie
             );
             if (find) {
                 return [find];
@@ -3707,7 +3865,7 @@ export default {
         },
         getPrepayment(index) {
             return _.find(this.prepayment_documents, {
-                id: this.form.prepayments[index].document_id
+                id: this.form.prepayments[index].document_id,
             });
         },
         inputAmountPrepayment(index) {
@@ -3743,8 +3901,10 @@ export default {
                 if (cash) {
                     this.form.payments[0].payment_destination_id = cash.id;
                 } else {
-                    this.form.payment_destination_id = this.payment_destinations[0].id;
-                    this.form.payments[0].payment_destination_id = this.payment_destinations[0].id;
+                    this.form.payment_destination_id =
+                        this.payment_destinations[0].id;
+                    this.form.payments[0].payment_destination_id =
+                        this.payment_destinations[0].id;
                 }
             }
         },
@@ -3775,7 +3935,7 @@ export default {
                 id = this.form.fee[index].payment_method_type_id;
             }
             let payment_method_type = _.find(this.payment_method_types, {
-                id: id
+                id: id,
             });
 
             if (payment_method_type.number_days) {
@@ -3859,7 +4019,7 @@ export default {
             let global_discount = 0;
             let sum_total_prepayment = 0;
 
-            this.form.prepayments.forEach(item => {
+            this.form.prepayments.forEach((item) => {
                 global_discount += parseFloat(item.amount);
                 sum_total_prepayment += parseFloat(item.total);
             });
@@ -3892,7 +4052,7 @@ export default {
 
             if (this.form.affectation_type_prepayment == 10) {
                 let discount = _.find(this.form.discounts, {
-                    discount_type_id: "04"
+                    discount_type_id: "04",
                 });
 
                 if (global_discount > 0 && !discount) {
@@ -3917,7 +4077,7 @@ export default {
                             "Descuentos globales por anticipos gravados que afectan la base imponible del IGV/IVAP",
                         factor: factor,
                         amount: amount,
-                        base: base
+                        base: base,
                     });
                 } else {
                     let pos = this.form.discounts.indexOf(discount);
@@ -3945,7 +4105,7 @@ export default {
                 }
             } else if (this.form.affectation_type_prepayment == 20) {
                 let exonerated_discount = _.find(this.form.discounts, {
-                    discount_type_id: "05"
+                    discount_type_id: "05",
                 });
 
                 this.form.total_discount = _.round(amount, 2);
@@ -3962,12 +4122,11 @@ export default {
                             "Descuentos globales por anticipos exonerados",
                         factor: factor,
                         amount: amount,
-                        base: base
+                        base: base,
                     });
                 } else {
-                    let position = this.form.discounts.indexOf(
-                        exonerated_discount
-                    );
+                    let position =
+                        this.form.discounts.indexOf(exonerated_discount);
 
                     if (position > -1) {
                         this.form.discounts[position].base = base;
@@ -3977,7 +4136,7 @@ export default {
                 }
             } else if (this.form.affectation_type_prepayment == 30) {
                 let unaffected_discount = _.find(this.form.discounts, {
-                    discount_type_id: "06"
+                    discount_type_id: "06",
                 });
 
                 this.form.total_discount = _.round(amount, 2);
@@ -3994,12 +4153,11 @@ export default {
                             "Descuentos globales por anticipos inafectos",
                         factor: factor,
                         amount: amount,
-                        base: base
+                        base: base,
                     });
                 } else {
-                    let position = this.form.discounts.indexOf(
-                        unaffected_discount
-                    );
+                    let position =
+                        this.form.discounts.indexOf(unaffected_discount);
                     if (position > -1) {
                         this.form.discounts[position].base = base;
                         this.form.discounts[position].amount = amount;
@@ -4010,7 +4168,7 @@ export default {
         },
         async changeDocumentPrepayment(index) {
             let prepayment = await _.find(this.prepayment_documents, {
-                id: this.form.prepayments[index].document_id
+                id: this.form.prepayments[index].document_id,
             });
 
             this.form.prepayments[index].number = prepayment.description;
@@ -4027,7 +4185,7 @@ export default {
                 number: null,
                 document_type_id: null,
                 amount: 0,
-                total: 0
+                total: 0,
             });
 
             this.changeTotalPrepayment();
@@ -4087,13 +4245,13 @@ export default {
         },
         async deletePrepaymentDiscount() {
             let discount = await _.find(this.form.discounts, {
-                discount_type_id: "04"
+                discount_type_id: "04",
             });
             let discount_exonerated = await _.find(this.form.discounts, {
-                discount_type_id: "05"
+                discount_type_id: "05",
             });
             let discount_unaffected = await _.find(this.form.discounts, {
-                discount_type_id: "06"
+                discount_type_id: "06",
             });
 
             let pos = this.form.discounts.indexOf(discount);
@@ -4102,17 +4260,15 @@ export default {
                 this.changeTotalPrepayment();
             }
 
-            let pos_exonerated = this.form.discounts.indexOf(
-                discount_exonerated
-            );
+            let pos_exonerated =
+                this.form.discounts.indexOf(discount_exonerated);
             if (pos_exonerated > -1) {
                 this.form.discounts.splice(pos_exonerated, 1);
                 this.changeTotalPrepayment();
             }
 
-            let pos_unaffected = this.form.discounts.indexOf(
-                discount_unaffected
-            );
+            let pos_unaffected =
+                this.form.discounts.indexOf(discount_unaffected);
             if (pos_unaffected > -1) {
                 this.form.discounts.splice(pos_unaffected, 1);
                 this.changeTotalPrepayment();
@@ -4121,11 +4277,9 @@ export default {
         getDocumentsPrepayment() {
             this.$http
                 .get(
-                    `/${this.resource}/prepayments/${
-                        this.form.affectation_type_prepayment
-                    }`
+                    `/${this.resource}/prepayments/${this.form.affectation_type_prepayment}`
                 )
-                .then(response => {
+                .then((response) => {
                     this.prepayment_documents = response.data;
                 });
         },
@@ -4169,7 +4323,7 @@ export default {
                 payment_method_type_id: id,
                 reference: null,
                 payment_destination_id: this.getPaymentDestinationId(),
-                payment: total
+                payment: total,
             });
             this.calculatePayments();
         },
@@ -4197,13 +4351,11 @@ export default {
         searchRemoteCustomers(input) {
             if (input.length > 0) {
                 this.loading_search = true;
-                let parameters = `input=${input}&document_type_id=${
-                    this.form.document_type_id
-                }&operation_type_id=${this.form.operation_type_id}`;
+                let parameters = `input=${input}&document_type_id=${this.form.document_type_id}&operation_type_id=${this.form.operation_type_id}`;
 
                 this.$http
                     .get(`/${this.resource}/search/customers?${parameters}`)
-                    .then(response => {
+                    .then((response) => {
                         this.customers = response.data.customers;
                         this.loading_search = false;
                         this.input_person.number =
@@ -4268,7 +4420,7 @@ export default {
                 has_prepayment: false,
                 affectation_type_prepayment: null,
                 actions: {
-                    format_pdf: "a4"
+                    format_pdf: "a4",
                 },
                 hotel: {},
                 transport: {},
@@ -4281,12 +4433,12 @@ export default {
                 fee: [],
                 total_pending_payment: 0,
                 has_retention: false,
-                retention: {}
+                retention: {},
             };
 
             this.form_cash_document = {
                 document_id: null,
-                sale_note_id: null
+                sale_note_id: null,
             };
 
             this.clickAddPayment();
@@ -4339,7 +4491,7 @@ export default {
                     currency_type_id: this.form.currency_type_id,
                     exchange_rate: this.form.exchange_rate_sale,
                     amount_pen: amount_pen,
-                    amount_usd: amount_usd
+                    amount_usd: amount_usd,
                 };
 
                 this.setTotalPendingAmountRetention(amount);
@@ -4361,7 +4513,7 @@ export default {
         initInputPerson() {
             this.input_person = {
                 number: null,
-                identity_document_type_id: null
+                identity_document_type_id: null,
             };
         },
         resetForm() {
@@ -4406,9 +4558,10 @@ export default {
                 if (!legend)
                     this.form.legends.push({
                         code: "2006",
-                        value: "Operación sujeta a detracción"
+                        value: "Operación sujeta a detracción",
                     });
-                this.form.detraction.bank_account = this.company.detraction_account;
+                this.form.detraction.bank_account =
+                    this.company.detraction_account;
                 // this.form.detraction.detraction_type_id = undefined
             } else if (this.form.operation_type_id === "1004") {
                 this.showDialogDocumentDetraction = true;
@@ -4416,10 +4569,10 @@ export default {
                 if (!legend)
                     this.form.legends.push({
                         code: "2006",
-                        value:
-                            "Operación Sujeta a Detracción - Servicios de Transporte - Carga"
+                        value: "Operación Sujeta a Detracción - Servicios de Transporte - Carga",
                     });
-                this.form.detraction.bank_account = this.company.detraction_account;
+                this.form.detraction.bank_account =
+                    this.company.detraction_account;
             } else {
                 _.remove(this.form.legends, { code: "2006" });
                 this.form.detraction = {};
@@ -4480,34 +4633,34 @@ export default {
                 if (tot <= total_restriction)
                     return {
                         success: false,
-                        message: `El importe de la operación debe ser mayor a S/ ${total_restriction}.00 o equivalente en USD`
+                        message: `El importe de la operación debe ser mayor a S/ ${total_restriction}.00 o equivalente en USD`,
                     };
 
                 if (!detraction.detraction_type_id)
                     return {
                         success: false,
                         message:
-                            "El campo bien o servicio sujeto a detracción es obligatorio"
+                            "El campo bien o servicio sujeto a detracción es obligatorio",
                     };
 
                 if (!detraction.payment_method_id)
                     return {
                         success: false,
                         message:
-                            "El campo método de pago - detracción es obligatorio"
+                            "El campo método de pago - detracción es obligatorio",
                     };
 
                 if (!detraction.bank_account)
                     return {
                         success: false,
-                        message: "El campo cuenta bancaria es obligatorio"
+                        message: "El campo cuenta bancaria es obligatorio",
                     };
 
                 if (detraction.amount <= 0)
                     return {
                         success: false,
                         message:
-                            "El campo total detracción debe ser mayor a cero"
+                            "El campo total detracción debe ser mayor a cero",
                     };
             }
 
@@ -4515,7 +4668,7 @@ export default {
         },
         changeEstablishment() {
             this.establishment = _.find(this.establishments, {
-                id: this.form.establishment_id
+                id: this.form.establishment_id,
             });
             this.filterSeries();
             this.selectDefaultCustomer();
@@ -4526,11 +4679,9 @@ export default {
                 let temp_customers = this.customers;
                 await this.$http
                     .get(
-                        `/${this.resource}/search/customer/${
-                            this.establishment.customer_id
-                        }`
+                        `/${this.resource}/search/customer/${this.establishment.customer_id}`
                     )
-                    .then(response => {
+                    .then((response) => {
                         let data_customer = response.data.customers;
                         temp_all_customers = temp_all_customers.push(
                             ...data_customer
@@ -4539,18 +4690,18 @@ export default {
                     });
                 temp_all_customers = this.all_customers.filter(
                     (item, index, self) =>
-                        index === self.findIndex(t => t.id === item.id)
+                        index === self.findIndex((t) => t.id === item.id)
                 );
                 temp_customers = this.customers.filter(
                     (item, index, self) =>
-                        index === self.findIndex(t => t.id === item.id)
+                        index === self.findIndex((t) => t.id === item.id)
                 );
                 this.all_customers = temp_all_customers;
                 this.customers = temp_customers;
                 await this.filterCustomers();
                 // this.form.customer_id = (this.customers.length > 0) ? this.establishment.customer_id : null
                 let alt = _.find(this.customers, {
-                    id: this.establishment.customer_id
+                    id: this.establishment.customer_id,
                 });
                 // console.log(alt)
 
@@ -4560,7 +4711,7 @@ export default {
                         alt.identity_document_type_id
                     );
                     let seller = this.sellers.find(
-                        element => element.id == alt.seller_id
+                        (element) => element.id == alt.seller_id
                     );
                     if (seller !== undefined) {
                         this.form.seller_id = seller.id;
@@ -4579,9 +4730,7 @@ export default {
         },
         dateValidError() {
             this.$message.error(
-                `No puede seleccionar una fecha menor a ${
-                    this.configuration.shipping_time_days
-                } día(s).`
+                `No puede seleccionar una fecha menor a ${this.configuration.shipping_time_days} día(s).`
             );
             // this.$message.error('No puede seleccionar una fecha menor a 6 días.');
             this.dateValid = false;
@@ -4613,7 +4762,7 @@ export default {
             this.form.date_of_due = this.form.date_of_issue;
             // if (! this.isUpdate) {
             await this.searchExchangeRateByDate(this.form.date_of_issue).then(
-                response => {
+                (response) => {
                     this.form.exchange_rate_sale = response;
                 }
             );
@@ -4622,7 +4771,7 @@ export default {
             // }
         },
         assignmentDateOfPayment() {
-            this.form.payments.forEach(payment => {
+            this.form.payments.forEach((payment) => {
                 payment.date_of_payment = this.form.date_of_issue;
             });
         },
@@ -4631,7 +4780,7 @@ export default {
             let series = _.filter(this.all_series, {
                 establishment_id: this.form.establishment_id,
                 document_type_id: this.form.document_type_id,
-                contingency: this.is_contingency
+                contingency: this.is_contingency,
             });
             if (
                 this.form.document_type_id === this.config.user.document_id &&
@@ -4642,7 +4791,7 @@ export default {
                     establishment_id: this.form.establishment_id,
                     document_type_id: this.form.document_type_id,
                     contingency: this.is_contingency,
-                    id: this.config.user.serie
+                    id: this.config.user.serie,
                 });
             }
 
@@ -4656,11 +4805,11 @@ export default {
             ) {
                 if (this.form.document_type_id === "01") {
                     this.customers = _.filter(this.all_customers, {
-                        identity_document_type_id: "6"
+                        identity_document_type_id: "6",
                     });
                 } else {
                     if (this.document_type_03_filter) {
-                        this.customers = _.filter(this.all_customers, c => {
+                        this.customers = _.filter(this.all_customers, (c) => {
                             return c.identity_document_type_id !== "6";
                         });
                     } else {
@@ -4675,18 +4824,18 @@ export default {
             this.form.guides.push(
                 {
                     document_type_id: "09",
-                    number: null
+                    number: null,
                 },
                 {
                     document_type_id: "31",
-                    number: null
+                    number: null,
                 }
             );
         },
         clickAddGuide() {
             this.form.guides.push({
                 document_type_id: null,
-                number: null
+                number: null,
             });
         },
         clickRemoveGuide(index) {
@@ -4704,15 +4853,17 @@ export default {
             this.calculateTotal();
         },
         clickRemoveItem(index) {
+            let item = this.form.items[index];
+          
             this.form.items.splice(index, 1);
             this.calculateTotal();
         },
         changeCurrencyType() {
             this.currency_type = _.find(this.currency_types, {
-                id: this.form.currency_type_id
+                id: this.form.currency_type_id,
             });
             let items = [];
-            this.form.items.forEach(row => {
+            this.form.items.forEach((row) => {
                 items.push(
                     calculateRowItem(
                         row,
@@ -4745,7 +4896,7 @@ export default {
 
             // let total_free_igv = 0
 
-            this.form.items.forEach(row => {
+            this.form.items.forEach((row) => {
                 // console.log(row)
 
                 total_discount += parseFloat(row.total_discount);
@@ -4802,7 +4953,7 @@ export default {
                         "34",
                         "35",
                         "36",
-                        "40"
+                        "40",
                     ].indexOf(row.affectation_igv_type_id) < 0
                 ) {
                     total_free += parseFloat(row.total_value);
@@ -4820,7 +4971,7 @@ export default {
                         "34",
                         "35",
                         "36",
-                        "40"
+                        "40",
                     ].indexOf(row.affectation_igv_type_id) > -1
                 ) {
                     // total_igv += parseFloat(row.total_igv)
@@ -4884,9 +5035,8 @@ export default {
                 }
 
                 //sum discount no base
-                this.total_discount_no_base += this.sumDiscountsNoBaseByItem(
-                    row
-                );
+                this.total_discount_no_base +=
+                    this.sumDiscountsNoBaseByItem(row);
 
                 // isc
                 total_isc += parseFloat(row.total_isc);
@@ -4949,13 +5099,14 @@ export default {
 
             if (row.discounts) {
                 // if(row.discounts.length > 0){
-                sum_discount_no_base = _.sumBy(row.discounts, function(
-                    discount
-                ) {
-                    return discount.discount_type_id == "01"
-                        ? discount.amount
-                        : 0;
-                });
+                sum_discount_no_base = _.sumBy(
+                    row.discounts,
+                    function (discount) {
+                        return discount.discount_type_id == "01"
+                            ? discount.amount
+                            : 0;
+                    }
+                );
                 // }
             }
 
@@ -5007,7 +5158,7 @@ export default {
                         "Cargos globales que no afectan la base imponible del IGV/IVAP",
                     factor: factor,
                     amount: amount,
-                    base: base
+                    base: base,
                 });
             } else {
                 let pos = this.form.charges.indexOf(charge);
@@ -5042,7 +5193,7 @@ export default {
         },
         deleteDiscountGlobal() {
             let discount = _.find(this.form.discounts, {
-                discount_type_id: "03"
+                discount_type_id: "03",
             });
             let index = this.form.discounts.indexOf(discount);
 
@@ -5119,9 +5270,9 @@ export default {
         },
         async asignPlateNumberToItems() {
             if (this.form.plate_number) {
-                await this.form.items.forEach(item => {
+                await this.form.items.forEach((item) => {
                     let at = _.find(item.attributes, {
-                        attribute_type_id: "5010"
+                        attribute_type_id: "5010",
                     });
 
                     if (!at) {
@@ -5131,7 +5282,7 @@ export default {
                             value: this.form.plate_number,
                             start_date: null,
                             end_date: null,
-                            duration: null
+                            duration: null,
                         });
                     } else {
                         if (this.isUpdate) {
@@ -5144,7 +5295,7 @@ export default {
         async validateAffectationTypePrepayment() {
             let not_equal_affectation_type = 0;
 
-            await this.form.items.forEach(item => {
+            await this.form.items.forEach((item) => {
                 if (
                     item.affectation_igv_type_id !=
                     this.form.affectation_type_prepayment
@@ -5156,29 +5307,29 @@ export default {
             return {
                 success: not_equal_affectation_type > 0 ? false : true,
                 message:
-                    "Los items deben tener tipo de afectación igual al seleccionado en el anticipo"
+                    "Los items deben tener tipo de afectación igual al seleccionado en el anticipo",
             };
         },
         hasCashOpen() {
             return this.payment_destinations.some(
-                payment_destination => payment_destination.cash_id != null
+                (payment_destination) => payment_destination.cash_id != null
             );
         },
         validatePaymentDestination() {
             let error_by_item = 0;
 
-            this.form.payments.forEach(item => {
+            this.form.payments.forEach((item) => {
                 if (!["05", "08", "09"].includes(item.payment_method_type_id)) {
                     if (item.payment_destination_id == null) error_by_item++;
                 }
             });
 
             return {
-                error_by_item: error_by_item
+                error_by_item: error_by_item,
             };
         },
         async submit() {
-            if(!this.hasCashOpen()){
+            if (!this.hasCashOpen()) {
                 this.$message.error("Debe abrir caja para realizar la venta");
                 return false;
             }
@@ -5186,7 +5337,8 @@ export default {
                 this.form.terms_condition = this.config.terms_condition_sale;
             }
             if (this.form.has_prepayment || this.prepayment_deduction) {
-                let error_prepayment = await this.validateAffectationTypePrepayment();
+                let error_prepayment =
+                    await this.validateAffectationTypePrepayment();
                 if (!error_prepayment.success)
                     return this.$message.error(error_prepayment.message);
             }
@@ -5204,7 +5356,8 @@ export default {
                     );
                 }
 
-                let validate_payment_destination = await this.validatePaymentDestination();
+                let validate_payment_destination =
+                    await this.validatePaymentDestination();
 
                 if (validate_payment_destination.error_by_item > 0) {
                     return this.$message.error(
@@ -5235,7 +5388,7 @@ export default {
 
             this.$http
                 .post(path, this.form)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$eventHub.$emit("reloadDataItems", null);
                         this.resetForm();
@@ -5254,7 +5407,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 422) {
                         this.errors = error.response.data;
                     } else {
@@ -5286,10 +5439,10 @@ export default {
             if (this.isAutoPrint) {
                 this.$http
                     .get(`/printticket/document/${this.documentNewId}/ticket`)
-                    .then(response => {
+                    .then((response) => {
                         this.printTicket(response.data);
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         console.log(error);
                     });
             }
@@ -5304,8 +5457,8 @@ export default {
                         type: "html",
                         format: "plain",
                         data: html_pdf,
-                        options: opts
-                    }
+                        options: opts,
+                    },
                 ];
 
                 qz.print(config, printData)
@@ -5313,7 +5466,7 @@ export default {
                         this.$notify({
                             title: "",
                             message: "Impresión en proceso...",
-                            type: "success"
+                            type: "success",
                         });
                     })
                     .catch(displayError);
@@ -5322,12 +5475,12 @@ export default {
         saveCashDocument() {
             this.$http
                 .post(`/cash/cash_document`, this.form_cash_document)
-                .then(response => {
+                .then((response) => {
                     if (!response.data.success) {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => console.log(error));
+                .catch((error) => console.log(error));
         },
         validate_payments() {
             //eliminando items de pagos
@@ -5339,14 +5492,14 @@ export default {
             let error_by_item = 0;
             let acum_total = 0;
 
-            this.form.payments.forEach(item => {
+            this.form.payments.forEach((item) => {
                 acum_total += parseFloat(item.payment);
                 if (item.payment <= 0 || item.payment == null) error_by_item++;
             });
 
             return {
                 error_by_item: error_by_item,
-                acum_total: acum_total
+                acum_total: acum_total,
             };
         },
 
@@ -5362,7 +5515,7 @@ export default {
             // })
             await this.$http
                 .get(`/${this.resource}/search/customer/${customer_id}`)
-                .then(response => {
+                .then((response) => {
                     this.customers = response.data.customers;
                     this.form.customer_id = customer_id;
                 });
@@ -5372,25 +5525,29 @@ export default {
             this.form.customer_address_id = null;
 
             let customer = _.find(this.customers, {
-                id: this.form.customer_id
+                id: this.form.customer_id,
             });
-            this.customer_addresses = customer.addresses;
-            if (customer.address) {
-                this.customer_addresses.unshift({
-                    id: null,
-                    address: customer.address
-                });
-            }
 
-            let seller = this.sellers.find(
-                element => element.id == customer.seller_id
-            );
-            if (seller !== undefined) {
-                this.form.seller_id = seller.id;
-            }
+            if (customer) {
+                this.customer_addresses = customer.addresses;
+                if (customer.address) {
+                    this.customer_addresses.unshift({
+                        id: null,
+                        address: customer.address,
+                    });
+                }
+                let seller = this.sellers.find(
+                    (element) => element.id == customer.seller_id
+                );
+                if (seller !== undefined) {
+                    this.form.seller_id = seller.id;
+                }
 
-            // retencion para clientes con ruc
-            this.validateCustomerRetention(customer.identity_document_type_id);
+                // retencion para clientes con ruc
+                this.validateCustomerRetention(
+                    customer.identity_document_type_id
+                );
+            }
 
             /*if(this.customer_addresses.length > 0) {
                 let address = _.find(this.customer_addresses, {'main' : 1});
@@ -5444,14 +5601,14 @@ export default {
                 id: null,
                 date: moment().format("YYYY-MM-DD"),
                 currency_type_id: this.form.currency_type_id,
-                amount: 0
+                amount: 0,
             });
             this.calculateFee();
         },
         clickAddFeeNew() {
             let first = {
                 id: "05",
-                number_days: 0
+                number_days: 0,
             };
             if (this.credit_payment_metod[0] !== undefined) {
                 first = this.credit_payment_metod[0];
@@ -5476,7 +5633,7 @@ export default {
 
                 date: date,
                 currency_type_id: this.form.currency_type_id,
-                amount: 0
+                amount: 0,
             });
             this.calculateFee();
         },
@@ -5492,7 +5649,7 @@ export default {
             let payment = 0;
             let amount = _.round(total / payment_count, 2);
             // console.log(amount);
-            _.forEach(this.form.payments, row => {
+            _.forEach(this.form.payments, (row) => {
                 payment += amount;
                 if (total - payment < 0) {
                     amount = _.round(total - payment + amount, 2);
@@ -5508,7 +5665,7 @@ export default {
 
             let accumulated = 0;
             let amount = _.round(total / fee_count, 2);
-            _.forEach(this.form.fee, row => {
+            _.forEach(this.form.fee, (row) => {
                 accumulated += amount;
                 if (total - accumulated < 0) {
                     amount = _.round(total - accumulated + amount, 2);
@@ -5567,7 +5724,7 @@ export default {
             if (code === "Escape") {
                 if (this.showDialogAddItem) this.showDialogAddItem = false;
             }
-        }
-    }
+        },
+    },
 };
 </script>

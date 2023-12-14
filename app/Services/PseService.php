@@ -11,6 +11,7 @@ use App\CoreFacturalo\WS\Services\BaseSunat;
 use App\CoreFacturalo\WS\Zip\ZipFileDecompress;
 use Illuminate\Support\Facades\Http;
 use App\Models\Tenant\Company;
+use App\Models\Tenant\Configuration;
 use App\Models\Tenant\DocumentFee;
 use App\Models\Tenant\Invoice;
 use App\Models\Tenant\Voided;
@@ -130,6 +131,9 @@ class PseService
         if (substr($pse_url, -1) != '/') {
             $pse_url = $pse_url . '/';
         }
+        $configuration = Configuration::first();
+        $configuration->ticket_single_shipment = true;
+        $configuration->save();
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $pse_token,
             'Ruc' => $company->number
@@ -139,6 +143,7 @@ class PseService
             throw new Exception("Error en el servidor de PSE");
         }
         $body = $response->json();
+        $body_text = $response->body();
         if ($body['success'] == false) {
             if ($body["message"]) {
                 throw new Exception($body["message"]);
@@ -232,6 +237,18 @@ class PseService
             }
         }
         $payload = $this->xml_for_download();
+        // if(!$payload){
+        //     return [
+        //         "success" => false,
+        //         "message" => "No se pudo obtener el payload"
+        //     ];
+        // }
+        // if(!$this->url_download){
+        //     return [
+        //         "success" => false,
+        //         "message" => "No se pudo obtener la url de descarga"
+        //     ];
+        // }
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . $this->token,
             'Content-Type' => 'application/xml',
@@ -390,13 +407,42 @@ class PseService
         }
         return;
     }
+   public function checkSignature($xmlString)
+    {
+      
+        $pass = true;
+        $xml = new \SimpleXMLElement($xmlString);
+        $xml->registerXPathNamespace('ar', 'urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2');
+        $xml->registerXPathNamespace('ext', 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2');
+        $xml->registerXPathNamespace('ds', 'http://www.w3.org/2000/09/xmldsig#');
+        $xml->registerXPathNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+        $xml->registerXPathNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+
+        $signatureValue = $xml->xpath('//ds:Signature/ds:SignatureValue');
+
+        if (!empty($signatureValue)) {
+            $signatureValue = (string)$signatureValue[0];
+            Log::info($signatureValue);
+            if (strpos($signatureValue, 'BetaPublicCert') !== false) {
+                $pass = false;
+            }
+        } 
+
+
+        return $pass;
+    }
     function extractCdrInfo($zip)
     {
         $this->decompressor = new ZipFileDecompress();
         $this->cdrReader = new DomCdrReader();
         $xml = $this->getXmlResponse($zip);
         $cdr = $this->cdrReader->getCdrResponse($xml);
+        $not_has_beta_signature = $this->checkSignature($xml);
+        if(!$not_has_beta_signature){
+            return;
+        }
         $description = $cdr->getDescription();
+
         $code = $cdr->getCode();
         $this->response = [
             'sent' => true,
@@ -563,7 +609,8 @@ class PseService
         $body['payload'] = $this->payload;
         return $body;
     }
-    function changeAnulate(){
+    function changeAnulate()
+    {
         $data = [
             'series' => $this->document->series,
             'number' => $this->document->number,
@@ -647,7 +694,8 @@ class PseService
         ])->post($this->url_send, $payload);
 
         $status = $response->status();
-
+        $body_text = $response->body();
+        Log::info($body_text);
         $body = $response->json();
 
         $response = $this->format_response($body);
@@ -663,7 +711,7 @@ class PseService
         if ($sent) {
             $this->document->state_type_id = '03';
             $this->document->save();
-            $response =  $this->download_file();
+            // $response =  $this->download_file();
         }
     }
     private function documentToModify($facelecab)
@@ -746,7 +794,7 @@ class PseService
         $seller = $this->document->seller;
 
         if ($seller && $seller->number) {
-            $facelecab->addChild('tidove', 6);
+            $facelecab->addChild('tidove', $seller->identity_document_type_id);
             $facelecab->addChild('nudove', $seller->number);
         } else {
             $facelecab->addChild('tidove', 0);
@@ -1030,7 +1078,7 @@ class PseService
     {
         $item = $document_item->item;
         $canped = $document_item->quantity;
-        $preuni = $document_item->unit_value - $document_item->total_discount;
+        $preuni = $document_item->unit_value - ($document_item->total_discount / $document_item->quantity);
 
 
         $totuni = $document_item->unit_value * $document_item->quantity - $document_item->total_discount;
@@ -1040,7 +1088,6 @@ class PseService
 
         }
         $affectation_igv_type_id = $document_item->affectation_igv_type_id;
-        Log::info($affectation_igv_type_id);
         if ($affectation_igv_type_id != '20' && $affectation_igv_type_id != '30') {
 
             $prelis = $preuni * (1 + $document_item->percentage_isc / 100) * (1 + $document_item->percentage_igv / 100);
@@ -1057,7 +1104,7 @@ class PseService
                 $this->basexo += $totuni;
                 break;
             case '15':
-                $valref = $document_item->total_value;
+                $valref = $document_item->total_value / $document_item->quantity;
                 $this->mongra += $document_item->total_value;
                 break;
             case '30':
@@ -1082,7 +1129,7 @@ class PseService
         $xml->addChild('nomabr', $this->format_characters($item->description, 24));
         $xml->addChild('valbas', $document_item->unit_value);
 
-        $xml->addChild('mondsc', number_format($document_item->total_discount, 2));
+        $xml->addChild('mondsc', number_format(($document_item->total_discount), 2));
 
         $xml->addChild('preuni', $preuni);
         $xml->addChild('monigv', $monigv);

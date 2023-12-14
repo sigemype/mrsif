@@ -230,7 +230,7 @@
                                         class="font-weight-semibold mb-0"
                                         v-if="DescriptionLength(item) > 50"
                                         data-toggle="tooltip"
-                                        data-placement="top"
+                                        data-placement="center"
                                         :title="item.description"
                                     >
                                         {{ item.description.substring(0, 50) }}
@@ -248,7 +248,7 @@
                                     <p
                                         class="text-muted font-weight-lighter mb-0"
                                     >
-                                        <small>{{ item.internal_id }}</small>
+                                        <small>{{ item.unit_type_id }} - {{ item.internal_id }}</small>
                                         <template v-if="item.sets.length > 0">
                                             <br />
                                             <small>
@@ -271,7 +271,7 @@
                                     <!-- <button type="button" class="btn waves-effect waves-light btn-sm btn-danger m-1__2" @click="clickHistorySales(item.item_id)"><i class="fa fa-list"></i></button>
                   <button type="button" class="btn waves-effect waves-light btn-sm btn-success m-1__2" @click="clickHistoryPurchases(item.item_id)"><i class="fas fa-cart-plus"></i></button> -->
                                     <template v-if="!item.edit_unit_price">
-                                        <h5
+                                        <h6
                                             class="font-weight-semibold text-end text-white"
                                         >
                                             <button
@@ -289,10 +289,10 @@
                                                     >&#9998;</span
                                                 >
                                             </button>
-                                            ({{ item.unit_type_id }})
+                                            
                                             {{ item.currency_type_symbol }}
                                             {{ item.sale_unit_price }}
-                                        </h5>
+                                        </h6>
                                     </template>
                                     <template v-else>
                                         <el-input
@@ -696,7 +696,7 @@
                                             style="
                                                 width: 10px;
                                                 text-align: center;
-                                                vertical-align: top;
+                                                vertical-align: center;
                                             "
                                             class="pos-list-label"
                                             :class="
@@ -709,7 +709,7 @@
                                         <td
                                             style="
                                                 width: 80px;
-                                                vertical-align: top;
+                                                vertical-align: center;
                                             "
                                         >
                                             <el-input
@@ -727,16 +727,20 @@
                                             ></el-input>
                                         </td>
                                         <td>
+                                             
                                             <p
+                                                style="vertical-align: center;"
+                                            
                                                 class="item-description"
                                                 :class="
                                                     selectedIdx == index &&
                                                     'text-danger'
                                                 "
                                             >
+                                                
                                                 {{ item.item.description }}
                                             </p>
-                                            <small>
+                                            <small style="vertical-align: center;">
                                                 {{ nameSets(item.item_id) }}
                                             </small>
                                         </td>
@@ -744,7 +748,7 @@
                                             style="
                                                 width: 10px;
                                                 text-align: center;
-                                                vertical-align: top;
+                                                vertical-align: center;
                                             "
                                             class="pos-list-label"
                                         >
@@ -753,7 +757,7 @@
                                         <td
                                             style="
                                                 width: 80px;
-                                                vertical-align: top;
+                                                vertical-align: center;
                                             "
                                         >
                                             <template v-if="edit_unit_price">
@@ -784,7 +788,7 @@
                                                 width: 36px;
                                                 padding-left: 0;
                                                 padding-right: 0;
-                                                vertical-align: top;
+                                                vertical-align: center;
                                             "
                                         >
                                             <a

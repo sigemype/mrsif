@@ -885,8 +885,13 @@ class ReportKardexController extends Controller
         }
 
         // dd($items);
-
+        $reference = null;
+        if($record->inventory){
+            $inventory = $record->inventory;
+            $reference = optional($inventory->inventory_reference)->description;
+        }
         $data = [
+            'reference' => $reference,
             'company_number' => $company->number,
             'document_type_name' => $record->document_type->description,
             'document_number' => $record->series . '-' . $record->number,

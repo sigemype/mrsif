@@ -104,7 +104,16 @@ if ($current_hostname) {
                          Route::get('/records', 'ReportSaleNoteController@records')
                               ->name('tenant.reports.sale_notes.records');
                     });
-
+                    Route::prefix('summary-sales')->group(function () {
+                         Route::get('', 'ReportSummarySalesController@index')->name('tenant.reports.summary_sales.index');
+                         Route::get('/pdf', 'ReportSummarySalesController@pdf')->name('tenant.reports.summary_sales.pdf');
+                         Route::get('/excel', 'ReportSummarySalesController@excel')
+                              ->name('tenant.reports.summary_sales.excel');
+                         Route::get('/filter', 'ReportSummarySalesController@filter')
+                              ->name('tenant.reports.summary_sales.filter');
+                         Route::get('/records', 'ReportSummarySalesController@records')
+                              ->name('tenant.reports.summary_sales.records');
+                    });
                     Route::get('quotations', 'ReportQuotationController@index')
                          ->name('tenant.reports.quotations.index');
                     Route::get('quotations/pdf', 'ReportQuotationController@pdf')

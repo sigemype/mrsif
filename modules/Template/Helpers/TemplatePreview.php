@@ -129,7 +129,7 @@ class TemplatePreview
         $url_cpe = (is_null($environment->url_cpe) || $environment->url_cpe === '') ? 'buscar' : $environment->url_cpe;
 
         $footer_text_1 = 'Representación impresa de la FACTURA ELECTRÓNICA';
-        $footer_text_2 = 'Para consultar el comprobante ingresar a ' . $url_cpe;
+        $footer_text_2 = 'Representación impresa del Comprobante de Pago Electrónico. <br/>Esta puede ser consultada en ' . $url_cpe;
 
 
         $pdf = new Pdf([

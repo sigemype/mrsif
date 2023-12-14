@@ -10,7 +10,13 @@
             <div class="row justify-content-md-center">
                 <div class="col-lg-12 col-md-12 col-sm-12 container-tabs">
                     <el-tabs v-model="activeName">
-                        <el-tab-pane label="Imprimir A4" name="first">
+                        <template v-if="configuration && configuration.package_handlers">
+                                 <el-tab-pane label="Imprimir recibo" name="first">
+                            <iframe :src="form.print_receipt" type="application/pdf" width="100%" height="400px"/>
+                        </el-tab-pane>
+                        </template>
+                        <template v-else>
+                              <el-tab-pane label="Imprimir A4" name="first">
                             <iframe :src="form.print_a4" type="application/pdf" width="100%" height="400px"/>
                         </el-tab-pane>
                         <el-tab-pane label="Imprimir Ticket" name="fourth" v-if="ShowTicket80">
@@ -25,10 +31,22 @@
                         <el-tab-pane label="Imprimir A5" name="second">
                             <iframe :src="form.print_a5" type="application/pdf" width="100%" height="400px"/>
                         </el-tab-pane>
+                        </template>
                     </el-tabs>
 
                 </div>
-                <div class="col-md-2 text-center font-weight-bold mt-3">
+               <template v-if="configuration && configuration.package_handlers">
+                 <div class="col-md-2 text-center font-weight-bold mt-3">
+                    <button class="btn btn-info"
+                            type="button"
+                            @click="clickPrint('receipt')">
+                        <i class="fa fa-receipt"></i>
+                    </button>
+                    <p>80MM</p>
+                </div>
+               </template>
+               <template v-else>
+                 <div class="col-md-2 text-center font-weight-bold mt-3">
                     <button class="btn btn-info"
                                    type="button"
                                    @click="clickPrint('a4')">
@@ -72,6 +90,7 @@
                     </button>
                     <p>A5</p>
                 </div>
+               </template>
 <!--                     
                     <a :href="`https://docs.google.com/viewer?url=${form.print_a4}?format=pdf`" class="btn mx-3 btn-primary btn-lg" target="_BLANK">
                         <i class="far fa-file-pdf"></i>
@@ -306,7 +325,13 @@ export default {
 
         },
         clickPrint(format) {
-            window.open(`/sale-notes/print/${this.form.external_id}/${format}`, '_blank');
+            if(format== 'receipt'){
+
+                window.open(`/sale-notes/receipt/${this.form.id}`, '_blank');
+            }else{
+
+                window.open(`/sale-notes/print/${this.form.external_id}/${format}`, '_blank');
+            }
         },
 
         clickSendWhatsapp() {

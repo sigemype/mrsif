@@ -172,6 +172,16 @@
                             </el-select>
                         </div>
                     </div> -->
+                        <div class="col-lg-2 col-md-2">
+                        <div class="form-group">
+                            <label class="control-label" style="width: 100%;">
+                                Referencia
+                            </label>
+                            <el-select v-model="form.inventory_reference_id" clearable>
+                                <el-option v-for="option in references" :key="option.id" :value="option.id" :label="option.description"></el-option>
+                            </el-select>
+                        </div>
+                    </div>
                     <div class="col-lg-2 col-md-2">
                         <div class="form-group">
                             <label class="control-label" style="width: 100%;">
@@ -314,6 +324,7 @@ export default {
             web_platforms: [],
             customers: {},
             users: {},
+            references:[],
             form: {
                 min: 1,
                 max: 2,
@@ -344,6 +355,7 @@ export default {
 
         await this.$http.post(`/${this.resource}/filter`)
             .then(response => {
+                this.references = response.data.references;
                 this.establishments = response.data.establishments;
                 this.all_items = response.data.items
                 this.document_types = response.data.document_types;

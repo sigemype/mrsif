@@ -166,6 +166,7 @@ export default {
             company: {},
             locked_emission: {},
             text_button: null,
+            loading_Whatsapp:false,
         }
     },
     async created() {
@@ -174,7 +175,9 @@ export default {
         this.text_button = 'Nueva guía'
     },
     methods: {
+        clickSendWhatsapp2(){
 
+        },
         clickDownload(format = 'a4') {
             if( (this.form && this.form.external_id)) {
                 window.open(`/print/dispatch/${this.form.external_id}/${format}`, '_blank');

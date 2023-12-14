@@ -128,6 +128,9 @@
 
                     <th class="text-center"># Pedido</th>
                     <th class="text-center">O.Pedido</th>
+                    <th class="text-center">Referencia</th>
+                    <th class="text-center">Precio Venta</th>
+                    <th class="text-center">Total</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -145,6 +148,9 @@
                         // dd($data);
                         $qty = $data['quantity'];
                         $item = $data['item'];
+                        $reference = $data['reference'];
+                        $sale_price = $data['sale_price'];
+                        $total_sale_price = $data['total_sale_price'];
                         $item_description = $item['description'];
                         $dispatches = $data['dispatches'];
                         $date_of_issue = $dispatches['date_of_issue'];
@@ -184,13 +190,16 @@
                         <td class="celda">{{ $date_of_shipping }}</td>
                         <td class="celda"> {{$item_description}} </td>
                         <td class="celda"> {{$value->getQtyFormated()}} </td>
-                        <td class="celda">{{$transfer_reason}}</td>
+                        <td class="celda">{{$transfer_reason ?? "Venta"}}</td>
                         <td class="celda">{{$transfer_description}}</td>
                         <td class="celda">{{$type_doc}}</td>
                         <td class="celda">{{$num_doc}}</td>
                         <td class="celda">{{$name_dispatcher}}</td>
                         <td class="celda">{{$order_note}}</td>
                         <td class="celda">{{ $order_form_description }}</td>
+                        <td class="celda">{{ $reference }}</td>
+                        <td class="celda"> {{$sale_price}} </td>
+                        <td class="celda"> {{$total_sale_price}} </td>
                     </tr>
                     @php
                         $acum_total += $qty

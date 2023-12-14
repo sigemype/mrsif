@@ -5,7 +5,7 @@
                 <a href="/dashboard"><i class="fas fa-tachometer-alt"></i></a>
             </h2>
             <ol class="breadcrumbs">
-                <li class="active"><span>Comprobantesdsdsdsdsdss</span></li>
+                <li class="active"><span>Comprobantes</span></li>
                 <li>
                     <span class="text-muted">Facturas - Boletas</span>
                 </li>
@@ -176,7 +176,7 @@
                         <th v-if="columns.sales_note.visible">Nota de venta</th>
                         <th v-if="columns.order_note.visible">Pedidos</th>
                         <th v-if="columns.send_it.visible">Email Enviado</th>
-                        <th v-if="columns.sire.visible" >SIRE</th>
+                        <th v-if="columns.sire.visible">SIRE</th>
                         <th>Estado</th>
                         <th v-if="columns.user_name.visible">Usuario</th>
                         <th v-if="columns.exchange_rate_sale.visible">T.C.</th>
@@ -567,8 +567,48 @@
                             </template>
                         </td>
                         <td v-if="columns.user_name.visible">
-                            {{ row.user_name }}
-                            <br /><small v-text="row.user_email"></small>
+                            <template v-if="isAuditor">
+                                <div>
+                                    <el-popover placement="top" width="250">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Usuarios:</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr
+                                                    v-for="(user, idx) in users"
+                                                    :key="idx"
+                                                    @click="
+                                                        updateUser(user.id, row)
+                                                    "
+                                                >
+                                                    <td>
+                                                        <span
+                                                            role="button"
+                                                            class="m-1"
+                                                        >
+                                                            {{ user.name }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+
+                                        <span slot="reference">
+                                            {{ row.user_name }}
+                                            <br /><small
+                                                v-text="row.user_email"
+                                            ></small>
+                                        </span>
+                                    </el-popover>
+                                </div>
+                            </template>
+                            <template v-else>
+                                {{ row.user_name }}
+                                <br /><small v-text="row.user_email"></small>
+                            </template>
                         </td>
                         <td v-if="columns.exchange_rate_sale.visible">
                             {{ row.exchange_rate_sale }}
@@ -644,7 +684,7 @@
                         <td v-if="columns.purchase_order.visible">
                             {{ row.purchase_order }}
                         </td>
-                        <td class="text-center">
+                        <td class="text-end">
                             <!-- <button
                                 type="button"
                                 style="min-width: 41px"
@@ -653,10 +693,25 @@
                             >
                                 PSE
                             </button> -->
+                            <el-tooltip
+                                v-if="row.btn_pdf_voided"
+                                effect="dark"
+                                placement="top-start"
+                                content="PDF, comunicación de baja."
+                            >
+                                <button
+                                    type="button"
+                                    style="min-width: 41px"
+                                    class="btn btn-danger mb-1"
+                                    @click.prevent="voidedPdf(row.id)"
+                                >
+                                    PDF
+                                </button>
+                            </el-tooltip>
                             <button
                                 type="button"
                                 style="min-width: 41px"
-                                class="btn waves-effect waves-light btn-sm btn-info m-1__2"
+                                class="btn btn-outline-primary mb-1"
                                 @click.prevent="clickDownload(row.download_xml)"
                                 v-if="row.has_xml"
                             >
@@ -665,7 +720,7 @@
                             <button
                                 type="button"
                                 style="min-width: 41px"
-                                class="btn waves-effect waves-light btn-sm btn-info m-1__2"
+                                class="btn btn-outline-primary mb-1"
                                 @click.prevent="clickDownload(row.download_pdf)"
                                 v-if="row.has_pdf"
                             >
@@ -675,7 +730,7 @@
                                 <button
                                     type="button"
                                     style="min-width: 41px"
-                                    class="btn waves-effect waves-light btn-sm btn-info m-1__2"
+                                    class="btn btn-outline-primary mb-1"
                                     @click.prevent="
                                         clickDownload(row.download_cdr)
                                     "
@@ -702,7 +757,7 @@
                             <button
                                 type="button"
                                 style="min-width: 41px"
-                                class="btn waves-effect waves-light btn-sm btn-danger m-1__2"
+                                class="btn btn-outline-danger mb-1"
                                 @click.prevent="clickKillDocument(row.id)"
                                 v-if="configuration.delete_documents"
                             >
@@ -1130,6 +1185,7 @@ export default {
             recordId: null,
             showDialogOptions: false,
             showDialogPayments: false,
+            users: [],
             columns: {
                 document_type_id: {
                     title: "Comprobante de Pago",
@@ -1217,14 +1273,13 @@ export default {
                 },
                 date_payment: {
                     title: "Fecha de pago",
-                    visible: false
+                    visible: false,
                 },
-                sire:{
+                sire: {
                     title: "SIRE",
-                    visible: false
-
+                    visible: false,
                 },
-            }
+            },
         };
     },
     created() {
@@ -1232,8 +1287,42 @@ export default {
 
         this.loadConfiguration();
         this.getColumnsToShow();
+        this.getUsers();
     },
     methods: {
+        voidedPdf(id){
+            window.open(`documents/voided_pdf/${id}`, "_blank");
+        },
+        async updateUser(user_id, document) {
+            let { id } = document;
+            try {
+                const response = await this.$http(
+                    `/documents/update-user/${user_id}/${id}`
+                );
+                if (response.status == 200) {
+                    this.$message.success(response.data.message);
+                    this.$refs.dataTable.getRecords();
+                }
+            } catch (e) {
+                this.$message.error(e.message);
+            }
+        },
+        async getUsers() {
+            try {
+                const response = await this.$http("/users/records-lite");
+                if (response.status == 200) {
+                    this.users = response.data;
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        },
+        changeUser() {
+            console.log(
+                "🚀 ~ file: index.vue:1239 ~ changeUser ~ this.isAuditor:",
+                this.isAuditor
+            );
+        },
         async clickVoidedCheckPse(id) {
             try {
                 const response = await this.$http(
@@ -1241,7 +1330,8 @@ export default {
                 );
                 let { data } = response;
                 if (data.sent) {
-                    let message = data.message || data.description || data.mensaje;
+                    let message =
+                        data.message || data.description || data.mensaje;
                     this.$message.success(message);
                     this.$refs.dataTable.getRecords();
                 } else {
@@ -1337,7 +1427,6 @@ export default {
                 console.log(e);
             } finally {
             }
-            console.log("Cambiando");
 
             row.showing = false;
         },

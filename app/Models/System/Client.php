@@ -64,6 +64,7 @@ class Client extends Model
     protected $with = ['hostname', 'plan'];
 
     protected $fillable = [
+        'locked_items',
         'cert_smart',
         'active',
         'hostname_id',
@@ -101,6 +102,7 @@ class Client extends Model
         'locked_create_establishments' => 'boolean',
         'restrict_sales_limit' => 'boolean',
         'active' => 'boolean',
+        'locked_items' => 'boolean',
     ];
 
 

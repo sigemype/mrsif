@@ -14,7 +14,8 @@ use App\Models\Tenant\Warehouse;
 use App\Models\Tenant\Person;
 use Modules\Finance\Helpers\UploadFileHelper;
 use Exception;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EstablishmentController extends Controller
 {
@@ -28,6 +29,35 @@ class EstablishmentController extends Controller
         return view('tenant.establishments.form');
     }
 
+    public function removeImage($type, Request $request){
+        $id = $request->input('id');
+        $establishment = Establishment::findOrFail($id);
+        //concatenar el tipo de imagen con la palabra logo como variable de establecimiento
+        $type = $type.'_logo';
+        if($establishment->$type){
+            $path = $establishment->$type;
+            $public_path = public_path($path);
+            if(file_exists($public_path) && unlink($public_path)){
+                $establishment->$type = null;
+                $establishment->save();
+                return [
+                    'success' => true,
+                    'message' => 'Imagen eliminada con éxito'
+                ];
+            }else{
+                return [
+                    'success' => false,
+                    'message' => 'No se pudo eliminar la imagen'
+                ];
+            }
+
+        }else{
+            return [
+                'success' => false,
+                'message' => 'No se encontró la imagen'
+            ];
+        }
+    }
     public function tables()
     {
         $countries = Country::whereActive()->orderByDescription()->get();
@@ -79,6 +109,31 @@ class EstablishmentController extends Controller
                 $file->storeAs('public/uploads/logos', $filename);
                 $path = 'storage/uploads/logos/' . $filename;
                 $request->merge(['logo' => $path]);
+            }   
+            if ($request->hasFile('file_yape') && $request->file('file_yape')->isValid()) {
+             
+                $request->validate(['file_yape' => 'mimes:jpeg,png,jpg|max:1024']);
+                $file = $request->file('file_yape');
+                $ext = $file->getClientOriginalExtension();
+                $filename = time() . '.' . $ext;
+                
+                UploadFileHelper::checkIfValidFile($filename, $file->getPathName(), true);
+                
+                $file->storeAs('public/uploads/logos', $filename);
+                $path = 'storage/uploads/logos/' . $filename;
+                $request->merge(['yape_logo' => $path]);
+            }
+            if ($request->hasFile('file_plin') && $request->file('file_plin')->isValid()) {
+                $request->validate(['file_plin' => 'mimes:jpeg,png,jpg|max:1024']);
+                $file = $request->file('file_plin');
+                $ext = $file->getClientOriginalExtension();
+                $filename = time() . '.' . $ext;
+
+                UploadFileHelper::checkIfValidFile($filename, $file->getPathName(), true);
+
+                $file->storeAs('public/uploads/logos', $filename);
+                $path = 'storage/uploads/logos/' . $filename;
+                $request->merge(['plin_logo' => $path]);
             }
             $establishment->fill($request->all());
             $establishment->printer = $request->printer;

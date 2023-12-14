@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $supplier = $document->supplier;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
 
@@ -88,7 +97,7 @@ $logo = "{$establishment->logo}";
     </tbody>
     <tfoot>
     <tr>
-        <td class="border-top text-right" colspan="4">Totales({{ $document->currency_type->symbol }})</td>
+        <td class="border-top text-right" colspan="4">totales({{ $document->currency_type->symbol }})</td>
         <td class="border-top text-right">{{ $document->total }}</td>
         <td class="border-top"></td>
         <td class="border-top text-right">{{ $document->total_retention }}</td>

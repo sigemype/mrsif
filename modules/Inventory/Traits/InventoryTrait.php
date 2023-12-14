@@ -26,7 +26,7 @@ use Modules\Item\Models\ItemLotsGroup;
 use Modules\Order\Models\OrderNote;
 use App\Models\Tenant\ItemSupply;
 use App\Http\Controllers\Tenant\PurchaseController;
-
+use App\Models\Tenant\InventoryReference;
 
 /**
  * Se debe tener en cuenta este trait para llevar el control de Kardex
@@ -196,6 +196,8 @@ trait InventoryTrait
                 'text_filter' => $row->text_filter,
                 'lots_enabled' => (bool)$row->lots_enabled,
                 'series_enabled' => (bool)$row->series_enabled,
+                'has_sizes' => (bool)$row->has_sizes,
+                'sizes' => $row->sizes,
                 'lots' => $row->item_lots->where('has_sale', false)->transform(function ($row1) {
                     return [
                         'id' => $row1->id,
@@ -287,6 +289,18 @@ trait InventoryTrait
             ];
         });
     }
+    public function optionsReference()
+    {
+        $records = InventoryReference::all();
+        return collect($records)->transform(function ($row) {
+            return [
+                'id' => $row->id,
+                'code' => $row->code,
+                'description' => $row->description
+            ];
+        });
+        
+    }
 
     /**
      * @param $item_id
@@ -366,7 +380,6 @@ trait InventoryTrait
      */
     private function updateStock($item_id, $quantity, $warehouse_id,$is_transfer = false)
     {
-        
         $configuration = Configuration::firstOrFail();
         if(!$configuration->list_items_by_warehouse && !$is_transfer) {
 
@@ -794,6 +807,7 @@ trait InventoryTrait
      */
     public function validateStockLotGroup($lot, $document_item)
     {
+        
         if ($lot->quantity < 0) {
             throw new Exception("El lote '{$lot->code}' del producto {$document_item->item->description} no tiene suficiente stock!");
         }

@@ -224,7 +224,7 @@ class OrderNoteController extends Controller
         if ($serie) {
             $serie = $serie->number;
         }
-        // $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        // $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         $discount_types = ChargeDiscountType::whereType('discount')->whereLevel('item')->get();
         $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $company = Company::active();
@@ -413,6 +413,13 @@ class OrderNoteController extends Controller
                     $series_configuration = SeriesConfiguration::where([['document_type_id', "PD"], ['series', $series]])->first();
                     $number = $series_configuration->number ?? 1;
                     $data["id"] = $number;
+                    $data["number"] = $number;
+                }
+                $number = Functions::valueKeyInArray($data, "number", null);
+                if(!$number){
+                    //get last id from table
+                    $last_id = OrderNote::orderBy('id', 'desc')->first();
+                    $data["number"] = $last_id->id + 1;
                 }
                 $this->order_note = OrderNote::create($data);
     

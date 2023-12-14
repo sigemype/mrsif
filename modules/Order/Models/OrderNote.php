@@ -122,6 +122,7 @@
 
         protected $fillable = [
             'id',
+            'number',
             'user_id',
             'external_id',
             'establishment_id',

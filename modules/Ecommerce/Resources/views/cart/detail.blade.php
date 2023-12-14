@@ -269,7 +269,26 @@
             numberDocument: '',
             history_records: {!! json_encode($history_records ) !!},
             phone_whatsapp: {!! json_encode($configuration->phone_whatsapp ) !!},
-            all_identity_document_types : [{id: '6', name: 'RUC'}, {id: '0', name: 'DOC'},{id: '4', name: 'CE'},{id: '1', name: 'DNI'}]
+            all_identity_document_types : [{id: '6', name: 'RUC'}, {id: '0', name: 'DOC'},{id: '4', name: 'CE'},{id: '1', name: 'DNI'}, {
+                                id: '9',
+                                name: 'CARNE SOLIC REFUGIO'
+                            },
+                            {
+                                id: '22',
+                                name: 'C.IDENT.-RREE'
+                            },
+                            {
+                                id: '23',
+                                name: 'PTP'
+                            },
+                            {
+                                id: '24',
+                                name: 'DOC.ID.EXTR.'
+                            },
+                            {
+                                id: '26',
+                                name: 'CPP'
+                            }]
         },
         computed: {
             maxLength: function () {
@@ -365,7 +384,7 @@
                     this.typeDocumentList = (this.payment_cash.amount >= 700) ? this.getIdentityDocumentTypes(['6', '1']) : this.getIdentityDocumentTypes()
                 } 
                 else {
-                    this.typeDocumentList = this.getIdentityDocumentTypes(['0', '1', '4'])
+                    this.typeDocumentList = this.getIdentityDocumentTypes(['0', '1', '4','9','22','23','24','26'])
                 }
 
             },

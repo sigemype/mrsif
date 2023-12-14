@@ -118,6 +118,8 @@ class Item extends ModelTenant
     public const SERVICE_UNIT_TYPE = 'ZZ';
 
     protected $fillable = [
+        'meter',
+        'has_sizes',
         'info_link',
         'warehouse_id',
         'name',
@@ -189,6 +191,7 @@ class Item extends ModelTenant
     ];
 
     protected $casts = [
+        'meter' => 'float',
         'date_of_due' => 'date',
         'is_for_production' => 'boolean',
         'purchase_has_isc' => 'boolean',
@@ -369,11 +372,11 @@ class Item extends ModelTenant
     public function scopeWhereWarehouse($query)
     {
         $configuration = Configuration::first();
-       
-        if($configuration->list_items_by_warehouse==true){
+
+        if ($configuration->list_items_by_warehouse == true) {
             $establishment_id = auth()->user()->establishment_id;
-        }else{
-            
+        } else {
+
             $establishment = $configuration->getMainWarehouse();
             $establishment_id = $establishment->id;
         }
@@ -383,7 +386,7 @@ class Item extends ModelTenant
             return $query->whereHas('warehouses', function ($query) use ($warehouse) {
                 $query->where('warehouse_id', $warehouse->id)
                     ->orWhere('shared', 1);
-            })->orWhere('unit_type_id', 'ZZ'); 
+            })->orWhere('unit_type_id', 'ZZ');
         }
         return $query;
     }
@@ -538,7 +541,7 @@ class Item extends ModelTenant
         return $query->where(function ($query) {
             $query->whereHas('lots_group', function ($q) {
                 $q->where('state_id', 1)
-                ->orWhereNull('state_id');
+                    ->orWhereNull('state_id');
             })->orWhereDoesntHave('lots_group');
         });
     }
@@ -704,6 +707,11 @@ class Item extends ModelTenant
         return $this->hasMany(ItemWarehousePrice::class, 'item_id')->select('id', 'item_id', 'price', 'warehouse_id');
     }
 
+    public function clientTypePrices()
+    {
+        return $this->hasMany(PersonTypePrice::class, 'item_id')->select('id', 'item_id', 'price', 'person_type_id');
+    }
+
     public static function getSaleUnitPriceByWarehouse(Item $item, int $warehouseId): string
     {
         $warehousePrice = $item->warehousePrices->where('item_id', $item->id)
@@ -766,7 +774,8 @@ class Item extends ModelTenant
     {
         return $this->warehouses()->where('warehouse_id', $warehouse_id);
     }
-    public function guide_item(){
+    public function guide_item()
+    {
         return $this->hasMany(GuideItem::class);
     }
     private function getLotsBySerie($warehouse, $series,  $search_item_by_series)
@@ -800,7 +809,8 @@ class Item extends ModelTenant
      *
      * @return array
      */
-    public function getDataToItemModal($warehouse = null,$with_lots_has_sale = false,$extended_description = false,$series = null,$search_item_by_series = false,$aditional_data = true) {
+    public function getDataToItemModal($warehouse = null, $with_lots_has_sale = false, $extended_description = false, $series = null, $search_item_by_series = false, $aditional_data = true)
+    {
         $configuration = Configuration::first();
         if ($warehouse == null) {
             $establishment_id = auth()->user()->establishment_id;
@@ -809,7 +819,7 @@ class Item extends ModelTenant
         $detail = $this->getFullDescription($warehouse, $extended_description);
         $realtion_item_unit_types = $this->item_unit_types;
         $lots_grp = $this->lots_group;
-
+        // $this->restoreStockSizes();
         $lots = $this->getLotsBySerie($warehouse, $series, $search_item_by_series);
         $blank = [];
         $currentColors = collect($blank);
@@ -821,7 +831,6 @@ class Item extends ModelTenant
         $ItemStatus = collect($blank);
         $ItemSize = collect($blank);
         $ItemUnitBusiness = collect($blank);
-
         if ($aditional_data === true) {
             $currentColors = $this->getItemColor()->transform(function ($row) {
                 return $row->cat_colors_item_id;
@@ -854,7 +863,6 @@ class Item extends ModelTenant
                 return $row->cat_item_size_id;
             });
         }
-
         if ($with_lots_has_sale == true) {
             $lots = $this->item_lots->where('has_sale', false)->transform(function ($row) {
                 return [
@@ -897,8 +905,25 @@ class Item extends ModelTenant
         } else {
             $purchase_unit_price = $purchase_unit_value * 1.18;
         }
-
+        $disponibilidad = null;
+        $header = null;
+        $projectItem = QuotationProjectItem::where('quotation_item_id', $this->id)->first();
+        if ($projectItem) {
+            $disponibilidad = $projectItem->disponibility;
+            $header = $projectItem->header;
+        }
+        $itemBonus =  $this->bonusses;
+        if (!empty($itemBonus)) {
+            $itemBonus = $itemBonus->transform(function (ItemBonus $row) {
+                return $row->getCollectionData();
+            });
+        }
+   
         $data = [
+            'meter' => $this->meter,
+            'bonus_items' => $itemBonus,
+            'disponibilidad' => $disponibilidad,
+            'header' => $header,
             'id'                               => $this->id,
             'item_code'                    => $this->item_code,
             'full_description'                 => $detail['full_description'],
@@ -920,6 +945,7 @@ class Item extends ModelTenant
             ]),
             'category'                         => $detail['category'],
             'stock'                            => $stock,
+            'has_bonus_item' => $this->hasBonus(),
             'internal_id'                      => $this->internal_id,
             'description'                      => $this->description,
             'info_link'                       => $this->info_link,
@@ -967,7 +993,9 @@ class Item extends ModelTenant
                 ];
             }),
             'warehouses' => collect($this->warehouses)->transform(function ($warehouses) use ($warehouse) {
+                $price = self::getSaleUnitPriceByWarehouse($this, $warehouses->warehouse_id);
                 return [
+                    'price' =>$price,
                     'warehouse_description' => $warehouses->warehouse->description,
                     'stock'                 => (!empty($warehouses->stock)) ? $warehouses->stock : 0,
                     'warehouse_id'          => $warehouses->warehouse_id,
@@ -990,13 +1018,27 @@ class Item extends ModelTenant
             'lots_enabled'   => (bool)$this->lots_enabled,
             'series_enabled' => (bool)$this->series_enabled,
             'is_set'         => (bool)$this->is_set,
-
+            'item_customer_prices' =>$this->clientTypePrices->transform(function ($row) {
+                //si row es un array transformalo a objeto
+                if (is_array($row)) {
+                    return $row;
+                }
+                
+                return [
+                    'id' => $row->id,
+                    'item_id' => $row->item_id,
+                    'person_type_id' => $row->person_type_id,
+                    'price' => $row->price,
+                    'description' => $row->person_type->description,
+                ];
+            }),
             'lot_code'    => $this->lot_code,
             'date_of_due' => $this->date_of_due,
             'barcode'     => $this->barcode,
             'change_free_affectation_igv'     => false,
             'original_affectation_igv_type_id'     => $this->sale_affectation_igv_type_id,
-
+            'has_sizes' => (bool)$this->has_sizes,
+            'sizes' => $this->sizes,
             'has_isc' => (bool)$this->has_isc,
             'system_isc_type_id' => $this->system_isc_type_id,
             'percentage_isc' => $this->percentage_isc,
@@ -1010,11 +1052,13 @@ class Item extends ModelTenant
             'restrict_sale_cpe' => $this->restrict_sale_cpe,
 
         ];
-
         // El nombre de producto, por defecto, sera la misma descripcion.
         $data['name_product_pdf'] = "<p>" . $data['description'] . "</p>";
 
         return $data;
+    }
+    public function sizes(){
+        return $this->hasMany(ItemSizeStock::class);
     }
 
     public function getItemAttributes()
@@ -1027,6 +1071,7 @@ class Item extends ModelTenant
     {
         return CatDigemid::where('item_id', $this->id)->first();
     }
+    
     public static function AffectationIgvTypesExoneratedUnaffected()
     {
         return ['20', '21', '30', '31', '32', '33', '34', '35', '36', '37'];
@@ -1061,6 +1106,7 @@ class Item extends ModelTenant
         $name_disa = '';
         $laboratory = '';
         $reg_san = '';
+        $date_due = null;
         $currentColors = ItemColor::where('item_id', $this->id)->get()->transform(function ($row) {
             return $row->TransformDatatoEdit();
         });
@@ -1072,6 +1118,7 @@ class Item extends ModelTenant
                 $name_disa = $digemid->getNomProd();
                 $laboratory = $digemid->getNomTitular();
                 $reg_san = $digemid->getNumRegSan();
+                $date_due = $digemid->getFechaVencimiento();
             }
         }
 
@@ -1102,11 +1149,14 @@ class Item extends ModelTenant
         $itemwarehouse = ItemWarehouse::where('warehouse_id', $this->warehouse_id)->where('item_id', $this->id)->first();
 
         return [
+            'meter' => $this->meter,
+            'has_sizes' => (bool)$this->has_sizes,
             'info_link' => $this->info_link,
             'name_disa' => $name_disa,
             'is_set' => false,
-            'favorite'     => $this->favorite,  
+            'favorite'     => $this->favorite,
             'laboratory' => $laboratory,
+            'date_due' => $date_due,
             'exportable_pharmacy' => $digemid_exportable,
             'colors' => $currentColors,
             'shared' =>  $itemwarehouse != null ? (bool) $itemwarehouse->shared : false,
@@ -1146,8 +1196,16 @@ class Item extends ModelTenant
             'purchase_unit_price' => "{$currency->symbol} {$this->purchase_unit_price}",
             'created_at' => ($this->created_at) ? $this->created_at->format('Y-m-d H:i:s') : '',
             'updated_at' => ($this->created_at) ? $this->updated_at->format('Y-m-d H:i:s') : '',
-            'warehouses' => collect($this->warehouses)->transform(function ($row) {
+            'warehouses' => collect($this->warehouses)->transform(function ($row) use ($salePriceWithIgv) {
+                $price = $salePriceWithIgv;
+                $item_id = $row->item_id;
+                $warehouse_id = $row->warehouse_id;
+                $itemwarehouse = ItemWarehousePrice::where('warehouse_id', $warehouse_id)->where('item_id', $item_id)->first();
+                if($itemwarehouse){
+                    $price = $itemwarehouse->price;
+                }
                 return [
+                    'price' => $price,
                     'warehouse_description' => $row->warehouse->description,
                     'stock' => $row->stock,
                 ];
@@ -1190,8 +1248,18 @@ class Item extends ModelTenant
                     'description' => $row->warehouse->description,
                 ];
             }),
+            'item_customer_prices' => $this->clientTypePrices->transform(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'item_id' => $row->item_id,
+                    'person_type_id' => $row->person_type_id,
+                    'price' => $row->price,
+                    'description' => $row->person_type->description,
+                ];
+            }),
             'is_for_production' => $this->isIsForProduction(),
             'supplies' => $itemSupply,
+            'frequent' =>(bool) $this->frequent,
 
         ];
     }
@@ -2116,6 +2184,11 @@ class Item extends ModelTenant
     {
         return $this->hasMany(ItemSupply::class);
     }
+
+    public function bonusses()
+    {
+        return $this->hasMany(ItemBonus::class);
+    }
     /**
      * @return HasMany
      */
@@ -2131,7 +2204,10 @@ class Item extends ModelTenant
     {
         return (bool) $this->is_for_production;
     }
-
+    public function hasBonus(): bool
+    {
+        return (bool) $this->bonusses->count() > 0;
+    }
     /**
      * @param Builder $query
      *
@@ -2575,7 +2651,7 @@ class Item extends ModelTenant
         $favorite = $request->has('favorite') && (bool) $request->favorite;
 
         return $query->whereFilterWithOutRelations()
-            
+
             ->with(['category', 'brand', 'currency_type'])
             ->whereFilterRecordsApi($request->input, $request->search_by_barcode)
             ->filterByCategory($category_id)
@@ -2786,5 +2862,26 @@ class Item extends ModelTenant
                 'compromise_quantity' => 0
             ];
         });
+    }
+
+
+    public function restoreStockSizes(){
+
+        $has_sizes = (bool) $this->has_sizes;
+        if($has_sizes){
+            $item_id = $this->id;
+            $warehouses_id = Warehouse::all()->pluck('id');
+            foreach($warehouses_id as $w_id){
+                $stock = ItemSizeStock::where([['item_id', $item_id], ['warehouse_id', $w_id]])->sum('stock');
+                $item_warehouse = ItemWarehouse::where([['item_id', $item_id], ['warehouse_id', $w_id]])->first();
+                if($item_warehouse){
+                    $item_warehouse->stock = $stock;
+                    $item_warehouse->save();
+                }
+
+            } 
+           
+        }
+
     }
 }

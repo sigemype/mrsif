@@ -4,13 +4,17 @@
             <h3 class="my-0">Nueva Compra</h3>
         </div>
         <div class="tab-content">
-            <form autocomplete="off" @submit.prevent="submit" v-loading="loading">
+            <form
+                autocomplete="off"
+                @submit.prevent="submit"
+                v-loading="loading"
+            >
                 <div class="form-body">
                     <div class="row">
                         <div class="col-lg-4">
                             <div
                                 :class="{
-                                    'has-danger': errors.document_type_id
+                                    'has-danger': errors.document_type_id,
                                 }"
                                 class="form-group"
                             >
@@ -22,8 +26,9 @@
                                     @change="changeDocumentType"
                                 >
                                     <el-option
-                                        v-for="(option,
-                                        index) in document_types"
+                                        v-for="(
+                                            option, index
+                                        ) in document_types"
                                         :key="index"
                                         :label="option.description"
                                         :value="option.id"
@@ -174,7 +179,7 @@
                         <div class="col-lg-2">
                             <div
                                 :class="{
-                                    'has-danger': errors.currency_type_id
+                                    'has-danger': errors.currency_type_id,
                                 }"
                                 class="form-group"
                             >
@@ -200,7 +205,7 @@
                         <div class="col-lg-2">
                             <div
                                 :class="{
-                                    'has-danger': errors.exchange_rate_sale
+                                    'has-danger': errors.exchange_rate_sale,
                                 }"
                                 class="form-group"
                             >
@@ -228,9 +233,7 @@
 
                         <div class="col-lg-2" v-if="purchase_order_id === null">
                             <div class="form-group">
-                                <label>
-                                    Orden de compra
-                                </label>
+                                <label> Orden de compra </label>
                                 <el-select
                                     v-model="form.purchase_order_id"
                                     :loading="loading_search"
@@ -242,8 +245,9 @@
                                     :remote-method="searchPurchaseOrder"
                                     remote-->
                                     <el-option
-                                        v-for="(option,
-                                        idx) in purchase_order_data"
+                                        v-for="(
+                                            option, idx
+                                        ) in purchase_order_data"
                                         :key="idx"
                                         :label="option.description"
                                         :value="option.id"
@@ -252,12 +256,10 @@
                             </div>
                         </div>
                         <div
-                            class="form-group col-sm-12 col-md-6 col-lg-4 "
+                            class="form-group col-sm-12 col-md-6 col-lg-4"
                             :class="{ 'has-danger': errors.created_at }"
                         >
-                            <label>
-                                Observaciones
-                            </label>
+                            <label> Observaciones </label>
                             <el-input
                                 v-model="form.observation"
                                 placeholder="Observaciones"
@@ -276,9 +278,84 @@
                             >
                             </el-date-picker>
                         </div>
+                        <template v-if="config.purchases_control">
+                            <div
+                                class="form-group col-sm-12 col-md-6 col-lg-4"
+                                :class="{
+                                    'has-danger': errors.purchase_license,
+                                }"
+                            >
+                                <label>
+                                    Placa
+
+                                    <a
+                                        href="#"
+                                        @click.prevent="
+                                            showPurchaseLicenseModal
+                                        "
+                                    >
+                                        [+ Nuevo]
+                                    </a>
+                                </label>
+
+                                <el-select
+                                    v-model="form.license_id"
+                                    filterable
+                                    remote
+                                    popper-class="el-select-customers"
+                                    clearable
+                                    placeholder="Buscar producto"
+                                    :remote-method="searchRemoteLicense"
+                                    :loading="loading_search"
+                                >
+                                    <el-option
+                                        v-for="option in licenses"
+                                        :key="option.id"
+                                        :value="option.id"
+                                        :label="option.license"
+                                    ></el-option>
+                                </el-select>
+                            </div>
+                            <div
+                                class="form-group col-sm-12 col-md-6 col-lg-4"
+                                :class="{
+                                    'has-danger': errors.purchase_responsible,
+                                }"
+                            >
+                                <label>
+                                    Responsable
+
+                                    <a
+                                        href="#"
+                                        @click.prevent="
+                                            showPurchaseResponsibleModal
+                                        "
+                                    >
+                                        [+ Nuevo]
+                                    </a>
+                                </label>
+                                <el-select
+                                    v-model="form.responsible_id"
+                                    filterable
+                                    remote
+                                    popper-class="el-select-customers"
+                                    clearable
+                                    placeholder="Buscar producto"
+                                    :remote-method="searchRemoteResponsible"
+                                    :loading="loading_search"
+                                >
+                                    <el-option
+                                        v-for="option in responsibles"
+                                        :key="option.id"
+                                        :value="option.id"
+                                        :label="`${option.number}-${option.name}`"
+                                    ></el-option>
+                                </el-select>
+                            </div>
+                        </template>
                         <div class="col-12">&nbsp;</div>
 
-                        <div class="col-md-8 mt-2 mb-2">
+                        <div class="col-md-3 mt-2 mb-2">
                             <div class="form-group">
                                 <el-checkbox
                                     v-model="form.purchase_period"
@@ -287,6 +364,44 @@
                                 </el-checkbox>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="const_detraccion">
+                                    Const. Detracción
+                                </label>
+                                <el-input
+                                    v-model="form.const_detraccion"
+                                    placeholder="Const. Detracción"
+                                ></el-input>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="date_detraccion">
+                                    Fecha Detracción
+                                </label>
+                                <el-date-picker
+                                    v-model="form.date_detraccion"
+                                    placeholder="Fecha Detracción"
+                                    type="date"
+                                    value-format="yyyy-MM-dd"
+                                >
+                                </el-date-picker>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="percentage_detraccion">
+                                    Porcentaje Detracción
+                                </label>
+                                <el-input
+                                    type="number"
+                                    v-model="form.percentage_detraccion"
+                                    placeholder="Porcentaje Detracción"
+                                ></el-input>
+                            </div>
+                        </div>
+
                         <div class="col-md-8 mt-2 mb-2">
                             <div class="form-group">
                                 <el-checkbox
@@ -326,9 +441,9 @@
                                     v-model="localHasGlobalIgv"
                                     :disabled="
                                         this.form.items.length != 0 &&
-                                            this.config
-                                                .enabled_global_igv_to_purchase ===
-                                                true
+                                        this.config
+                                            .enabled_global_igv_to_purchase ===
+                                            true
                                     "
                                     @change="changeHasGlobalIgv"
                                     >¿La compra tiene igv?
@@ -346,9 +461,7 @@
 
                         <div v-if="form.has_client" class="col-lg-6 col-md-6">
                             <div class="form-group">
-                                <label class="control-label">
-                                    Clientes
-                                </label>
+                                <label class="control-label"> Clientes </label>
 
                                 <el-select
                                     v-model="form.customer_id"
@@ -376,7 +489,7 @@
                                 <div
                                     :class="{
                                         'has-danger':
-                                            errors.payment_condition_id
+                                            errors.payment_condition_id,
                                     }"
                                     class="form-group"
                                 >
@@ -388,8 +501,9 @@
                                         @change="changePaymentCondition"
                                     >
                                         <el-option
-                                            v-for="(option,
-                                            idx) in payment_conditions"
+                                            v-for="(
+                                                option, idx
+                                            ) in payment_conditions"
                                             :key="idx"
                                             :label="option.name"
                                             :value="option.id"
@@ -466,8 +580,9 @@
                                         </thead>
                                         <tbody>
                                             <tr
-                                                v-for="(row,
-                                                index) in form.payments"
+                                                v-for="(
+                                                    row, index
+                                                ) in form.payments"
                                                 :key="index"
                                             >
                                                 <td>
@@ -485,8 +600,9 @@
                                                             "
                                                         >
                                                             <el-option
-                                                                v-for="(option,
-                                                                idx) in cashPaymentMethod"
+                                                                v-for="(
+                                                                    option, idx
+                                                                ) in cashPaymentMethod"
                                                                 :key="idx"
                                                                 :label="
                                                                     option.description
@@ -509,8 +625,9 @@
                                                             filterable
                                                         >
                                                             <el-option
-                                                                v-for="(option,
-                                                                idx) in payment_destinations"
+                                                                v-for="(
+                                                                    option, idx
+                                                                ) in payment_destinations"
                                                                 :key="idx"
                                                                 :label="
                                                                     option.description
@@ -602,8 +719,9 @@
                                                         "
                                                     >
                                                         <el-option
-                                                            v-for="(option,
-                                                            idx) in creditPaymentMethod"
+                                                            v-for="(
+                                                                option, idx
+                                                            ) in creditPaymentMethod"
                                                             :key="idx"
                                                             :label="
                                                                 option.description
@@ -695,7 +813,9 @@
                                                                 class="fa fa-plus font-weight-bold text-info"
                                                             ></i>
                                                             <span
-                                                                style="color: #777777"
+                                                                style="
+                                                                    color: #777777;
+                                                                "
                                                                 >Agregar
                                                                 cuota</span
                                                             ></a
@@ -795,25 +915,33 @@
                                             <td class="text-end">
                                                 {{ currency_type.symbol }}
                                                 {{
-                                                row.total_discount ?    Number(row.total_discount).toFixed(
-                                                        decimalQuantity
-                                                    ):0.0
+                                                    row.total_discount
+                                                        ? Number(
+                                                              row.total_discount
+                                                          ).toFixed(
+                                                              decimalQuantity
+                                                          )
+                                                        : 0.0
                                                 }}
                                             </td>
                                             <td class="text-end">
                                                 {{ currency_type.symbol }}
                                                 {{
-                                                    Number(row.total_charge).toFixed(
-                                                        decimalQuantity
-                                                    )
+                                                    Number(
+                                                        row.total_charge
+                                                    ).toFixed(decimalQuantity)
                                                 }}
                                             </td>
                                             <td class="text-end">
                                                 {{ currency_type.symbol }}
                                                 {{
-                                                    row.total ?Number(row.total).toFixed(
-                                                        decimalQuantity
-                                                    ):0.0
+                                                    row.total
+                                                        ? Number(
+                                                              row.total
+                                                          ).toFixed(
+                                                              decimalQuantity
+                                                          )
+                                                        : 0.0
                                                 }}
                                             </td>
                                             <td class="text-end">
@@ -835,8 +963,7 @@
                                                 <button
                                                     v-if="
                                                         purchase_order_id &&
-                                                            row.item
-                                                                .series_enabled
+                                                        row.item.series_enabled
                                                     "
                                                     class="btn waves-effect waves-light btn-sm btn-info"
                                                     type="button"
@@ -925,14 +1052,22 @@
                             >
                                 OP.EXPORTACIÓN: {{ currency_type.symbol }}
                                 {{
-                                    form.total_exportation ? Number(form.total_exportation).toFixed(
-                                        decimalQuantity
-                                    ) : 0.0
+                                    form.total_exportation
+                                        ? Number(
+                                              form.total_exportation
+                                          ).toFixed(decimalQuantity)
+                                        : 0.0
                                 }}
                             </p>
                             <p v-if="form.total_free > 0" class="text-end">
                                 OP.GRATUITAS: {{ currency_type.symbol }}
-                                {{ form.total_free ? Number(form.total_free).toFixed(decimalQuantity):0.0 }}
+                                {{
+                                    form.total_free
+                                        ? Number(form.total_free).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
+                                }}
                             </p>
                             <p
                                 v-if="form.total_unaffected > 0"
@@ -940,9 +1075,11 @@
                             >
                                 OP.INAFECTAS: {{ currency_type.symbol }}
                                 {{
-                                    form.total_unaffected ?Number(form.total_unaffected).toFixed(
-                                        decimalQuantity
-                                    ):0.0
+                                    form.total_unaffected
+                                        ? Number(form.total_unaffected).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
                                 }}
                             </p>
                             <p
@@ -951,35 +1088,65 @@
                             >
                                 OP.EXONERADAS: {{ currency_type.symbol }}
                                 {{
-                                    form.total_exonerated? Number(form.total_exonerated).toFixed(
-                                        decimalQuantity
-                                    ):0.0
+                                    form.total_exonerated
+                                        ? Number(form.total_exonerated).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
                                 }}
                             </p>
                             <p v-if="form.total_taxed > 0" class="text-end">
                                 OP.GRAVADA: {{ currency_type.symbol }}
-                                {{ form.total_taxed ? Number(form.total_taxed).toFixed(decimalQuantity):0.0 }}
+                                {{
+                                    form.total_taxed
+                                        ? Number(form.total_taxed).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
+                                }}
                             </p>
                             <p v-if="form.total_igv > 0" class="text-end">
                                 IGV: {{ currency_type.symbol }}
-                                {{  form.total_igv ?Number(form.total_igv).toFixed(decimalQuantity):0.0 }}
+                                {{
+                                    form.total_igv
+                                        ? Number(form.total_igv).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
+                                }}
                             </p>
 
                             <p v-if="form.total_isc > 0" class="text-end">
                                 ISC: {{ currency_type.symbol }}
-                                {{form.total_isc.toFixed ? Number(form.total_isc).toFixed(decimalQuantity):0.0 }}
+                                {{
+                                    form.total_isc.toFixed
+                                        ? Number(form.total_isc).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
+                                }}
                             </p>
 
                             <p v-if="form.total_discount > 0" class="text-end">
                                 DESCUENTOS TOTALES: {{ currency_type.symbol }}
                                 {{
-                                   form.total_discount ? Number(form.total_discount).toFixed(decimalQuantity):0.0
+                                    form.total_discount
+                                        ? Number(form.total_discount).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
                                 }}
                             </p>
 
                             <h3 v-if="form.total > 0" class="text-end">
                                 <b>TOTAL COMPRAS: </b>{{ currency_type.symbol }}
-                                {{form.total ? Number(form.total).toFixed(decimalQuantity):0.0 }}
+                                {{
+                                    form.total
+                                        ? Number(form.total).toFixed(
+                                              decimalQuantity
+                                          )
+                                        : 0.0
+                                }}
                             </h3>
 
                             <template v-if="is_perception_agent">
@@ -994,7 +1161,7 @@
                                         <div
                                             :class="{
                                                 'has-danger':
-                                                    errors.perception_number
+                                                    errors.perception_number,
                                             }"
                                             class="form-group"
                                         >
@@ -1023,7 +1190,7 @@
                                         <div
                                             :class="{
                                                 'has-danger':
-                                                    errors.perception_date
+                                                    errors.perception_date,
                                             }"
                                             class="form-group"
                                         >
@@ -1055,7 +1222,7 @@
                                         <div
                                             :class="{
                                                 'has-danger':
-                                                    errors.total_perception
+                                                    errors.total_perception,
                                             }"
                                             class="form-group"
                                         >
@@ -1081,7 +1248,13 @@
                                 >
                                     <b>MONTO TOTAL : </b
                                     >{{ currency_type.symbol }}
-                                    {{ total_amount ?Number(total_amount).toFixed(decimalQuantity):0.0 }}
+                                    {{
+                                        total_amount
+                                            ? Number(total_amount).toFixed(
+                                                  decimalQuantity
+                                              )
+                                            : 0.0
+                                    }}
                                 </h3>
                             </template>
                         </div>
@@ -1092,8 +1265,8 @@
                     <el-button
                         v-if="
                             form.items !== undefined &&
-                                form.items.length > 0 &&
-                                !hide_button
+                            form.items.length > 0 &&
+                            !hide_button
                         "
                         :loading="loading_submit"
                         native-type="submit"
@@ -1136,6 +1309,15 @@
             @saveInputLotGroup="saveInputLotGroup"
         >
         </input-lot-group>
+        <responsible-modal
+            :external="true"
+            :showDialog.sync="showResponsibleDialog"
+        ></responsible-modal>
+        <license-modal
+            @reloadDataLicense="reloadDataLicense"
+            :external="true"
+            :showDialog.sync="showLicenseDialog"
+        ></license-modal>
     </div>
 </template>
 
@@ -1147,38 +1329,41 @@ import {
     exchangeRate,
     functions,
     fnPaymentsFee,
-    operationsForDiscounts
+    operationsForDiscounts,
 } from "../../../mixins/functions";
 import {
     calculateRowItem,
-    showNamePdfOfDescription
+    showNamePdfOfDescription,
 } from "../../../helpers/functions";
 import SeriesForm from "./partials/series";
 import { mapActions, mapState } from "vuex";
 import InputLotGroup from "@components/secondary/InputLotGroup.vue";
-
+import ResponsibleModal from "./partials/responsible_modal.vue";
+import LicenseModal from "./partials/license_modal.vue";
 export default {
     props: ["purchase_order_id"],
     components: {
+        ResponsibleModal,
+        LicenseModal,
         PurchaseFormItem,
         PersonForm,
         PurchaseOptions,
         SeriesForm,
-        InputLotGroup
+        InputLotGroup,
     },
     mixins: [functions, exchangeRate, fnPaymentsFee, operationsForDiscounts],
     computed: {
         ...mapState(["config", "establishment", "hasGlobalIgv"]),
-        creditPaymentMethod: function() {
+        creditPaymentMethod: function () {
             return _.filter(this.payment_method_types, { is_credit: true });
         },
-        cashPaymentMethod: function() {
+        cashPaymentMethod: function () {
             return _.filter(this.payment_method_types, { is_credit: false });
         },
-        isCreditPaymentCondition: function() {
+        isCreditPaymentCondition: function () {
             return ["02", "03"].includes(this.form.payment_condition_id);
         },
-        isGlobalDiscountBase: function() {
+        isGlobalDiscountBase: function () {
             return this.config.global_discount_type_id === "02";
         },
         isFromPurchaseOrder() {
@@ -1186,11 +1371,13 @@ export default {
                 this.purchase_order_id != undefined &&
                 this.purchase_order_id != null
             );
-        }
+        },
     },
     data() {
         return {
             input_person: {},
+            showLicenseDialog: false,
+            showResponsibleDialog: false,
             resource: "purchases",
             showDialogAddItem: false,
             readonly_date_of_due: false,
@@ -1202,7 +1389,7 @@ export default {
             is_perception_agent: false,
             errors: {},
             form: {
-                items: []
+                items: [],
             },
             aux_supplier_id: null,
             total_amount: 0,
@@ -1232,15 +1419,20 @@ export default {
             decimalQuantity: 2,
             currentIndex: null,
             currentItem: null,
-            loading:false,
+            loading: false,
+            loading_search: false,
+            licenses: [],
+            responsibles: [],
         };
     },
     async mounted() {
         this.initForm();
         await this.$http
             .get(`/${this.resource}/tables`)
-            .then(response => {
+            .then((response) => {
                 let data = response.data;
+                this.responsibles = data.responsibles;
+                this.licenses = data.licenses;
                 this.document_types = data.document_types_invoice;
                 this.currency_types = data.currency_types;
                 this.payment_conditions = data.payment_conditions;
@@ -1255,6 +1447,7 @@ export default {
 
                 this.charges_types = data.charges_types;
                 this.$store.commit("setConfiguration", data.configuration);
+
                 this.$store.commit("setEstablishment", data.establishment);
                 this.form.currency_type_id =
                     this.currency_types.length > 0
@@ -1275,7 +1468,7 @@ export default {
                 this.setConfigGlobalDiscountType();
             });
 
-        this.$eventHub.$on("reloadDataPersons", supplier_id => {
+        this.$eventHub.$on("reloadDataPersons", (supplier_id) => {
             this.reloadDataSuppliers(supplier_id);
         });
         this.$eventHub.$on("initInputPerson", () => {
@@ -1288,7 +1481,10 @@ export default {
         this.changeHasPayment();
         this.changeHasClient();
     },
-    created() {
+    async created() {
+        await this.$eventHub.$on("reloadDataPersons", (responsible_id) => {
+            this.reloadDataResponsible(responsible_id);
+        });
         this.loadConfiguration();
         this.loadHasGlobalIgv();
         this.loadEstablishment();
@@ -1301,6 +1497,45 @@ export default {
         this.initGlobalIgv();
     },
     methods: {
+        reloadDataLicense(license) {
+            let { id } = license;
+            this.licenses.push(license);
+            this.form.license_id = id;
+        },
+        reloadDataResponsible(responsible_id) {
+            this.$http
+                .get(`/purchases-responsible/record/${responsible_id}`)
+                .then((response) => {
+                    this.responsibles = [response.data];
+                    this.form.responsible_id = responsible_id;
+                });
+        },
+        async searchRemoteLicense(input) {
+            if (input.length >= 2) {
+                const response = await this.$http.get(
+                    `/purchases-license/records?value=${input}&column=license`
+                );
+                if (response.status == 200) {
+                    this.licenses = response.data.data;
+                }
+            }
+        },
+        async searchRemoteResponsible(input) {
+            if (input.length >= 2) {
+                const response = await this.$http.get(
+                    `/purchases-responsible/records?value=${input}`
+                );
+                if (response.status == 200) {
+                    this.responsibles = response.data.data;
+                }
+            }
+        },
+        showPurchaseResponsibleModal() {
+            this.showResponsibleDialog = true;
+        },
+        showPurchaseLicenseModal() {
+            this.showLicenseDialog = true;
+        },
         async existPurchase() {
             let exist = false;
             try {
@@ -1309,7 +1544,7 @@ export default {
                     document_type_id: this.form.document_type_id,
                     series: this.form.series,
                     number: this.form.number,
-                    supplier_id: this.form.supplier_id
+                    supplier_id: this.form.supplier_id,
                 });
                 exist = response.data.success;
             } catch (e) {
@@ -1324,7 +1559,7 @@ export default {
             if (exist) {
                 this.$message({
                     type: "warning",
-                    message: "El documento ya se encuentra registrado"
+                    message: "El documento ya se encuentra registrado",
                 });
                 return false;
             }
@@ -1364,7 +1599,7 @@ export default {
         ...mapActions([
             "loadConfiguration",
             "loadEstablishment",
-            "loadHasGlobalIgv"
+            "loadHasGlobalIgv",
         ]),
         changeHasGlobalIgv() {
             // if(this.form.items.length < 1 && this.config.enabled_global_igv_to_purchase === true) {
@@ -1394,7 +1629,7 @@ export default {
 
                 this.$http
                     .get(`/reports/data-table/persons/customers?${parameters}`)
-                    .then(response => {
+                    .then((response) => {
                         this.customers = response.data.persons;
                         this.loading_search = false;
 
@@ -1417,7 +1652,7 @@ export default {
             if (this.purchase_order_id) {
                 await this.$http
                     .get(`/purchase-orders/record/${this.purchase_order_id}`)
-                    .then(response => {
+                    .then((response) => {
                         let purchase_order = response.data.data.purchase_order;
                         let warehouse = response.data.data.warehouse;
                         let supp = purchase_order.supplier;
@@ -1451,10 +1686,10 @@ export default {
                         this.form.total = purchase_order.total;
 
                         this.currency_type = _.find(this.currency_types, {
-                            id: this.form.currency_type_id
+                            id: this.form.currency_type_id,
                         });
 
-                        this.form.items.forEach(it => {
+                        this.form.items.forEach((it) => {
                             it.warehouse_id = warehouse.id;
                             it.charges = it.charges
                                 ? Object.values(it.charges)
@@ -1479,13 +1714,13 @@ export default {
             let acum_total = 0;
             let q_affectation_free = 0;
 
-            await this.form.payments.forEach(item => {
+            await this.form.payments.forEach((item) => {
                 acum_total += parseFloat(item.payment);
                 if (item.payment <= 0 || item.payment == null) error_by_item++;
             });
 
             //determinate affectation igv
-            await this.form.items.forEach(item => {
+            await this.form.items.forEach((item) => {
                 if (item.affectation_igv_type.free) {
                     q_affectation_free++;
                 }
@@ -1501,14 +1736,14 @@ export default {
                 return {
                     success: false,
                     message:
-                        "Los montos ingresados superan al monto a pagar o son incorrectos"
+                        "Los montos ingresados superan al monto a pagar o son incorrectos",
                 };
             }
 
             if (this.form.has_client && !this.form.customer_id) {
                 return {
                     success: false,
-                    message: "Debe seleccionar un cliente"
+                    message: "Debe seleccionar un cliente",
                 };
             }
 
@@ -1519,7 +1754,7 @@ export default {
                 ) {
                     return {
                         success: false,
-                        message: "Debe registrar al menos un pago"
+                        message: "Debe registrar al menos un pago",
                     };
                 }
 
@@ -1529,14 +1764,14 @@ export default {
                 ) {
                     return {
                         success: false,
-                        message: "Debe registrar al menos una cuota"
+                        message: "Debe registrar al menos una cuota",
                     };
                 }
             }
 
             return {
                 success: true,
-                message: null
+                message: null,
             };
         },
         clickCancel(index) {
@@ -1551,7 +1786,7 @@ export default {
                 payment_method_type_id: "01",
                 reference: null,
                 payment_destination_id: this.getPaymentDestinationId(),
-                payment: 0
+                payment: 0,
             });
 
             this.calculatePayments();
@@ -1572,7 +1807,7 @@ export default {
         initInputPerson() {
             this.input_person = {
                 number: "",
-                identity_document_type_id: ""
+                identity_document_type_id: "",
             };
         },
         keyupEnterSupplier() {
@@ -1598,10 +1833,11 @@ export default {
         },
         keyupSupplier(e) {
             if (e.key !== "Enter") {
-                this.input_person.number = this.$refs.select_person.$el.getElementsByTagName(
-                    "input"
-                )[0].value;
-                let exist_persons = this.suppliers.filter(supplier => {
+                this.input_person.number =
+                    this.$refs.select_person.$el.getElementsByTagName(
+                        "input"
+                    )[0].value;
+                let exist_persons = this.suppliers.filter((supplier) => {
                     let pos = supplier.description.search(
                         this.input_person.number
                     );
@@ -1633,7 +1869,7 @@ export default {
             }
 
             let payment_method_type = _.find(this.payment_method_types, {
-                id: id
+                id: id,
             });
 
             if (payment_method_type.number_days) {
@@ -1672,7 +1908,7 @@ export default {
         filterSuppliers() {
             if (this.form.document_type_id === "01") {
                 // this.suppliers = _.filter(this.all_suppliers, {'identity_document_type_id': '6'})
-                this.suppliers = _.filter(this.all_suppliers, item => {
+                this.suppliers = _.filter(this.all_suppliers, (item) => {
                     return ["6", "0"].includes(item.identity_document_type_id);
                 });
                 this.selectSupplier();
@@ -1689,6 +1925,9 @@ export default {
         initForm() {
             this.errors = {};
             this.form = {
+                const_detraccion: null,
+                date_detraccion: null,
+                percentage_detraccion: null,
                 establishment_id: null,
                 document_type_id: null,
                 series: null,
@@ -1730,7 +1969,7 @@ export default {
                 has_client: false,
                 has_payment: false,
                 payment_condition_id: "01",
-                fee: []
+                fee: [],
             };
 
             // this.clickAddPayment()
@@ -1784,7 +2023,7 @@ export default {
         async changeDateOfIssue() {
             this.form.date_of_due = this.form.date_of_issue;
             await this.searchExchangeRateByDate(this.form.date_of_issue).then(
-                response => {
+                (response) => {
                     this.form.exchange_rate_sale = response;
                 }
             );
@@ -1795,7 +2034,7 @@ export default {
             this.filterSuppliers();
         },
         changeIgvPurchase() {
-            this.form.items = this.form.items.map(i =>
+            this.form.items = this.form.items.map((i) =>
                 this.changePercentageIgv(i)
             );
             this.calculateTotal();
@@ -1841,10 +2080,10 @@ export default {
         },
         changeCurrencyType() {
             this.currency_type = _.find(this.currency_types, {
-                id: this.form.currency_type_id
+                id: this.form.currency_type_id,
             });
             let items = [];
-            this.form.items.forEach(row => {
+            this.form.items.forEach((row) => {
                 items.push(
                     calculateRowItem(
                         row,
@@ -1871,7 +2110,7 @@ export default {
             let total_base_isc = 0;
             let total_isc = 0;
 
-            this.form.items.forEach(row => {
+            this.form.items.forEach((row) => {
                 total_discount += parseFloat(row.total_discount);
                 total_charge += parseFloat(row.total_charge);
 
@@ -1938,7 +2177,7 @@ export default {
         },
         calculatePerception() {
             let supplier = _.find(this.all_suppliers, {
-                id: this.form.supplier_id
+                id: this.form.supplier_id,
             });
 
             if (supplier) {
@@ -1950,7 +2189,7 @@ export default {
 
                     this.form.perception_date = moment().format("YYYY-MM-DD");
 
-                    this.form.items.forEach(row => {
+                    this.form.items.forEach((row) => {
                         quantity_item_perception += row.item.has_perception
                             ? 1
                             : 0;
@@ -1979,18 +2218,18 @@ export default {
         validatePaymentDestination() {
             let error_by_item = 0;
 
-            this.form.payments.forEach(item => {
+            this.form.payments.forEach((item) => {
                 if (item.payment_destination_id == null) error_by_item++;
             });
 
             return {
-                error_by_item: error_by_item
+                error_by_item: error_by_item,
             };
         },
         validateDataItems() {
             let errors_lots_group = 0;
 
-            this.form.items.forEach(row => {
+            this.form.items.forEach((row) => {
                 // validar lotes cuando se genera desde oc
                 if (this.isFromPurchaseOrder) {
                     if (row.item.lots_enabled) {
@@ -2011,7 +2250,7 @@ export default {
         getCurrentResponse(success = true, message = null) {
             return {
                 success: success,
-                message: message
+                message: message,
             };
         },
         async submit() {
@@ -2029,7 +2268,8 @@ export default {
                 return this.$message.error(validate.message);
             }
 
-            let validate_payment_destination = await this.validatePaymentDestination();
+            let validate_payment_destination =
+                await this.validatePaymentDestination();
 
             if (validate_payment_destination.error_by_item > 0) {
                 return this.$message.error(
@@ -2043,16 +2283,14 @@ export default {
             // await this.changePaymentMethodType(false)
             await this.$http
                 .post(`/${this.resource}`, this.form)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         if (this.purchase_order_id) {
                             this.$message({
                                 showClose: true,
-                                message: `Compra registrada : ${
-                                    response.data.data.number_full
-                                }`,
+                                message: `Compra registrada : ${response.data.data.number_full}`,
                                 duration: 2 * 3000,
-                                type: "success"
+                                type: "success",
                             });
 
                             this.close();
@@ -2065,7 +2303,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 422) {
                         this.errors = error.response.data;
                     } else {
@@ -2082,7 +2320,7 @@ export default {
         reloadDataSuppliers(supplier_id) {
             this.$http
                 .get(`/${this.resource}/table/suppliers`)
-                .then(response => {
+                .then((response) => {
                     this.aux_supplier_id = supplier_id;
                     this.all_suppliers = response.data;
                     this.filterSuppliers();
@@ -2097,7 +2335,7 @@ export default {
         async validationItemSeries() {
             let error = 0;
 
-            await this.form.items.forEach(element => {
+            await this.form.items.forEach((element) => {
                 if (element.item.series_enabled) {
                     const count_lot = element.lots ? element.lots.length : 0;
                     if (element.quantity != count_lot) {
@@ -2110,7 +2348,7 @@ export default {
                 return {
                     success: false,
                     message:
-                        "Las series y la cantidad en los productos deben ser iguales."
+                        "Las series y la cantidad en los productos deben ser iguales.",
                 };
 
             return { success: true, message: "" };
@@ -2121,16 +2359,16 @@ export default {
             this.loading = true;
             await this.$http
                 .post(`/${this.resource}/search/purchase_order`, { input })
-                .then(response => {
+                .then((response) => {
                     this.purchase_order_data = response.data;
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.error(error);
                 })
                 .finally(() => {
                     this.loading = false;
                 });
-        }
-    }
+        },
+    },
 };
 </script>

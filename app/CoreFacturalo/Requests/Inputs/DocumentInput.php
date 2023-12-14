@@ -227,21 +227,24 @@ class DocumentInput
                         }
 
                         if ($row['quantity_factor'] !== 1) {
-                            $unit_type_id = $row['presentation_unit_type_id'];
-                            if (key_exists('presentation_description', $row)) {
-                                $presentation_description = $row['presentation_description'];
-                            } else {
-                                $presentation_description = $row['presentation_name'];
-                            }
+                            // $unit_type_id = $row['presentation_unit_type_id'];
+                            $unit_type_id = Functions::valueKeyInArray($row, 'presentation_unit_type_id');
+                            if ($unit_type_id) {
+                                if (key_exists('presentation_description', $row)) {
+                                    $presentation_description = $row['presentation_description'];
+                                } else {
+                                    $presentation_description = $row['presentation_name'];
+                                }
 
-                            $presentation = [
-                                'description' => $presentation_description,
-                                'item_id' => $item->id,
-                                'price2' => $row['unit_price'],
-                                'price_default' => 2,
-                                'quantity_unit' => $quantity_factor,
-                                'unit_type_id' => $unit_type_id,
-                            ];
+                                $presentation = [
+                                    'description' => $presentation_description,
+                                    'item_id' => $item->id,
+                                    'price2' => $row['unit_price'],
+                                    'price_default' => 2,
+                                    'quantity_unit' => $quantity_factor,
+                                    'unit_type_id' => $unit_type_id,
+                                ];
+                            }
                         }
                     }
                 } else {
@@ -253,6 +256,7 @@ class DocumentInput
                 $arayItem = [
                     'item_id' => $item->id,
                     'item' => [
+                        'meter' => $item->meter,
                         'description' => trim($item->description),
                         'item_type_id' => $item->item_type_id,
                         'internal_id' => $item->internal_id,
@@ -265,6 +269,8 @@ class DocumentInput
                         'lots' => self::lots($row),
                         'IdLoteSelected' => (isset($row['IdLoteSelected']) ? $row['IdLoteSelected'] : (isset($row['item']['IdLoteSelected']) ? $row['item']['IdLoteSelected'] : null)),
                         'model' => $item->model,
+                        'sizes_selected' => (isset($row['sizes_selected']) ? $row['sizes_selected'] : (isset($row['item']['sizes_selected']) ? $row['item']['sizes_selected'] : null)),
+                        'brand' => optional($item->brand)->name,
                         'sanitary' => $item->sanitary,
                         'cod_digemid' => $item->cod_digemid,
                         'date_of_due' => (!empty($item->date_of_due)) ? $item->date_of_due->format('Y-m-d') : null,
@@ -275,6 +281,7 @@ class DocumentInput
                         'used_points_for_exchange' => $row['item']['used_points_for_exchange'] ?? null,
                     ],
                     'quantity' => $row['quantity'],
+                    'update_price' => Functions::valueKeyInArray($row, 'update_price', false),
                     'unit_value' => $row['unit_value'],
                     'price_type_id' => $row['price_type_id'],
                     'unit_price' => $row['unit_price'],
@@ -472,6 +479,7 @@ class DocumentInput
                     $factor = $row['factor'];
                     $amount = $row['amount'];
                     $base = $row['base'];
+                    $is_split = Functions::valueKeyInArray($row, 'is_split', false);
                     $is_amount = $row['is_amount'] ?? null; //registra si el descuento fue por monto o porcentaje
 
                     $discounts[] = [
@@ -481,7 +489,9 @@ class DocumentInput
                         'amount' => $amount,
                         'base' => $base,
                         'is_amount' => $is_amount,
+                        'is_split' => $is_split,
                     ];
+
                 }
                 return $discounts;
             }

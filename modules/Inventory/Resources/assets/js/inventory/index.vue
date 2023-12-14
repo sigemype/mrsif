@@ -26,7 +26,7 @@
                         role="menu"
                         style="position: absolute;will-change: transform;top: 0px;left: 0px;transform: translate3d(0px, 42px, 0px);" x-placement="bottom-start">
                         <a class="dropdown-item text-1" href="#" @click.prevent="clickImportSpecialAttributes('item-lots-group')">Lotes</a>
-                        <a class="dropdown-item text-1" href="#" @click.prevent="clickImportSpecialAttributes('item-lots')">Series</a>
+                        <a class="dropdown-item text-1" href="#" @click.prevent="clickImportSpecialAttributes('item-lots')">series</a>
                     </div>
                 </div>
 

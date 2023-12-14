@@ -1,12 +1,24 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $supplier = $document->supplier;
     $payments = $document->payments;
     $tittle = $document->series.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
+    $license = optional($document->purchase_license)->license;
+    $responsible = optional($document->purchase_responsible)->name;
+
 @endphp
 <html>
 <head>
@@ -100,6 +112,21 @@ $logo = "{$establishment->logo}";
             {{ $document->user->name }}
         </td>
     </tr>
+    <tr>
+        <td width="15%">Responsable:</td>
+        <td width="45%">{{ $responsible}}</td>
+        <td width="25%">Placa:</td>
+        <td width="15%">{{ $license }}</td>
+    </tr>
+    @if($document->date_detraccion||$document->percentage_detraccion||$document->const_detraccion)
+    <tr>
+        <td
+        colspan="4"
+        >
+            Const. detracción: {{ $document->const_detraccion ?? "-"}} &nbsp;  Fecha: {{ $document->date_detraccion ?? "-"}}&nbsp;   Porcentaje: {{ $document->percentage_detraccion ? "$document->percentage_detraccion %" : "-"}} 
+        </td>
+    </tr>
+    @endif
     @if($document->purchase_order)
     <tr>
         <td class="align-top">O. Compra:</td>
@@ -118,12 +145,12 @@ $logo = "{$establishment->logo}";
 <table class="full-width mt-10 mb-10">
     <thead class="">
     <tr class="bg-grey">
-        <th class="border-top-bottom text-center py-2" width="8%">CANT.</th>
-        <th class="border-top-bottom text-center py-2" width="8%">UNIDAD</th>
-        <th class="border-top-bottom text-left py-2">DESCRIPCIÓN</th>
-        <th class="border-top-bottom text-right py-2" width="12%">P.UNIT</th>
-        <th class="border-top-bottom text-right py-2" width="8%">DTO.</th>
-        <th class="border-top-bottom text-right py-2" width="12%">TOTAL</th>
+        <th class="border-top-bottom text-center py-2" width="8%">Cant.</th>
+        <th class="border-top-bottom text-center py-2" width="8%">Unidad</th>
+        <th class="border-top-bottom text-left py-2">Descripción</th>
+        <th class="border-top-bottom text-right py-2" width="12%">P.Unit</th>
+        <th class="border-top-bottom text-right py-2" width="8%">Dto.</th>
+        <th class="border-top-bottom text-right py-2" width="12%">Total</th>
     </tr>
     </thead>
     <tbody>
@@ -184,37 +211,37 @@ $logo = "{$establishment->logo}";
     @endforeach
         @if($document->total_exportation > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">OP. EXPORTACIÓN: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">Op. Exportación: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_exportation, 2) }}</td>
             </tr>
         @endif
         @if($document->total_free > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">OP. GRATUITAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">Op. Gratuitas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_free, 2) }}</td>
             </tr>
         @endif
         @if($document->total_unaffected > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">OP. INAFECTAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">Op. Inafectas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_unaffected, 2) }}</td>
             </tr>
         @endif
         @if($document->total_exonerated > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">OP. EXONERADAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">Op. Exoneradas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_exonerated, 2) }}</td>
             </tr>
         @endif
         @if($document->total_taxed > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">OP. GRAVADAS: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">Op. Gravadas: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
         @endif
         @if($document->total_discount > 0)
             <tr>
-                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}: {{ $document->currency_type->symbol }}</td>
+                <td colspan="5" class="text-right font-bold">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento TOTAL')}}: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         @endif
@@ -231,7 +258,7 @@ $logo = "{$establishment->logo}";
         @endif
 
         <tr>
-            <td colspan="5" class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+            <td colspan="5" class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
             <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
         </tr>
     </tbody>
@@ -241,7 +268,7 @@ $logo = "{$establishment->logo}";
 <table class="full-width">
     <tr>
         <td>
-            <strong>CONDICIÓN DE PAGO: {{ $document->payment_condition->name }} </strong>
+            <strong>Condición de Pago: {{ $document->payment_condition->name }} </strong>
         </td>
     </tr>
 </table>
@@ -251,7 +278,7 @@ $logo = "{$establishment->logo}";
     <table class="full-width">
         <tr>
             <td>
-                <strong>PAGOS:</strong>
+                <strong>Pagos:</strong>
             </td>
         </tr>
             @php

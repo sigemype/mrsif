@@ -57,7 +57,7 @@
                                 </p>
                                 <h2 class="font-weight-semibold mt-0">
                                     {{
-                                        records.filter(r => r.active == false)
+                                        records.filter((r) => r.active == false)
                                             .length
                                     }}
                                 </h2>
@@ -279,7 +279,7 @@
                             >
                                 <div
                                     class="summary-icon text-center"
-                                    style="background-color: rgb(41, 41, 97);"
+                                    style="background-color: rgb(41, 41, 97)"
                                 >
                                     <i class="fab fa-gitlab"></i>
                                 </div>
@@ -332,7 +332,7 @@
                         </el-button>
                     </div>
                     <div class="col-6 d-flex justify-content-end">
-                        <div class="data-table-visible-columns ">
+                        <div class="data-table-visible-columns">
                             <el-dropdown :hide-on-click="false">
                                 <el-button type="primary">
                                     Mostrar/Ocultar columnas<i
@@ -348,7 +348,7 @@
                                             @change="setColumns"
                                             v-if="
                                                 column.title !== undefined &&
-                                                    column.visible !== undefined
+                                                column.visible !== undefined
                                             "
                                             v-model="column.visible"
                                             >{{ column.title }}
@@ -413,6 +413,13 @@
                                     class="text-center"
                                 >
                                     Facturacion
+                                </th>
+                                <th
+                                    v-if="columns.count_item.visible"
+                                    scope="col"
+                                    class="text-center"
+                                >
+                                    Productos
                                 </th>
                                 <th
                                     v-if="columns.count_user.visible"
@@ -489,6 +496,13 @@
                                     Bloquear Entorno demo
                                 </th> -->
                                 <th
+                                    v-if="columns.max_items.visible"
+                                    scope="col"
+                                    class="text-end"
+                                >
+                                    Limitar Prod.
+                                </th>
+                                <th
                                     v-if="columns.max_documents.visible"
                                     scope="col"
                                     class="text-end"
@@ -549,7 +563,7 @@
                                 <td v-if="columns.hostname.visible">
                                     <a
                                         :href="`http://${row.hostname}`"
-                                        style="color:black"
+                                        style="color: black"
                                         target="_blank"
                                     >
                                         {{ row.hostname }}</a
@@ -659,7 +673,7 @@
                                                         :value="
                                                             row.document_regularize_shipping
                                                         "
-                                                        class="item  ml-4"
+                                                        class="item ml-4"
                                                         :type="
                                                             row.document_regularize_shipping ==
                                                             0
@@ -682,7 +696,7 @@
                                                 >
                                                     <el-badge
                                                         :value="0"
-                                                        class="item  ml-4"
+                                                        class="item ml-4"
                                                         type="primary"
                                                     >
                                                         <i
@@ -706,7 +720,7 @@
                                                         :value="
                                                             row.document_to_be_canceled
                                                         "
-                                                        class="item  ml-4"
+                                                        class="item ml-4"
                                                         :type="
                                                             row.document_to_be_canceled ==
                                                             0
@@ -729,7 +743,7 @@
                                                 >
                                                     <el-badge
                                                         :value="0"
-                                                        class="item  ml-4"
+                                                        class="item ml-4"
                                                         type="primary"
                                                     >
                                                         <i
@@ -785,7 +799,47 @@
                                         </template>
                                     </strong>
                                 </td>
-
+                                <td
+                                    v-if="columns.count_item.visible"
+                                    class="text-center"
+                                >
+                                    <template
+                                        v-if="
+                                            row.max_items !== 0 &&
+                                            row.count_item > row.max_items
+                                        "
+                                    >
+                                        <el-popover
+                                            :content="text_limit_item"
+                                            placement="top-start"
+                                            trigger="hover"
+                                            width="220"
+                                        >
+                                            <label
+                                                slot="reference"
+                                                class="text-danger"
+                                            >
+                                                <strong>{{
+                                                    row.count_item
+                                                }}</strong>
+                                            </label>
+                                        </el-popover>
+                                    </template>
+                                    <template v-else>
+                                        <label>
+                                            <strong>{{
+                                                row.count_item
+                                            }}</strong>
+                                        </label>
+                                    </template>
+                                    /
+                                    <template v-if="row.max_items == 0">
+                                        <i class="fas fa-infinity"></i>
+                                    </template>
+                                    <template v-else>
+                                        <strong>{{ row.max_items }}</strong>
+                                    </template>
+                                </td>
                                 <td
                                     v-if="columns.count_user.visible"
                                     class="text-center"
@@ -793,7 +847,7 @@
                                     <template
                                         v-if="
                                             row.max_users !== 0 &&
-                                                row.count_user > row.max_users
+                                            row.count_user > row.max_users
                                         "
                                     >
                                         <el-popover
@@ -881,7 +935,7 @@
                                 >
                                     <strong>{{
                                         row.count_doc_month +
-                                            row.count_sales_notes_month
+                                        row.count_sales_notes_month
                                     }}</strong>
                                 </td>
 
@@ -919,6 +973,16 @@
                                         ></el-switch>
                                     </template>
                                 </td> -->
+                                   <td
+                                    v-if="columns.max_items.visible"
+                                    class="text-center"
+                                >
+                                    <el-switch
+                                        v-model="row.locked_items"
+                                        style="display: block"
+                                        @change="changeLockedItem(row)"
+                                    ></el-switch>
+                                </td>
                                 <td
                                     v-if="columns.max_documents.visible"
                                     class="text-center"
@@ -1029,14 +1093,12 @@
                                 </td>
                                 <td class="text-end">
                                     <button
-                                        :class="
-                                            `${
-                                                row.has_debt
-                                                    ? 'btn-danger'
-                                                    : 'btn-success'
-                                            }`
-                                        "
-                                        class="btn waves-effect waves-light btn-sm  m-1__2"
+                                        :class="`${
+                                            row.has_debt
+                                                ? 'btn-danger'
+                                                : 'btn-success'
+                                        }`"
+                                        class="btn waves-effect waves-light btn-sm m-1__2"
                                         type="button"
                                         @click.prevent="
                                             clickAccountStatus(row.id)
@@ -1104,15 +1166,11 @@
                         </span>
                     </div>
                     <div class="col-md-6">
-                        <label for="email">
-                            Correo
-                        </label>
+                        <label for="email"> Correo </label>
                         <el-input v-model="form.email"> </el-input>
                     </div>
                     <div class="col-md-6">
-                        <label for="password">
-                            Contraseña
-                        </label>
+                        <label for="password"> Contraseña </label>
                         <el-input show-password v-model="form.password">
                         </el-input>
                     </div>
@@ -1125,9 +1183,7 @@
             <template v-else>
                 <div class="row m-2">
                     <div class="col-md-12">
-                        <span>
-                            Necesita cerrar sesión.
-                        </span>
+                        <span> Necesita cerrar sesión. </span>
                         <el-button>
                             <a
                                 href="/logout"
@@ -1164,124 +1220,132 @@ export default {
         AccountStatus,
         ClientDelete,
         DataLimitNotification,
-        MailModal
+        MailModal,
     },
     data() {
         return {
             columns: {
                 active: {
                     title: "Baja",
-                    visible: true
+                    visible: true,
                 },
                 hostname: {
                     title: "Host",
-                    visible: true
+                    visible: true,
                 },
                 name: {
                     title: "Nombre",
-                    visible: true
+                    visible: true,
                 },
                 number: {
                     title: "RUC",
-                    visible: true
+                    visible: true,
                 },
                 plan: {
                     title: "Plan",
-                    visible: false
+                    visible: false,
                 },
                 email: {
                     title: "Correo",
-                    visible: true
+                    visible: true,
                 },
                 soap_type: {
                     title: "Entorno",
-                    visible: true
+                    visible: true,
                 },
                 count_doc: {
                     title: "Total Comprobantes",
-                    visible: false
+                    visible: false,
                 },
-                config_system_env:{
+                config_system_env: {
                     title: "Bloquear entorno demo",
-                    visible: true
+                    visible: true,
                 },
                 notifications: {
                     title: "Notificaciones",
-                    visible: true
+                    visible: true,
                 },
                 start_billing_cycle: {
                     title: "Inicio Ciclo Fact.",
-                    visible: false
+                    visible: false,
                 },
                 count_doc_month: {
                     title: "Facturación",
-                    visible: false
+                    visible: false,
                 },
                 count_user: {
                     title: "Usuarios",
-                    visible: false
+                    visible: false,
+                },
+                count_item: {
+                    title: "Productos",
+                    visible: true,
                 },
                 count_establishments: {
                     title: "Establecimientos",
-                    visible: false
+                    visible: false,
                 },
                 monthly_sales_total: {
                     title: "Ventas (Mes)",
-                    visible: false
+                    visible: false,
                 },
                 created_at: {
                     title: "Fecha de creación",
-                    visible: false
+                    visible: false,
                 },
                 queries_to_apiperu: {
                     title: "API Peru (mes)",
-                    visible: false
+                    visible: false,
                 },
                 count_sales_notes: {
                     title: "Cant.Notas de venta",
-                    visible: false
+                    visible: false,
                 },
                 total_doc: {
                     title: "Total (Comprobantes)",
-                    visible: false
+                    visible: false,
                 },
                 locked: {
                     title: "Bloquear Cuenta",
-                    visible: true
+                    visible: true,
                 },
                 max_documents: {
                     title: "Limitar Doc.",
-                    visible: true
+                    visible: true,
                 },
                 max_users: {
                     title: "Limitar Usuarios",
-                    visible: true
+                    visible: true,
+                },
+                max_items: {
+                    title: "Limitar Productos",
+                    visible: true,
                 },
                 max_establishments: {
                     title: "Limitar Establecimientos",
-                    visible: true
+                    visible: true,
                 },
                 max_sales_limit: {
                     title: "Limitar Ventas (Mes)",
-                    visible: false
+                    visible: false,
                 },
                 user: {
                     title: "Usuario",
-                    visible: false
+                    visible: false,
                 },
                 password: {
                     title: "Clave",
-                    visible: false
+                    visible: false,
                 },
                 password_cdt: {
                     title: "Clave CDT",
-                    visible: false
-                }
+                    visible: false,
+                },
             },
             logout: false,
             form: {
                 email: null,
-                password: null
+                password: null,
             },
             showNewAdmin: false,
             showFormMail: false,
@@ -1294,6 +1358,7 @@ export default {
             recordId: null,
             records: [],
             text_limit_doc: null,
+            text_limit_item: null,
             text_limit_users: null,
             loaded: false,
             year: moment().format("YYYY"),
@@ -1304,13 +1369,13 @@ export default {
                     {
                         // label: 'Data One',
                         // backgroundColor: '#f87979',
-                        data: null
-                    }
-                ]
+                        data: null,
+                    },
+                ],
             },
             showDialogDelete: false,
             record: {},
-            loading: false
+            loading: false,
         };
     },
     async mounted() {
@@ -1327,15 +1392,18 @@ export default {
         this.getColumns();
         this.text_limit_doc = "El límite de comprobantes fue superado";
         this.text_limit_users = "El límite de usuarios fue superado";
+        this.text_limit_item = "El límite de productos fue superado";
     },
     methods: {
         async charts() {
-            await this.$http.get(`/${this.resource}/charts`).then(response => {
-                let line = response.data.line;
-                this.dataChartLine.labels = line.labels;
-                this.dataChartLine.datasets[0].data = line.data;
-                this.total_documents = response.data.total_documents;
-            });
+            await this.$http
+                .get(`/${this.resource}/charts`)
+                .then((response) => {
+                    let line = response.data.line;
+                    this.dataChartLine.labels = line.labels;
+                    this.dataChartLine.datasets[0].data = line.data;
+                    this.total_documents = response.data.total_documents;
+                });
         },
         close(login = false) {
             this.showNewAdmin = false;
@@ -1346,7 +1414,7 @@ export default {
         },
         async setColumns() {
             const response = await this.$http.post(`/users/columns`, {
-                columns: this.columns
+                columns: this.columns,
             });
         },
         async getColumns() {
@@ -1413,7 +1481,7 @@ export default {
         changeActiveTenant(row) {
             this.$http
                 .post(`${this.resource}/active_tenant`, row)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1421,7 +1489,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1430,11 +1498,11 @@ export default {
                 })
                 .then(() => {});
         },
-        changeconfig_system_env_tenant(row){
-            console.log("row.config_system_env",row.config_system_env)
+        changeconfig_system_env_tenant(row) {
+            console.log("row.config_system_env", row.config_system_env);
             this.$http
                 .post(`${this.resource}/config_system_env`, row)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1442,7 +1510,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1454,7 +1522,7 @@ export default {
         changeLockedTenant(row) {
             this.$http
                 .post(`${this.resource}/locked_tenant`, row)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1462,7 +1530,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1471,11 +1539,10 @@ export default {
                 })
                 .then(() => {});
         },
-
-        changeLockedUser(row) {
+    changeLockedItem(row) {
             this.$http
-                .post(`${this.resource}/locked_user`, row)
-                .then(response => {
+                .post(`${this.resource}/locked_item`, row)
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1483,7 +1550,27 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
+                    if (error.response.status === 500) {
+                        this.$message.error(error.response.data.message);
+                    } else {
+                        console.log(error.response);
+                    }
+                })
+                .then(() => {});
+        },
+        changeLockedUser(row) {
+            this.$http
+                .post(`${this.resource}/locked_user`, row)
+                .then((response) => {
+                    if (response.data.success) {
+                        this.$message.success(response.data.message);
+                        this.$eventHub.$emit("reloadData");
+                    } else {
+                        this.$message.error(response.data.message);
+                    }
+                })
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1498,7 +1585,7 @@ export default {
 
             this.$http
                 .post(`${this.resource}/locked-by-column`, params)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1506,7 +1593,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1519,16 +1606,16 @@ export default {
             this.$http
                 .post(`${this.resource}/set_billing_cycle`, {
                     id: id,
-                    end_billing_cycle: event
+                    end_billing_cycle: event,
                 })
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                     } else {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1543,16 +1630,16 @@ export default {
             this.$http
                 .post(`${this.resource}/set_billing_cycle`, {
                     id: id,
-                    start_billing_cycle: event
+                    start_billing_cycle: event,
                 })
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                     } else {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1566,7 +1653,7 @@ export default {
         changeLockedEmission(row) {
             this.$http
                 .post(`${this.resource}/locked_emission`, row)
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.$eventHub.$emit("reloadData");
@@ -1574,7 +1661,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error(error.response.data.message);
                     } else {
@@ -1584,7 +1671,7 @@ export default {
                 .then(() => {});
         },
         getData() {
-            this.$http.get(`/${this.resource}/records`).then(response => {
+            this.$http.get(`/${this.resource}/records`).then((response) => {
                 this.records = response.data.data;
             });
         },
@@ -1613,7 +1700,7 @@ export default {
         clickEdit(recordId) {
             this.recordId = recordId;
             this.showDialog = true;
-        }
-    }
+        },
+    },
 };
 </script>

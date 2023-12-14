@@ -13,9 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('clients', function (Blueprint $table) {
-            $table->boolean('create_restaurant')->nullable()->default(false)->after('restrict_sales_limit');
-        });
+
+        if (!Schema::hasColumn('clients', 'create_restaurant')) {
+            Schema::table('clients', function (Blueprint $table) {
+                $table->boolean('create_restaurant')->nullable()->default(false)->after('restrict_sales_limit');
+            });
+        }
+        
     }
 
     /**

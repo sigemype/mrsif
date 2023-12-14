@@ -115,6 +115,7 @@
                                     class="form-group"
                                 >
                                     <el-switch
+                                        :disabled="useDacta"
                                         v-model="form.ticket_single_shipment"
                                         active-text="Si"
                                         inactive-text="No"
@@ -1592,6 +1593,314 @@
                                     ></small>
                                 </div>
                             </div>
+
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Cotización proyectos
+                                    <!-- <el-tooltip
+                                        class="item"
+                                        content="Al crear un documento, el administrador puede seleccionar la caja abierta del vendedor"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip> -->
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger': errors.quotation_projects,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.quotation_projects"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.quotation_projects"
+                                        class="text-danger"
+                                        v-text="errors.quotation_projects[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Tickets de encomienda
+                                    <el-tooltip
+                                        class="item"
+                                        content="Muestra el menú de tickets de encomienda y usa nota de venta como recibos de caja"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger': errors.package_handlers,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.package_handlers"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.package_handlers"
+                                        class="text-danger"
+                                        v-text="errors.package_handlers[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Re-abrir caja
+                                    <el-tooltip
+                                        class="item"
+                                        content="Volver abrir la caja después de cerrada"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger': errors.reopen_cash,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.reopen_cash"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.reopen_cash"
+                                        class="text-danger"
+                                        v-text="errors.reopen_cash[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Bloquear edición de notas de venta
+                                    <el-tooltip
+                                        class="item"
+                                        content="Evitar que los vendedores editen las notas de venta"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger':
+                                            errors.block_seller_sale_note_edit,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="
+                                            form.block_seller_sale_note_edit
+                                        "
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="
+                                            errors.block_seller_sale_note_edit
+                                        "
+                                        class="text-danger"
+                                        v-text="
+                                            errors
+                                                .block_seller_sale_note_edit[0]
+                                        "
+                                    ></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Todos los vendedores
+                                    <el-tooltip
+                                        class="item"
+                                        content="Mostrar todos los vendedores sin tomar en cuenta el establecimiento"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger': errors.all_sellers,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.all_sellers"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.all_sellers"
+                                        class="text-danger"
+                                        v-text="errors.all_sellers[0]"
+                                    ></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Mostrar todos los productos
+                                    <el-tooltip
+                                        class="item"
+                                        content="Mostrar TODOS los productos en el modal  de emisión de dctos, PODRIA DEMORAR"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger': errors.all_products,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.all_products"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.all_products"
+                                        class="text-danger"
+                                        v-text="errors.all_products[0]"
+                                    ></small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Cambiar de establecimiento al seleccionar
+                                    producto
+                                    <el-tooltip
+                                        class="item"
+                                        content="Poder seleccionar otro almacén para el producto al momento de vender"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger':
+                                            errors.select_warehouse_to_sell,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.select_warehouse_to_sell"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.select_warehouse_to_sell"
+                                        class="text-danger"
+                                        v-text="
+                                            errors.select_warehouse_to_sell[0]
+                                        "
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Responsable y placa en compras
+                                    <el-tooltip
+                                        class="item"
+                                        content="Mostrar responsable y placa en compras, solo para vehiculos"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger': errors.purchases_control,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.purchases_control"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.purchases_control"
+                                        class="text-danger"
+                                        v-text="errors.purchases_control[0]"
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <label class="control-label">
+                                    Buscar productos con similar código de
+                                    fábrica
+                                    <el-tooltip
+                                        class="item"
+                                        content="Poder seleccionar otro almacén para el producto al momento de vender"
+                                        effect="dark"
+                                        placement="top-start"
+                                    >
+                                        <i class="fa fa-info-circle"></i>
+                                    </el-tooltip>
+                                </label>
+
+                                <div
+                                    :class="{
+                                        'has-danger':
+                                            errors.search_by_factory_code,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <el-switch
+                                        v-model="form.search_by_factory_code"
+                                        active-text="Si"
+                                        inactive-text="No"
+                                        @change="submit"
+                                    ></el-switch>
+                                    <small
+                                        v-if="errors.search_by_factory_code"
+                                        class="text-danger"
+                                        v-text="
+                                            errors.search_by_factory_code[0]
+                                        "
+                                    ></small>
+                                </div>
+                            </div>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane class="mb-3" name="third">
@@ -1640,10 +1949,10 @@
                                     class="form-group"
                                 >
                                     <label class="control-label"
-                                        >Tipo de afectación
+                                        >Tipo de afectación venta
                                         <el-tooltip
                                             class="item"
-                                            content="Tipo de afectación predeterminada al registrar nuevo producto y rentar habitación en hoteles (Disponible Op. Gravadas y Exoneradas)"
+                                            content="Tipo de afectación de venta predeterminada al registrar nuevo producto y rentar habitación en hoteles (Disponible Op. Gravadas y Exoneradas)"
                                             effect="dark"
                                             placement="top-start"
                                         >
@@ -1667,6 +1976,51 @@
                                         class="text-danger"
                                         v-text="
                                             errors.affectation_igv_type_id[0]
+                                        "
+                                    ></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-4">
+                                <div
+                                    :class="{
+                                        'has-danger':
+                                            errors.purchase_affectation_igv_type_id,
+                                    }"
+                                    class="form-group"
+                                >
+                                    <label class="control-label"
+                                        >Tipo de afectación compra
+                                        <el-tooltip
+                                            class="item"
+                                            content="Tipo de afectación de compra predeterminada al registrar nuevo producto y rentar habitación en hoteles (Disponible Op. Gravadas y Exoneradas)"
+                                            effect="dark"
+                                            placement="top-start"
+                                        >
+                                            <i class="fa fa-info-circle"></i>
+                                        </el-tooltip>
+                                    </label>
+                                    <el-select
+                                        v-model="
+                                            form.purchase_affectation_igv_type_id
+                                        "
+                                        filterable
+                                        @change="submit"
+                                    >
+                                        <el-option
+                                            v-for="option in affectation_igv_types"
+                                            :key="option.id"
+                                            :label="option.description"
+                                            :value="option.id"
+                                        ></el-option>
+                                    </el-select>
+                                    <small
+                                        v-if="
+                                            errors.purchase_affectation_igv_type_id
+                                        "
+                                        class="text-danger"
+                                        v-text="
+                                            errors
+                                                .purchase_affectation_igv_type_id[0]
                                         "
                                     ></small>
                                 </div>
@@ -3935,6 +4289,44 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-6 mt-4">
+                                <div class="form-group">
+                                    <label>
+                                        Agrupar productos
+                                        <el-tooltip
+                                            class="item"
+                                            effect="dark"
+                                            placement="top-start"
+                                        >
+                                            <div slot="content">
+                                                Al escoger dos o más productos
+                                                iguales, se agruparán en una
+                                                sola línea con la cantidad total
+                                                de productos seleccionados
+                                            </div>
+                                            <i class="fa fa-info-circle"></i>
+                                        </el-tooltip>
+                                    </label>
+                                    <div
+                                        :class="{
+                                            'has-danger': errors.group_items,
+                                        }"
+                                        class="form-group"
+                                    >
+                                        <el-switch
+                                            v-model="form.group_items"
+                                            active-text="Si"
+                                            inactive-text="No"
+                                            @change="submit"
+                                        ></el-switch>
+                                        <small
+                                            v-if="errors.group_items"
+                                            class="text-danger"
+                                            v-text="errors.group_items[0]"
+                                        ></small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </el-tab-pane>
                     <el-tab-pane class="mb-3" name="nine">
@@ -4493,7 +4885,7 @@ import ReportConfigurationsIndex from "./partials/report_configurations_index.vu
 import PdfFooterImages from "./partials/pdf_footer_images.vue";
 
 export default {
-    props: ["typeUser", "configuration"],
+    props: ["typeUser", "configuration", "company"],
     components: {
         TermsCondition,
         TermsConditionSale,
@@ -4506,6 +4898,7 @@ export default {
     },
     data() {
         return {
+            useDacta: false,
             headers: headers_token,
             showDialogTermsCondition: false,
             showDialogTermsConditionSales: false,
@@ -4533,6 +4926,10 @@ export default {
         this.form = this.config;
     },
     mounted() {
+        let { pse } = this.company;
+        if (pse) {
+            this.useDacta = true;
+        }
         this.loadTables();
         this.initForm();
         this.$http.get(`/${this.resource}/record`).then((response) => {

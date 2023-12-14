@@ -112,8 +112,11 @@
                     <th>Estado</th>
                     <th class="text-center">Fecha Envío</th>
                     <th class="text-center">O.Pedido</th>
+                    <th class="text-center">Referencia</th>
                     <th class="text-center">Producto</th>
                     <th class="text-center">Cantidad</th>
+                    <th class="text-center">Precio Venta</th>
+                    <th class="text-center">Total</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -125,6 +128,9 @@
                         $data = $value->getCollectionData();
                         $qty = $data['quantity'];
                         $item = $data['item'];
+                        $reference = $data['reference'];
+                        $sale_price = $data['sale_price'];
+                        $total_sale_price = $data['total_sale_price'];
                         $item_description = $item['description'];
                         $dispatches = $data['dispatches'];
                         $date_of_issue = $dispatches['date_of_issue'];
@@ -148,8 +154,11 @@
                         <td class="celda"> {{$state_type_description}} </td>
                         <td class="celda">{{ $date_of_shipping }}</td>
                         <td class="celda">{{ $order_form_description }}</td>
+                        <td class="celda">{{ $reference }}</td>
                         <td class="celda"> {{$item_description}} </td>
                         <td class="celda"> {{$value->getQtyFormated()}} </td>
+                        <td class="celda"> {{$sale_price}} </td>
+                        <td class="celda"> {{$total_sale_price}} </td>
                     @php
                         $acum_total += $qty
                     @endphp

@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     $invoice = $document->invoice;
     $document_base = ($document->note) ? $document->note : null;
@@ -95,11 +104,11 @@ $item_=0;
     <div class="information mt-3 borde_celeste1">
         <div class="div-table">
             <div class="div-table-row">
-                <div class="div-table-col w-15 font-xs"> <strong>CLIENTE</div>
+                <div class="div-table-col w-15 font-xs"> <strong>Cliente</div>
                 <div class="div-table-col w-85 font-xs">: {{ $customer->name }}</div>
             </div>
             <div class="div-table-row">
-                <div class="div-table-col w-15 font-xs"> <strong>DIRECCIÓN</div>
+                <div class="div-table-col w-15 font-xs"> <strong>Dirección</div>
                 <div class="div-table-col w-85 font-xs">: 
                     {{ strtoupper($customer->address) }}
                     {{ ($customer->district_id !== '-')? '- '.strtoupper($customer->district->description) : '' }}
@@ -116,7 +125,7 @@ $item_=0;
                 <div  class="div-table-col w-85 font-xs">: @foreach($payments as $row) {{ $row->payment_method_type->description }} @endforeach</div>
              </div>
              <div class="div-table-row">
-                <div class="div-table-col w-15 font-xs"> <strong>FECHA DE EMISIÓN</div>
+                <div class="div-table-col w-15 font-xs"> <strong>Fecha de emisión</div>
                 <div  class="div-table-col w-85 font-xs">: {{$document->date_of_issue->format('Y-m-d')}}</div>
              </div>
              <div class="div-table-row">
@@ -149,9 +158,9 @@ $item_=0;
             </div>
 
             <div class="div-table-row">
-                <div class="div-table-col w-10 font-xs"> <strong>VENDEDOR</div>
+                <div class="div-table-col w-10 font-xs"> <strong>Vendedor</div>
                 <div class="div-table-col w-20 font-xs">: @if ($document->seller) {{ $document->seller->name }} @else {{ $document->user->name }} @endif</div>
-                <div class="div-table-col w-15 font-xs"> <strong>ORDEN DE COMPRA</div>
+                <div class="div-table-col w-15 font-xs"> <strong>Orden de compra</div>
                 <div class="div-table-col w-25 font-xs">:  @if ($document->purchase_order) {{ $document->purchase_order }} @endif</div>
                 <div class="div-table-col w-10 font-xs"> <strong>OTROS</div>
                 <div class="div-table-col w-19 font-xs">: @if($document->additional_information)
@@ -185,12 +194,12 @@ $item_=0;
     <thead >
         <tr class="">
             <th class="border-c_todo_dashed text-center py-1 desc" width="5%">ITEM</th>
-            <th class="border-c_todo_dashed text-center py-1 desc" width="10%">CÓDIGO</th>
-            <th class="border-c_todo_dashed text-center py-1 desc" width="8%">CANT.</th>
+            <th class="border-c_todo_dashed text-center py-1 desc" width="10%">Código</th>
+            <th class="border-c_todo_dashed text-center py-1 desc" width="8%">Cant.</th>
             <th class="border-c_todo_dashed text-center py-1 desc" width="8%">U.M.</th>
-            <th class="border-c_todo_dashed text-center py-1 desc" width="40%">DESCRIPCIÓN</th>
+            <th class="border-c_todo_dashed text-center py-1 desc" width="40%">Descripción</th>
             <th class="border-c_todo_dashed text-center py-1 desc" width="8%">P.U</th>
-            <th class="border-c_todo_dashed text-center py-1 desc" width="8%">IMPORTE</th>
+            <th class="border-c_todo_dashed text-center py-1 desc" width="8%">Importe</th>
         </tr>
     </thead>
     <tbody class="">
@@ -300,7 +309,7 @@ $item_=0;
 
 <table class="mt-10 mb-10 font-xxs">
     <tr>
-        <td colspan="8" class="text-center font-bold font-xxs border-c_todo_solid"><strong>CONDICIÓN DE PAGO: {{ $paymentCondition }} </strong></td>
+        <td colspan="8" class="text-center font-bold font-xxs border-c_todo_solid"><strong>Condición de Pago: {{ $paymentCondition }} </strong></td>
     </tr>
     <tr>
         <td colspan="8" class="text-center font-bold font-xxs border-c_todo_solid">
@@ -351,7 +360,7 @@ $item_=0;
 
 
             <tr>
-                <td colspan="8" class="text-center font-bold font-xxs border-c_todo_solid">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO')}} </td>
+                <td colspan="8" class="text-center font-bold font-xxs border-c_todo_solid">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento')}} </td>
                 <td class="text-right font-bold font-xxs border-c_todo_solid padding_right">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
         <tr>

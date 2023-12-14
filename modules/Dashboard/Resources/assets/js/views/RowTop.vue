@@ -74,6 +74,23 @@
         </div>
       </div>
     </div>
+        <div class="col-6 col-md-4 col-lg-2">
+      <div class="card h-100 hover-scale-up cursor-pointer">
+        <div class="card-body d-flex flex-column align-items-center">
+          <div
+            class="sw-6 sh-6 rounded-xl d-flex justify-content-center align-items-center border border-primary mb-4"
+          >
+           <i data-cs-icon="dollar" class="text-primary"></i>
+          </div>
+          <div class="mb-1 d-flex align-items-center text-alternate text-small lh-1-25 text-center">
+          Monto total  <br />de ventas
+          </div>
+          <div class="text-primary cta-4">
+            {{ total }}
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="col-6 col-md-4 col-lg-2">
       <div class="card h-100 hover-scale-up cursor-pointer">
         <div class="card-body d-flex flex-column align-items-center">
@@ -86,7 +103,7 @@
           Utilidad <br />neta
           </div>
           <div class="text-primary cta-4">
-            {{ utilities.totals.utility }}
+            {{ formatNumber(utilities.totals.utility) }}
           </div>
         </div>
       </div>
@@ -106,6 +123,7 @@ export default {
       total_cpe: 0,
       sale_note_total_global: 0,
       total: 0,
+      total_global : 0,
     };
   },
   mounted() {
@@ -124,15 +142,24 @@ export default {
     },
   },
   methods: {
+    //crea una función para separar los miles con una coma y dos decimales
+    formatNumber(value) {
+      console.log("🚀 ~ file: RowTop.vue:147 ~ formatNumber ~ value:", value)
+      if (value) {
+        return parseFloat(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+    },
     onFetchData() {
       this.$http.get("/dashboard/global-data").then((response) => {
         const data = response.data;
-        this.document_total_global = data.document_total_global;
+        this.document_total_global = this.formatNumber(data.document_total_global);
         this.total_cpe = data.total_cpe;
-        this.sale_note_total_global = data.sale_note_total_global;
+        this.sale_note_total_global = this.formatNumber(data.sale_note_total_global);
         this.total =
-          parseFloat(this.document_total_global) +
-          parseFloat(this.sale_note_total_global);
+          parseFloat(data.document_total_global) +
+          parseFloat(data.sale_note_total_global);
+        this.total = this.formatNumber(this.total);
+        
       });
     },
   },

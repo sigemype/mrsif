@@ -46,7 +46,7 @@
             COMPROBANTE DE PAGO
         </td>
         <td colspan="3">
-            INFORMACON DE CLIENTE
+            INFORMACION DE CLIENTE
         </td>
         <td>
             VALOR<br />FACTURADO<br />EXPORTACION

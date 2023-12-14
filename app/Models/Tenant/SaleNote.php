@@ -348,6 +348,7 @@ use Modules\Suscription\Models\Tenant\SuscriptionPayment;
         }
         public function getEstablishmentAttribute($value)
         {
+      
             return (is_null($value)) ? null : (object)json_decode($value);
         }
 
@@ -769,8 +770,13 @@ use Modules\Suscription\Models\Tenant\SuscriptionPayment;
                     $date_of_pay=$pay->date_of_payment->format('Y-m-d');
                 }
             }
-
+            $not_blocked = true;
+            $type_user = auth()->user()->type;
+            if($configuration->block_seller_sale_note_edit && $type_user === 'seller') {
+                $not_blocked = false;
+            }
             return [
+                'not_blocked' => $not_blocked,
                 'id' => $this->id,
                 'soap_type_id' => $this->soap_type_id,
                 'external_id' => $this->external_id,
@@ -792,6 +798,7 @@ use Modules\Suscription\Models\Tenant\SuscriptionPayment;
                 'total_igv' => self::FormatNumber($this->total_igv),
                 'total' => self::FormatNumber($this->total),
                 'state_type_id' => $this->state_type_id,
+                'observation' => $this->observation,
                 'state_type_description' => $this->state_type->description,
                 'document_id' => $this->document_id,
                 'documents' => $documents->transform(function ($row) {
@@ -823,6 +830,7 @@ use Modules\Suscription\Models\Tenant\SuscriptionPayment;
                 'print_a4' => url('') . "/sale-notes/print/{$this->external_id}/a4",
                 'print_ticket' => url('') . "/sale-notes/print/{$this->external_id}/ticket",
                 'print_a5' => url('') . "/sale-notes/print/{$this->external_id}/a5",
+                'print_receipt' => url('')."/sale-notes/receipt/{$this->id}",
                 'print_ticket_58' => url('') . "/sale-notes/print/{$this->external_id}/ticket_58",
                 'print_ticket_50' => $this->getUrlPrintByFormat('ticket_50'),
                 'purchase_order' => $this->purchase_order,

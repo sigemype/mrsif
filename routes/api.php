@@ -1,24 +1,36 @@
 <?php
+
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 Route::get('generate_token', 'Tenant\Api\AppController@getSeries');
 $hostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
 if ($hostname) {
     Route::domain($hostname->fqdn)->group(function () {
 
-        Route::post('login', 'Tenant\Api\AppController@login');
+        
 
-            // Route::prefix('clinica')->group(function () {
-                //para sistema de clinica
-                // Route::get('document/metodos_filtro', 'Tenant\Api\ClinicaController@metodos_filtro');
-                // Route::get('report/format/download', 'Tenant\Api\ClinicaController@download_report');
-                // Route::post('documents/status', 'Tenant\Api\ClinicaController@documentStatus');
-                // Route::post('document/emailLS', 'Tenant\Api\ClinicaController@document_email');
-                // Route::get('document/tipo_doc', 'Tenant\Api\ClinicaController@getTypeDoc');
-            // });
-              //app loreto inventario
-              Route::prefix('inventory')->group(function () {
-                Route::get('search_items', '\modules\Inventory\Http\Controllers\InventoryController@searchItems');
-                });
+        Route::post('login', 'Tenant\Api\AppController@login');
+        Route::get('qz/crt/override', function () {
+
+            return file_get_contents('qz/crt/override.crt');
+        });
+        
+        Route::post('qz/signing', function (Request $request) {
+            $KEY = file_get_contents('qz/signing/key.pem');
+            $req = $request->input('request');
+            $privateKey = openssl_get_privatekey($KEY /*, $PASS */);
+            $signature = null;
+            openssl_sign($req, $signature, $privateKey);
+            if ($signature) {
+                header("Content-type: text/plain");
+                return base64_encode($signature);
+            }
+            return '<h1>Error al firmar qz</h1>';
+        });
+        //app loreto inventario
+        Route::prefix('inventory')->group(function () {
+          Route::get('search_items', '\modules\Inventory\Http\Controllers\InventoryController@searchItems');
+        });
 
         //reportes caja
         Route::get('cash/report/products/{cash}', 'Tenant\Api\AppController@report_products');
@@ -27,8 +39,76 @@ if ($hostname) {
         Route::get('cash/report/income-summary/{cash}', 'Tenant\Api\AppController@pdf');
         Route::get('cash/report/products/{cash}/ticket', 'Tenant\Api\AppController@report_products_ticket');
         Route::post('items/uploads', 'Tenant\ItemController@upload');
-
+        Route::post('persons/', 'Tenant\PersonController@store');
         Route::middleware(['auth:api', 'locked.tenant'])->group(function () {
+
+            Route::get('app/company-params', 'Tenant\ItemController@tables'); // Parámetros de la empresa
+
+            // PRODUCTOS
+            Route::get('app/paginate-items', 'Tenant\ItemController@records'); // Listar items por paginación
+            Route::get('app/retrieve-item/{id}', 'Tenant\ItemController@record'); // Obtener la información de un producto
+            Route::delete('app/item/{id}', 'Tenant\ItemController@destroy');
+            Route::post('app/items', 'Tenant\ItemController@store');
+            Route::delete('app/items/item-unit-type/{item}', 'Tenant\ItemController@destroyItemUnitType');
+
+            // CONFIGURACIÓN
+            Route::get('app/configurations/record', 'Tenant\ConfigurationController@record');
+
+            // CLIENTES
+            Route::prefix('app/persons')->group(function () {
+               Route::get('/columns', 'Tenant\PersonController@columns');
+               Route::get('/tables', 'Tenant\PersonController@tables');
+               Route::get('/{type}/records', 'Tenant\PersonController@records');
+               Route::get('/record/{person}', 'Tenant\PersonController@record');
+               Route::post('', 'Tenant\PersonController@store');
+               Route::delete('/{person}', 'Tenant\PersonController@destroy');
+            });
+            // CAJA CHICA
+            Route::post('app/cash', 'Tenant\CashController@store');
+            Route::get('app/cash/tables', 'Tenant\CashController@tables');
+            Route::get('app/cash/columns', 'Tenant\CashController@columns');
+            Route::get('app/cash/records', 'Tenant\CashController@records');
+            Route::get('app/cash/record/{cash}', 'Tenant\CashController@record');
+            Route::get('app/cash/opening_cash', 'Tenant\CashController@opening_cash');
+            Route::delete('app/cash/{cash}', 'Tenant\CashController@destroy');
+            Route::get('app/cash/close/{cash}', 'Tenant\CashController@close');
+            Route::get('app/cash/opening_cash_check/{user_id}', 'Tenant\CashController@opening_cash_check');
+            Route::post('app/cash/cash_document', 'Tenant\CashController@cash_document');
+            // POS
+            Route::get('app/pos/payment_tables', 'Tenant\PosController@payment_tables');
+            Route::get('app/pos/validate_stock/{item}/{quantity}', 'Tenant\PosController@validate_stock');
+            Route::get('app/pos/items', 'Tenant\PosController@item');
+            Route::get('app/pos/search_items_cat', 'Tenant\PosController@search_items_cat');
+            Route::get('app/pos/search_items', 'Tenant\PosController@search_items');
+            Route::get('app/pos/tables', 'Tenant\PosController@tables');
+
+            // COMPROBANTE ELECTRÓNICO
+            Route::post('app/documents_v1', 'Tenant\DocumentController@store');
+            Route::post('app/cash/cash_document', 'Tenant\CashController@cash_document');
+            Route::get('app/documents/record/{document}', 'Tenant\DocumentController@record');
+            Route::post('app/documents/email', 'Tenant\DocumentController@email');
+
+            //NOTA DE VENTA
+            Route::post('app/sale-notes', 'Tenant\SaleNoteController@store');
+            Route::get('app/sale-notes/record/{salenote}', 'Tenant\SaleNoteController@record');
+
+            Route::get('app/documents/data_table', 'Tenant\DocumentController@data_table');
+            Route::get('app/documents/records', 'Tenant\DocumentController@records');
+            Route::get('app/documents/send/{document}', 'Tenant\DocumentController@send');
+            Route::get('app/sale-notes/columns', 'Tenant\SaleNoteController@columns');
+            Route::get('app/sale-notes/columns2', 'Tenant\SaleNoteController@columns2');
+            Route::get('app/sale-notes/records', 'Tenant\SaleNoteController@records');
+            Route::get('app/sale-notes/totals', 'Tenant\SaleNoteController@totals');
+            Route::get('app/sale-notes/anulate/{id}', 'Tenant\SaleNoteController@anulate');
+            Route::post('app/summaries', 'Tenant\SummaryController@store');
+
+            //ANULACIONES
+            Route::post('app/voided', 'Tenant\VoidedController@store');
+            Route::delete('items/{item}', 'Tenant\ItemController@destroy');
+
+            Route::get('app/items/tables', 'Tenant\ItemController@tables');
+            Route::get('app/items/record/{item}', 'Tenant\ItemController@record');
+             /** Apis v2 Mobile */
 
             Route::prefix('restaurant')->group(function () {
 
@@ -163,9 +243,12 @@ if ($hostname) {
               Route::get('pos/tables', 'Tenant\PosController@tables');
               Route::get('pos/payment_tables','Tenant\PosController@payment_tables');
             });
-            //reorte general
-            Route::get('report/format/download', 'Tenant\Api\ClinicaController@download_report');
-            // Route::get('report/format/download', 'Modules\Account\Http\Controllers\FormatController@download');
+
+            //reporte general
+            // Route::get('report/format/download', 'Tenant\Api\ClinicaController@download_report');
+            Route::get('account/format/download', '\Modules\Account\Http\Controllers\FormatController@download');
+            Route::post('account/report/email', 'Tenant\Api\AppController@accountReportEmail');
+            
             //categorias
             Route::get('category/details/{id}', 'Tenant\Api\AppController@category_detail');
             Route::delete('category/delete/{id}', 'Tenant\Api\AppController@category_destroy');
@@ -186,6 +269,15 @@ if ($hostname) {
             Route::post('dispatcher/create', 'Tenant\Api\AppController@storeDispatcher');
             Route::delete('dispatcher/delete/{item}', 'Tenant\Api\AppController@destroyDispatcher');
 
+            // guia transportista
+            Route::prefix('dispatch_carrier')->group(function () {
+                Route::get('/records', 'Tenant\Api\AppController@dispatchesCarrierRecords');
+                Route::get('/data', 'Tenant\Api\AppController@dispatchesCarrierData');
+                Route::post('', 'Tenant\DispatchCarrierController@store');
+                Route::get('/send/{id}', 'Tenant\Api\AppController@sendDispatchCarrier');
+                Route::get('/record/{id}', 'Tenant\Api\AppController@dispatchesCarrierRecordId');
+                Route::get('/status_ticketLS/{id}', 'Tenant\Api\DispatchController@statusTicketCarrier');
+            });
             //transportistas drivers
             Route::get('driver/search', 'Tenant\Api\AppController@searchDriver');
             Route::post('driver/create', 'Tenant\Api\AppController@storeDriver');
@@ -324,6 +416,7 @@ if ($hostname) {
 
             Route::post('dispatches/send', 'Tenant\Api\DispatchController@send');
             Route::get('dispatches/status_ticketLS/{external_id}', 'Tenant\Api\DispatchController@statusTicketLS');
+            Route::post('dispatches/status_ticket', 'Tenant\Api\DispatchController@statusTicket');
 
             Route::post('documents_server', 'Tenant\Api\DocumentController@storeServer');
             Route::get('document_check_server/{external_id}', 'Tenant\Api\DocumentController@documentCheckServer');

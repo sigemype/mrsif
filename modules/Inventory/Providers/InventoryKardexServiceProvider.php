@@ -17,7 +17,9 @@ use Modules\Item\Models\ItemLotsGroup;
 use Modules\Item\Models\ItemLot;
 use Modules\Inventory\Models\DevolutionItem;
 use App\Models\Tenant\DispatchItem;
+use App\Models\Tenant\ItemSizeStock;
 use App\Models\Tenant\NoStockDocument;
+use Modules\Inventory\Models\InventoryConfiguration;
 
 /**
  * Se debe tener en cuenta este provider para llevar el control de Kardex
@@ -57,6 +59,11 @@ class InventoryKardexServiceProvider extends ServiceProvider
     private function purchase()
     {
         PurchaseItem::created(function (PurchaseItem $purchase_item) {
+            $purchase = $purchase_item->purchase;
+            $factor = 1;
+            if($purchase->is_note_credit()){
+                $factor = -1;
+            }
 
             $presentationQuantity = (!empty($purchase_item->item->presentation)) ? $purchase_item->item->presentation->quantity_unit : 1;
 
@@ -64,8 +71,8 @@ class InventoryKardexServiceProvider extends ServiceProvider
             // $warehouse = $this->findWarehouse($this->findWarehouseById($purchase_item->warehouse_id)->establishment_id);
             // $warehouse = $this->findWarehouse();
             //$this->createInventory($purchase_item->item_id, $purchase_item->quantity, $warehouse->id);
-            $this->createInventoryKardex($purchase_item->purchase, $purchase_item->item_id, /*$purchase_item->quantity*/ ($purchase_item->quantity * $presentationQuantity), $warehouse->id);
-            $this->updateStock($purchase_item->item_id, ($purchase_item->quantity * $presentationQuantity), $warehouse->id);
+            $this->createInventoryKardex($purchase_item->purchase, $purchase_item->item_id, /*$purchase_item->quantity*/ ($purchase_item->quantity * $presentationQuantity * $factor), $warehouse->id);
+            $this->updateStock($purchase_item->item_id, ($purchase_item->quantity * $presentationQuantity*$factor), $warehouse->id);
         });
     }
 
@@ -157,11 +164,14 @@ class InventoryKardexServiceProvider extends ServiceProvider
 
                             $lotesSelecteds = $document_item->item->IdLoteSelected;
                             $document_factor = ($document->document_type_id === '07') ? 1 : -1;
-
+                            $inventory_configuration = InventoryConfiguration::first();
+                            $inventory_configuration->stock_control;
                             foreach ($lotesSelecteds as $item) {
                                 $lot = ItemLotsGroup::query()->find($item->id);
                                 $lot->quantity = $lot->quantity + (($quantity_unit * $item->compromise_quantity) * $document_factor);
+                                if($inventory_configuration->stock_control){
                                 $this->validateStockLotGroup($lot, $document_item);
+                                }
                                 $lot->save();
                             }
                         } else {
@@ -184,7 +194,16 @@ class InventoryKardexServiceProvider extends ServiceProvider
                     }
                 }
             }
+            if (isset($document_item->item->sizes_selected)) {
+                foreach ($document_item->item->sizes_selected as $size) {
 
+                    $item_size = ItemSizeStock::where('item_id', $document_item->item_id)->where('size', $size->size)->first();
+                    if ($item_size) {
+                        $item_size->stock = $item_size->stock - $size->qty;
+                        $item_size->save();
+                    }
+                }
+            }
             if (isset($document_item->item->lots)) {
                 foreach ($document_item->item->lots as $it) {
 
@@ -249,8 +268,15 @@ class InventoryKardexServiceProvider extends ServiceProvider
                     }
                 }
             }
-            // series
-
+            if (isset($sale_note_item->item->sizes_selected)) {
+                foreach ($sale_note_item->item->sizes_selected as $size) {
+                    $item_size = ItemSizeStock::where('item_id', $sale_note_item->item_id)->where('size', $size->size)->first();
+                    if ($item_size) {
+                        $item_size->stock = $item_size->stock - $size->qty;
+                        $item_size->save();
+                    }
+                }
+            }
         });
     }
 

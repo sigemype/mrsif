@@ -9,30 +9,17 @@ function getLocationData($value, $type = 'sale')
     if ($type == 'sale') {
         $type_doc = $value->document;
     }
-    if (
-        $value &&
-        $type_doc &&
-        $type_doc->customer
-    ) {
+    if ($value && $type_doc && $type_doc->customer) {
         $customer = $type_doc->customer;
     }
     if ($customer != null) {
-        if (
-            $customer->district &&
-            $customer->district->description
-        ) {
+        if ($customer->district && $customer->district->description) {
             $district = $customer->district->description;
         }
-        if (
-            $customer->department &&
-            $customer->department->description
-        ) {
+        if ($customer->department && $customer->department->description) {
             $department = $customer->department->description;
         }
-        if (
-            $customer->province &&
-            $customer->province->description
-        ) {
+        if ($customer->province && $customer->province->description) {
             $province = $customer->province->description;
         }
     }
@@ -42,13 +29,15 @@ function getLocationData($value, $type = 'sale')
         'province' => $province,
     ];
 }
-?><!DOCTYPE html>
+?>
+<!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type"
-          content="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8"/>
+        content="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>REPORTE PRODUCTOS</title>
     <style>
@@ -56,17 +45,21 @@ function getLocationData($value, $type = 'sale')
             font-family: sans-serif;
             font-size: 12px;
         }
+
         table {
             width: 100%;
             border-spacing: 0;
             border: 1px solid black;
         }
+
         .celda {
             text-align: center;
             padding: 5px;
             border: 0.1px solid black;
             font-size: 9px;
+            word-wrap: break-word;
         }
+
         th {
             padding: 5px;
             font-size: 9px;
@@ -74,185 +67,313 @@ function getLocationData($value, $type = 'sale')
             border-color: #0088cc;
             border: 0.1px solid black;
         }
+
         .title {
             font-weight: bold;
             padding: 5px;
             font-size: 20px !important;
             text-decoration: underline;
         }
-        p > strong {
+
+        p>strong {
             margin-left: 5px;
             font-size: 13px;
         }
+
         thead {
             font-weight: bold;
             background: #0088cc;
             color: white;
             text-align: center;
         }
+
         @page {
             margin: 6px;
         }
     </style>
 </head>
+
 <body>
-@if(!empty($records))
-    <div class="">
-        <div class=" ">
-            <table class="" style="table-layout:fixed;">
-                <thead>
-                <?php
-                $plus = 4;
-                if ($document_type_id != '80' && $type == 'sale') {
-                    // para añadir dpto, prov y dist se le resta 1 al width de 9 elementos
-                    $plus = 3;
-                }
-                ?>
-                <tr width="100%">
-                    @include('report::general_items.partials.report_pdf_header',[
-                                                  'document_type_id'=>$document_type_id,
-                                                  'type'=>$type,
-                                                  'plus'=>$plus,
-                                              ])
-                </tr>
-                </thead>
-                <tbody>
-                @if($type == 'sale')
-                    @if($document_type_id == '80')
-                        @foreach($records as $key => $value)
-                            <?php
-                            if(isset($qty)) unset($qty);
-                            /** @var \App\Models\Tenant\DocumentItem $value */
-                            $series = '';
-                            if (isset($value->item->lots)) {
-                                $series_data = collect($value->item->lots)->where('has_sale', 1)->pluck('series')->toArray();
-                                $series = implode(" - ", $series_data);
-                            }
-                            $total_item_purchase = \Modules\Report\Http\Resources\GeneralItemCollection::getPurchaseUnitPrice($value);
-                            $utility_item = $value->total - $total_item_purchase;
-                            /** @var \App\Models\Tenant\Item $item */
-                            $item = $value->getModelItem();
-                            $model = $item->model;
-                            $document = $value->sale_note;
-                            $platform = $item->getWebPlatformModel();
-                            if ($platform !== null) {
-                                $platform = $platform->name;
-                            }
-                            $pack = $item->getSetItems();
-                            ?>
-                            @include('report::general_items.partials.report_pdf_body_sale',[
-                                      'document_type_id'=>$document_type_id,
-                                      'document'=>$document,
-                                      'type'=>$type,
-                                      'value'=>$value,
-                                      'key'=>$key,
-                                      'item'=>$item,
-                                  ])
-                            @if($pack !== null)
-                                @foreach($pack as $item_pack)
-                                    <?php
-                                    /** @var \App\Models\Tenant\ItemSet $item_pack */
-                                    $value->item = $item_pack->individual_item;
-                                    /** @var \App\Models\Tenant\Item $item */
-                                    $item = $value->item;
-                                    $qty = $item_pack->quantity;
-                                    ?>
-                                    @include('report::general_items.partials.report_pdf_body_sale',[
-                                                                           'document_type_id'=>$document_type_id,
-                                                                          'document'=>$document,
-                                                                          'type'=>$type,
-                                                                          'value'=>$value,
-                                                                          'key'=>$key,
-                                                                          'item'=>$item,
-                                                                       ])
-                                @endforeach
-                            @endif
-                        @endforeach
-                    @else
-                        @foreach($records as $key => $value)
-                            <?php
-                                if(isset($qty)) unset($qty);
-                            /** @var \App\Models\Tenant\DocumentItem $value */
-                            $series = '';
-                            if (isset($value->item->lots)) {
-                                $series_data = collect($value->item->lots)->where('has_sale', 1)->pluck('series')->toArray();
-                                $series = implode(" - ", $series_data);
-                            }
-                            $total_item_purchase = \Modules\Report\Http\Resources\GeneralItemCollection::getPurchaseUnitPrice($value);
-                            $utility_item = $value->total - $total_item_purchase;
-                            $item = $value->getModelItem();
-                            $model = $item->model;
-                            /** @var  \App\Models\Tenant\Document $document */
-                            $document = $value->document;
-                            $purchseOrder = $document->purchase_order;
-                            $platform = $item->getWebPlatformModel();
-                            if ($platform !== null) {
-                                $platform = $platform->name;
-                            }
-                            $pack = $item->getSetItems();
-                            $item = $value->item;
-                            $stablihsment = getLocationData($value, $type);
-                            ?>
-                            @include('report::general_items.partials.report_pdf_body_sale',[
-                                                                  'document_type_id'=>$document_type_id,
-                                                                  'document'=>$document,
-                                                                  'type'=>$type,
-                                                                  'value'=>$value,
-                                                                  'key'=>$key,
-                                                                  'item'=>$item,
-                                                                  'stablihsment'=>$stablihsment,
-                                                              ])
-                            @if($pack !== null)
-                                @foreach($pack as $item_pack)
-                                    <?php
-                                    /** @var \App\Models\Tenant\ItemSet $item_pack */
-                                    $value->item = $item_pack->individual_item;
-                                    /** @var \App\Models\Tenant\Item $item */
-                                    $item = $value->item;
-                                    $qty = $item_pack->quantity;
-                                    // dd($item);
-                                    ?>
-                                    @include('report::general_items.partials.report_pdf_body_sale',
-                                                                       [
-                                                                           'document_type_id'=>$document_type_id,
-                                                                           'document'=>$document,
-                                                                           'type'=>$type,
-                                                                           'value'=>$value,
-                                                                           'key'=>$key,
-                                                                           'item'=>$item,
-                                                                           'qty'=>$qty,
-                                                                           'stablihsment'=>$stablihsment,
-                                                                       ])
-                                @endforeach
-                            @endif
-                        @endforeach
-                    @endif
-                @else
-                    @foreach($records as $key => $value)
-
+    @if (!empty($records))
+        <div class="">
+            <div class=" ">
+                <table class="" style="table-layout:fixed;">
+                    <thead>
                         <?php
-
-                        /**@var \App\Models\Tenant\PurchaseItem $value */
-                        /** @var  \App\Models\Tenant\Purchase $document */
-                        $document = $value->purchase;
+                        $plus = 4;
+                        if ($document_type_id != '80' && $type == 'sale') {
+                            // para añadir dpto, prov y dist se le resta 1 al width de 9 elementos
+                            $plus = 3;
+                        }
                         ?>
-                        @include('report::general_items.partials.report_pdf_body_purchase',
-                                                           [
-                                                               'value'=>$value,
-                                                               'document'=>$document,
+                        <tr width="100%">
+                            @include('report::general_items.partials.report_pdf_header', [
+                                'document_type_id' => $document_type_id,
+                                'type' => $type,
+                                'plus' => $plus,
+                            ])
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if ($type == 'sale')
 
-                                                           ])
-
-                    @endforeach
-                @endif
-                </tbody>
-            </table>
+                            @foreach ($records as $key => $value)
+                                @if ($value->sale_note && $value->sale_note->date_of_issue)
+                                <?php
+                                $value = \App\Models\Tenant\SaleNoteItem::find($value->id);
+                                    if (isset($qty)) {
+                                        unset($qty);
+                                    }
+                                    /** @var \App\Models\Tenant\SaleNoteItem $value */
+                                    $series = '';
+                                    if (isset($value->item->lots)) {
+                                        $series_data = collect($value->item->lots)
+                                            ->where('has_sale', 1)
+                                            ->pluck('series')
+                                            ->toArray();
+                                        $series = implode(' - ', $series_data);
+                                    }
+                                    $total_item_purchase = \Modules\Report\Http\Resources\GeneralItemCollection::getPurchaseUnitPrice($value);
+                                    
+                                    if (isset($row->item->presentation)) {
+                                        if (is_object($row->item->presentation)) {
+                                            $quantity_unit = $value->item->presentation->quantity_unit;
+                                    
+                                            $total_item_purchase *= $quantity_unit * $value->quantity;
+                                        }
+                                    }
+                                    $apply_conversion_to_pen = $request_apply_conversion_to_pen == 'true';
+                                    if (!$apply_conversion_to_pen && $value->isCurrencyTypeUsd()) {
+                                        $total_item_purchase /= $value->getExchangeRateSale();
+                                    }
+                                    $utility_item = $value->total - $total_item_purchase;
+                                    /** @var \App\Models\Tenant\Item $item */
+                                    $item = $value->getModelItem();
+                                    $model = $item->model;
+                                    $document = $value->sale_note;
+                                    $platform = $item->getWebPlatformModel();
+                                    if ($platform !== null) {
+                                        $platform = $platform->name;
+                                    }
+                                    $pack = $item->getSetItems();
+                                    ?>
+                                    @include('report::general_items.partials.report_pdf_body_sale', [
+                                        'document_type_id' => $document_type_id,
+                                        'document' => $document,
+                                        'type' => $type,
+                                        'value' => $value,
+                                        'key' => $key,
+                                        'item' => $item,
+                                    ])
+                                    @if ($pack !== null)
+                                        @foreach ($pack as $item_pack)
+                                            <?php
+                                            /** @var \App\Models\Tenant\ItemSet $item_pack */
+                                            $value->item = $item_pack->individual_item;
+                                            /** @var \App\Models\Tenant\Item $item */
+                                            $item = $value->item;
+                                            $qty = $item_pack->quantity;
+                                            ?>
+                                            @include(
+                                                'report::general_items.partials.report_pdf_body_sale',
+                                                [
+                                                    'document_type_id' => $document_type_id,
+                                                    'document' => $document,
+                                                    'type' => $type,
+                                                    'value' => $value,
+                                                    'key' => $key,
+                                                    'item' => $item,
+                                                ]
+                                            )
+                                        @endforeach
+                                    @endif
+                                @endif
+                            @endforeach
+                            @foreach ($records as $key => $value)
+                                @if ($value->document && $value->document->date_of_issue)
+                                    <?php
+                                    if (isset($qty)) {
+                                        unset($qty);
+                                    }
+                                    /** @var \App\Models\Tenant\DocumentItem $value */
+                                    $series = '';
+                                    if (isset($value->item->lots)) {
+                                        $series_data = collect($value->item->lots)
+                                            ->where('has_sale', 1)
+                                            ->pluck('series')
+                                            ->toArray();
+                                        $series = implode(' - ', $series_data);
+                                    }
+                                    $total_item_purchase = \Modules\Report\Http\Resources\GeneralItemCollection::getPurchaseUnitPrice($value);
+                                    
+                                    if (isset($row->item->presentation)) {
+                                        if (is_object($row->item->presentation)) {
+                                            $quantity_unit = $value->item->presentation->quantity_unit;
+                                    
+                                            $total_item_purchase *= $quantity_unit * $value->quantity;
+                                        }
+                                    }
+                                    $apply_conversion_to_pen = $request_apply_conversion_to_pen == 'true';
+                                    if (!$apply_conversion_to_pen && $value->isCurrencyTypeUsd()) {
+                                        $total_item_purchase /= $value->getExchangeRateSale();
+                                    }
+                                    $utility_item = $value->total - $total_item_purchase;
+                                    $item = $value->getModelItem();
+                                    $model = $item->model;
+                                    /** @var  \App\Models\Tenant\Document $document */
+                                    $document = $value->document;
+                                    if ($document == null) {
+                                        $document_id = $value->id;
+                                    }
+                                    $purchseOrder = $document->purchase_order;
+                                    $platform = $item->getWebPlatformModel();
+                                    if ($platform !== null) {
+                                        $platform = $platform->name;
+                                    }
+                                    $pack = $item->getSetItems();
+                                    $item = $value->item;
+                                    $stablihsment = getLocationData($value, $type);
+                                    ?>
+                                    @include('report::general_items.partials.report_pdf_body_sale', [
+                                        'document_type_id' => $document_type_id,
+                                        'document' => $document,
+                                        'type' => $type,
+                                        'value' => $value,
+                                        'key' => $key,
+                                        'item' => $item,
+                                        'stablihsment' => $stablihsment,
+                                    ])
+                                    @if ($pack !== null)
+                                        @foreach ($pack as $item_pack)
+                                            <?php
+                                            /** @var \App\Models\Tenant\ItemSet $item_pack */
+                                            $value->item = $item_pack->individual_item;
+                                            /** @var \App\Models\Tenant\Item $item */
+                                            $item = $value->item;
+                                            $qty = $item_pack->quantity;
+                                            // dd($item);
+                                            ?>
+                                            @include(
+                                                'report::general_items.partials.report_pdf_body_sale',
+                                                [
+                                                    'document_type_id' => $document_type_id,
+                                                    'document' => $document,
+                                                    'type' => $type,
+                                                    'value' => $value,
+                                                    'key' => $key,
+                                                    'item' => $item,
+                                                    'qty' => $qty,
+                                                    'stablihsment' => $stablihsment,
+                                                ]
+                                            )
+                                        @endforeach
+                                    @endif
+                                @endif
+                            @endforeach
+                            @foreach ($records as $key => $value)
+                                @if ($value->quotation && $value->quotation->date_of_issue)
+                                    <?php
+                                         $value = \App\Models\Tenant\QuotationItem::find($value->id);
+                                    if (isset($qty)) {
+                                        unset($qty);
+                                    }
+                                    /** @var \App\Models\Tenant\QuotationItem $value */
+                                    $series = '';
+                                    if (isset($value->item->lots)) {
+                                        $series_data = collect($value->item->lots)
+                                            ->where('has_sale', 1)
+                                            ->pluck('series')
+                                            ->toArray();
+                                        $series = implode(' - ', $series_data);
+                                    }
+                                    $total_item_purchase = \Modules\Report\Http\Resources\GeneralItemCollection::getPurchaseUnitPrice($value);
+                                    
+                                    if (isset($row->item->presentation)) {
+                                        if (is_object($row->item->presentation)) {
+                                            $quantity_unit = $value->item->presentation->quantity_unit;
+                                            $total_item_purchase *= $quantity_unit * $value->quantity;
+                                        }
+                                    }
+                                    $apply_conversion_to_pen = $request_apply_conversion_to_pen == 'true';
+                                    if (!$apply_conversion_to_pen && $value->isCurrencyTypeUsd()) {
+                                        $total_item_purchase /= $value->getExchangeRateSale();
+                                    }
+                                    $utility_item = $value->total - $total_item_purchase;
+                                    $item = $value->getModelItem();
+                                    $model = $item->model;
+                                    /** @var  \App\Models\Tenant\Quotation $document */
+                                    $document = $value->quotation;
+                                    if ($document == null) {
+                                        $document_id = $value->id;
+                                    }
+                                    $purchseOrder = $document->purchase_order;
+                                    $platform = $item->getWebPlatformModel();
+                                    if ($platform !== null) {
+                                        $platform = $platform->name;
+                                    }
+                                    $pack = $item->getSetItems();
+                                    $item = $value->item;
+                                    $stablihsment = getLocationData($value, $type);
+                                    ?>
+                                    @include('report::general_items.partials.report_pdf_body_sale', [
+                                        'document_type_id' => $document_type_id,
+                                        'document' => $document,
+                                        'type' => $type,
+                                        'value' => $value,
+                                        'key' => $key,
+                                        'item' => $item,
+                                        'stablihsment' => $stablihsment,
+                                    ])
+                                    @if ($pack !== null)
+                                        @foreach ($pack as $item_pack)
+                                            <?php
+                                            /** @var \App\Models\Tenant\ItemSet $item_pack */
+                                            $value->item = $item_pack->individual_item;
+                                            /** @var \App\Models\Tenant\Item $item */
+                                            $item = $value->item;
+                                            $qty = $item_pack->quantity;
+                                            // dd($item);
+                                            ?>
+                                            @include(
+                                                'report::general_items.partials.report_pdf_body_sale',
+                                                [
+                                                    'document_type_id' => $document_type_id,
+                                                    'document' => $document,
+                                                    'type' => $type,
+                                                    'value' => $value,
+                                                    'key' => $key,
+                                                    'item' => $item,
+                                                    'qty' => $qty,
+                                                    'stablihsment' => $stablihsment,
+                                                ]
+                                            )
+                                        @endforeach
+                                    @endif
+                                @endif
+                            @endforeach
+                        @else
+                            @foreach ($records as $key => $value)
+                                <?php
+                                
+                                /**@var \App\Models\Tenant\PurchaseItem $value */
+                                /** @var  \App\Models\Tenant\Purchase $document */
+                                $document = $value->purchase;
+                                ?>
+                                @include('report::general_items.partials.report_pdf_body_purchase', [
+                                    'value' => $value,
+                                    'document' => $document,
+                                ])
+                            @endforeach
+                        @endif
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-@else
-    <div>
-        <p>No se encontraron registros.</p>
-    </div>
-@endif
+    @else
+        <div>
+            <p>No se encontraron registros.</p>
+        </div>
+    @endif
 </body>
+
 </html>

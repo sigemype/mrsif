@@ -37,7 +37,7 @@
             </div>
             <div class="form-actions text-end mt-5">
                 <el-button @click.prevent="close()">Cancelar</el-button>
-                <el-button type="primary" native-type="submit" :loading="loading_submit">Procesar</el-button>
+                <el-button type="primary" native-type="submit" :loading="loading_submit">{{textProcess}}</el-button>
             </div>
         </form>
     </el-dialog>
@@ -49,6 +49,7 @@
         props: ['showDialog'],
         data() {
             return {
+                textProcess: 'Procesar',
                 loading_submit: false,
                 headers: headers_token,
                 titleDialog: null,
@@ -85,14 +86,17 @@
                     return;
                 }
                 this.loading_submit = true
+                this.textProcess = 'Procesando...'
                 await this.$refs.upload.submit()
-                this.loading_submit = false
+                 
             },
             close() {
                 this.$emit('update:showDialog', false)
                 this.initForm()
             },
             successUpload(response, file, fileList) {
+                this.loading_submit = false
+                this.textProcess = 'Procesar'
                 if (response.success) {
                     this.$message.success(response.message)
                     this.$eventHub.$emit('reloadData')
@@ -104,6 +108,8 @@
                 }
             },
             errorUpload(error) {
+                this.loading_submit = false
+                this.textProcess = 'Procesar'
                 console.log(error)
             }
         }

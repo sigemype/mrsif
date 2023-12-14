@@ -34,6 +34,9 @@ use Modules\Sale\Models\SaleOpportunity;
 use Modules\Sale\Models\Contract;
 use Modules\Purchase\Models\FixedAssetPurchase;
 use App\Models\Tenant\{
+    BillOfExchange,
+    BillOfExchangeDocument,
+    BillOfExchangePayment,
     CashDocumentCredit,
     CashDocument,
     DocumentItem,
@@ -41,6 +44,7 @@ use App\Models\Tenant\{
     Inventory,
     Item,
     ItemSet,
+    ItemSizeStock,
     Promotion,
     QuotationItem,
     SaleNoteItem
@@ -77,6 +81,7 @@ class OptionController extends Controller
             ItemSet::query()->delete();
             Item::where('id', '>', 0)->chunk(100, function ($items) use (&$items_deleted) {
                 foreach ($items as $item) {
+                    ItemSizeStock::where('item_id', $item->id)->delete();
                     ItemSet::where('item_id', $item->id)->delete();
                     Promotion::where('item_id', $item->id)->delete();
                     ContractItem::where('item_id', $item->id)->delete();
@@ -166,7 +171,9 @@ class OptionController extends Controller
     }
     public function deleteDocuments(Request $request)
     {
-
+        BillOfExchangePayment::query()->delete();
+        BillOfExchangeDocument::query()->delete();
+        BillOfExchange::query()->delete();
         $this->delete_quantity = 0;
         AverageHistory::query()->delete();
         SuscriptionPayment::query()->delete();

@@ -357,6 +357,7 @@
                             </template>
                             <template v-else>
                                 <button
+                                    v-if="configuration.reopen_cash"
                                     type="button"
                                     class="btn waves-effect waves-light btn-sm btn-warning"
                                     @click.prevent="clickReOpenCash(row.id)"

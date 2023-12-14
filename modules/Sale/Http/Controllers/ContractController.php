@@ -155,7 +155,7 @@ class ContractController extends Controller
         $customers = $this->table('customers');
         $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();
         $currency_types = CurrencyType::whereActive()->get();
-        // $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        // $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         $discount_types = ChargeDiscountType::whereType('discount')->whereLevel('item')->get();
         $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $company = Company::active();
@@ -177,7 +177,7 @@ class ContractController extends Controller
     {
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $series = Series::where('establishment_id',$establishment->id)->get();
-        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         $payment_method_types = PaymentMethodType::all();
         $payment_destinations = $this->getPaymentDestinations();
 

@@ -16,6 +16,7 @@ class Company extends ModelTenant
 {
     protected $with = ['identity_document_type'];
     protected $fillable = [
+        'is_rus',
         'footer_text_template',
         'mtc_auth',
         'user_id',
@@ -61,6 +62,7 @@ class Company extends ModelTenant
     protected $casts = [
         'send_document_to_pse' => 'bool',
         'pse' => 'bool',
+        'is_rus' => 'bool',
     ];
 
     /**
@@ -69,7 +71,9 @@ class Company extends ModelTenant
     public function getCodDigemid() {
         return $this->cod_digemid;
     }
-
+    public function isSmart(){
+        return $this->certificate == 'certificate_smart.pem';
+    }
     /**
      * @param mixed $cod_digemid
      *

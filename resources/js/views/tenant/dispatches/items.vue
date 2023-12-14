@@ -19,11 +19,18 @@
                         <small class="text-danger" v-if="errors.items" v-text="errors.items[0]"></small>
                     </div>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-3">
                     <div class="form-group" :class="{'has-danger': errors.quantity}">
                         <label class="control-label">Cantidad</label>
                         <el-input-number v-model="form.quantity" :precision="4" :step="1" :min="0.01" :max="99999999"></el-input-number>
                         <small class="text-danger" v-if="errors.quantity" v-text="errors.quantity[0]"></small>
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="form-group" :class="{'has-danger': errors.weight}">
+                        <label class="control-label">Peso</label>
+                        <el-input-number v-model="form.weight" :precision="2" :step="1" :min="0.01" :max="99999999"></el-input-number>
+                        <small class="text-danger" v-if="errors.weight" v-text="errors.weight[0]"></small>
                     </div>
                 </div>
                 <template v-if="item">
@@ -35,7 +42,7 @@
         </div>
         <span slot="footer" class="dialog-footer">
             <el-button @click.prevent="close">Cerrar</el-button>
-            <el-button type="primary" @click="clickAddItem">Agregar</el-button>
+            <el-button type="primary" @click="clickAddItem" v-if="form.item">Agregar</el-button>
         </span>
 
         <item-form :showDialog.sync="showDialogNewItem" :external="true"></item-form>
@@ -86,9 +93,12 @@
                 this.$http.post(`/${this.resource}/tables?current_item=${this.currentItem ? this.currentItem.item_id:''}`).then(response => {
                     this.items = response.data.items;
                     this.all_items = this.items
+                    this.form.weight = 1;
+                    this.form.quantity = 1;
                     if(this.currentItem){
                         this.form.item = this.currentItem.item_id;
                         this.form.quantity = this.currentItem.quantity;
+                        this.form.weight = this.currentItem.weight;
                         this.form.IdLoteSelected = this.currentItem.IdLoteSelected;
                         this.item = this.items.find(it => it.id == this.form.item);
                     }
@@ -116,6 +126,7 @@
                     this.$emit('addItem', {
                         item,
                         quantity: this.form.quantity,
+                        weight: this.form.weight,
                     });
 
                     this.form = {};

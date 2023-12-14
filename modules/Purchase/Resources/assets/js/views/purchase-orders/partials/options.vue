@@ -86,6 +86,7 @@ export default {
             button_text: 'Nueva OC',
             errors: {},
             form: {},
+            loading_Whatsapp:false,
         }
     },
     created() {

@@ -5,7 +5,9 @@
         </div>
         <div class="card mb-0">
                 <div class="card-body">
-                    <data-table :resource="resource"  :applyCustomer="true" :colspanFootPurchase="9" :applyConversionToPen="applyConversionToPen">
+                    <data-table :resource="resource"  
+                    :configuration="configuration"
+                    :applyCustomer="true" :colspanFootPurchase="9" :applyConversionToPen="applyConversionToPen">
                         <tr slot="heading">
                             <th class="">#</th>
                             <th class="">F. Emisión</th>
@@ -13,7 +15,8 @@
                             <th class="">Proveedor</th>
                             <th class="">Estado</th>
                             <th class="">Número</th>
-
+    <th v-if="configuration.purchases_control">Placa</th>
+    <th v-if="configuration.purchases_control">Responsable</th>
                             <th class="">F. Pago</th>
                             <th class="text-center">Moneda</th>
                             <th>Percepcion</th>
@@ -37,8 +40,10 @@
                                 <small v-text="row.document_type_description"></small><br/>
 
                             </td>
+                            <td v-if="configuration.purchases_control">{{row.license}}</td>
+                            <td v-if="configuration.purchases_control">{{row.responsible}}</td>
                             <td>
-                                <span v-for="pay in row.payments">{{pay.payment_method_type_description}}</span>
+                                <span v-for="(pay,idx) in row.payments" :key="idx">{{pay.payment_method_type_description}}</span>
                             </td>
                             <td class="text-center">
                                 {{ row.currency_type_id }}
@@ -81,6 +86,7 @@
     export default {
         components: {DataTable},
         props:[
+            'configuration',
             'applyConversionToPen',
         ],
         data() {
@@ -91,6 +97,7 @@
             }
         },
         async created() {
+            console.log(this.configuration);
         },
         methods: {
 

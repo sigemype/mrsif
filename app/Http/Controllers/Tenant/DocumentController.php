@@ -82,7 +82,9 @@ use App\Models\Tenant\Note;
 use App\Models\Tenant\SummaryDocument;
 use App\Models\Tenant\VoidedDocument;
 use App\Models\Tenant\NameQuotations;
+use App\Models\Tenant\Voided;
 use App\Services\PseService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Modules\BusinessTurn\Models\DocumentHotel;
 use Modules\BusinessTurn\Models\DocumentTransport;
 use Modules\Inventory\Models\{
@@ -106,6 +108,36 @@ class DocumentController extends Controller
         $this->middleware('input.request:documentUpdate,web', ['only' => ['update']]);
     }
 
+    public function updateUser($user_id, $document_id)
+    {
+        $document = Document::find($document_id);
+        $document->user_id = $user_id;
+        $document->save();
+        return [
+            'success' => true,
+            'message' => 'Usuario cambiado'
+        ];
+    }
+    public function voidedPdf($id)
+    {
+        $document = Document::find($id);
+        $voided_document = VoidedDocument::where('document_id', $id)->first();
+        $voided = Voided::where('id', $voided_document->voided_id)->first();
+        $establishment = Establishment::find(auth()->user()->establishment_id);
+        $company = Company::active();
+
+
+        $pdf = Pdf::loadView('tenant.documents.voided_pdf', compact(
+            "document",
+            "company",
+            "establishment",
+            "voided",
+            "voided_document"
+        ))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->stream("anulacion" . '.pdf');
+    }
     public function changeSire($document_id, $appendix)
     {
         $document = Document::find($document_id);
@@ -127,11 +159,11 @@ class DocumentController extends Controller
         $document->save();
         return [
             'success' => true,
-            'message' => 'Anexo '.$appendix.' cambiado'
+            'message' => 'Anexo ' . $appendix . ' cambiado'
         ];
     }
     public function change_state($state_id,  $document_id)
-    
+
     {
         $document = Document::find($document_id);
         $document->state_type_id = $state_id;
@@ -144,7 +176,7 @@ class DocumentController extends Controller
     }
     public function index(Request $request)
     {
-        
+
         $to_anulate = $request->input('to_anulate') ?? false;
         $is_client = $this->getIsClient();
         $import_documents = config('tenant.import_documents');
@@ -157,7 +189,7 @@ class DocumentController extends Controller
         $view_apiperudev_validator_cpe = config('tenant.apiperudev_validator_cpe');
         $view_validator_cpe = config('tenant.validator_cpe');
         $document_state_types = StateType::all();
-        
+
         return view(
             'tenant.documents.index',
             compact(
@@ -352,12 +384,13 @@ class DocumentController extends Controller
         $is_contingency = 0;
         $suscriptionames = SuscriptionNames::create_new();
         $data = NameQuotations::first();
-        $quotations_optional =  $data!=null ? $data->quotations_optional : null;
-        $quotations_optional_value =  $data!=null ? $data->quotations_optional_value : null;
-  
+        $quotations_optional =  $data != null ? $data->quotations_optional : null;
+        $quotations_optional_value =  $data != null ? $data->quotations_optional_value : null;
+
         return view(
-            'tenant.documents.form', 
-            compact('suscriptionames', 'is_contingency', 'configuration', 'establishment', 'establishment_auth','quotations_optional','quotations_optional_value','api_token'));
+            'tenant.documents.form',
+            compact('suscriptionames', 'is_contingency', 'configuration', 'establishment', 'establishment_auth', 'quotations_optional', 'quotations_optional_value', 'api_token')
+        );
     }
 
     public function create_tensu()
@@ -385,7 +418,7 @@ class DocumentController extends Controller
         $series = $user->getSeries();
         // $prepayment_documents = $this->table('prepayment_documents');
         $establishments = Establishment::where('id', $establishment_id)->get(); // Establishment::all();
-        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         $document_types_note = DocumentType::whereIn('id', ['07', '08'])->get();
         $note_credit_types = NoteCreditType::whereActive()->orderByDescription()->get();
         $note_debit_types = NoteDebitType::whereActive()->orderByDescription()->get();
@@ -757,7 +790,7 @@ class DocumentController extends Controller
             $this->generalWriteErrorLog($e);
             return $this->generalResponse(false, 'Ocurrió un error: ' . $e->getMessage() . " " . $e->getFile() . " " . $e->getLine());
             // return $this->generalResponse(false, 'Ocurrió un error: ' . $e->getMessage());
-           
+
         }
     }
 
@@ -888,25 +921,32 @@ class DocumentController extends Controller
         $document = $fact->getDocument();
         //generar response
         $response = $fact->getResponse();
-
+        $base_url = url('/');
+        $external_id = $document->external_id;
+        $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
+        $print_format = $establishment->print_format??'ticket';
+        $url_print = "{$base_url}/print/document/{$external_id}/$print_format";
         return [
             'success' => true,
             'data' => [
                 'document' => $document,
                 'id' => $document->id,
                 'number_full' => $document->number_full,
-                'response' => $response
+                'response' => $response,
+                'url_print' => $url_print
             ]
         ];
     }
-    public function anulatePse($id){
+    public function anulatePse($id)
+    {
         $document = Document::find($id);
         $pse = new PseService($document);
         $response = $pse->anulatePse();
 
         return $response;
     }
-    public function anulatePseCheck($id){
+    public function anulatePseCheck($id)
+    {
         $document = Document::find($id);
         $pse = new PseService($document);
         $response = $pse->check_anulate();
@@ -1123,11 +1163,11 @@ class DocumentController extends Controller
         $establishment_auth = Establishment::where('id', auth()->user()->establishment_id)->get();
         $isUpdate = true;
         $data = NameQuotations::first();
-        $quotations_optional =  $data!=null ? $data->quotations_optional : null;
-        $quotations_optional_value =  $data!=null ? $data->quotations_optional_value : null;
-      
-        
-        return view('tenant.documents.form', compact('suscriptionames','quotations_optional','quotations_optional_value', 'is_contingency', 'establishment', 'establishment_auth', 'configuration', 'documentId', 'isUpdate','api_token'));
+        $quotations_optional =  $data != null ? $data->quotations_optional : null;
+        $quotations_optional_value =  $data != null ? $data->quotations_optional_value : null;
+
+
+        return view('tenant.documents.form', compact('suscriptionames', 'quotations_optional', 'quotations_optional_value', 'is_contingency', 'establishment', 'establishment_auth', 'configuration', 'documentId', 'isUpdate', 'api_token'));
     }
 
     /**

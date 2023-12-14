@@ -19,6 +19,18 @@ class ReportInventoryCollection extends ResourceCollection
 
             $item = $row->item;
             return [
+                'meter' => $item->meter,
+                'laboratory' => optional($item->cat_digemid)->nom_titular,
+                'num_reg_san' => optional($item->cat_digemid)->num_reg_san,
+                'kardex_quantity' => (float) $row->kardex_quantity ?? 0,
+                'lots_group' => $item->lots_group->transform(function ($row, $key) {
+                    return [
+                        'id' => $row->id,
+                        'code' => $row->code,
+                        'quantity' => $row->quantity,
+                        'date_of_due' => $row->date_of_due,
+                    ];
+                }),
                 'barcode' => $item->barcode,
                 'internal_id' => $item->internal_id,
                 'name' => $item->description,

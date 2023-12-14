@@ -20,6 +20,7 @@ use App\Models\Tenant\StateType;
 use App\Models\Tenant\Catalogs\DetractionType;
 use App\Models\Tenant\Catalogs\Department;
 use App\Models\Tenant\Catalogs\PaymentMethodType as CatPaymentMethodType;
+use App\Models\Tenant\Company;
 use App\Traits\OfflineTrait;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
 use App\Models\Tenant\Item;
@@ -29,9 +30,11 @@ use Modules\Document\Helpers\ConsultCdr;
 use Modules\Item\Models\ItemLot;
 use Modules\Document\Http\Resources\ItemLotCollection;
 use App\Models\Tenant\Configuration;
+use App\Models\Tenant\ItemSizeStock;
 use App\Models\Tenant\SaleNoteItem;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
-
+use Mpdf\Mpdf;
 
 class DocumentController extends Controller
 {
@@ -286,6 +289,24 @@ class DocumentController extends Controller
     }
 
 
+    public function searchItemsFactoryCode($id)
+    {
+        $request = new Request();
+        $item = Item::findOrFail($id);
+        $factory_code = $item->factory_code;
+        $items = Item::query();
+        $factory_codes = explode(',', $factory_code);
+       foreach ($factory_codes as $factory_code) {
+            $factory_code = trim($factory_code);
+            $items->orWhereRaw("FIND_IN_SET('$factory_code', REPLACE(factory_code, ' ', ''))");
+        }
+        $items = $items->get()
+            ->transform(function (Item $row) {
+                // return $row->getDataToItemModal();
+                return $row->getDataToItemModal();
+            });
+        return compact('items');
+    }
     /**
      * @param \Illuminate\Http\Request $request
      *
@@ -323,7 +344,21 @@ class DocumentController extends Controller
         //        return new ItemLotCollection($records->get());
         return new ItemLotCollection($records->paginate(config('tenant.items_per_page')));
     }
+    public function searchItemSizes(Request $request)
+    {
+        $query = ItemSizeStock::query();
+        $warehouse_id = $request->has('warehouse_id') ? $request->input('warehouse_id') : null;
+        $item_id = $request->has('item_id') ? $request->input('item_id') : null;
+        $query = $query->where('item_id', $item_id)
+            ->where('stock', '>', 0);
+        if ($warehouse_id) {
+            $query = $query->where('warehouse_id', $warehouse_id);
+        }
 
+        $query = $query->get();
+
+        return ['data' => $query];
+    }
     public function searchItemLots(Request $request)
     {
         $query = ItemLot::query()
@@ -385,7 +420,19 @@ class DocumentController extends Controller
 
         return $sale_lots->union($records);
     }
+    // public function getRecordsSizesForSaleNoteItem($records, $sale_note_item_id, $request)
+    // {
+    //     // obtener series disponibles
+    //     $records->whereAvailableItemLot($request->item_id)->latest();
 
+    //     // obtener series vendidas en la nv
+    //     $sale_note_item = SaleNoteItem::findOrFail($sale_note_item_id);
+    //     $lots = $sale_note_item->item->series;
+
+    //     $sale_lots = ItemLot::whereIn('id', collect($lots)->pluck('id')->toArray())->where('has_sale', true)->latest();
+
+    //     return $sale_lots->union($records);
+    // }
 
     public function regularizeLots(Request $request)
     {

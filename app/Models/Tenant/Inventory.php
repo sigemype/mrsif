@@ -5,6 +5,7 @@ namespace App\Models\Tenant;
 class Inventory extends ModelTenant
 {
     protected $fillable = [
+        
         'type',
         'description',
         'item_id',

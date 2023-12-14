@@ -12,19 +12,19 @@ trait StorageDocument
     public function uploadStorage($filename, $file_content, $file_type, $root = null)
     {
         $this->setData($filename, $file_type, $root);
-        Storage::disk('tenant')->put($this->_folder.DIRECTORY_SEPARATOR.$this->_filename, $file_content);
+        Storage::disk('tenant')->put($this->_folder . DIRECTORY_SEPARATOR . $this->_filename, $file_content);
     }
 
     public function downloadStorage($filename, $file_type, $root = null)
     {
         $this->setData($filename, $file_type, $root);
-        return Storage::disk('tenant')->download($this->_folder.DIRECTORY_SEPARATOR.$this->_filename);
+        return Storage::disk('tenant')->download($this->_folder . DIRECTORY_SEPARATOR . $this->_filename);
     }
 
     public function getStorage($filename, $file_type, $root = null)
     {
         $this->setData($filename, $file_type, $root);
-        return Storage::disk('tenant')->get($this->_folder.DIRECTORY_SEPARATOR.$this->_filename);
+        return Storage::disk('tenant')->get($this->_folder . DIRECTORY_SEPARATOR . $this->_filename);
     }
 
     private function setData($filename, $file_type, $root)
@@ -34,6 +34,9 @@ trait StorageDocument
             case 'unsigned':
                 break;
             case 'signed':
+                break;
+            case 'json':
+                $extension = 'json';
                 break;
             case 'pdf':
                 $extension = 'pdf';
@@ -45,11 +48,11 @@ trait StorageDocument
                 $extension = 'pdf';
                 break;
             case 'cdr':
-                $filename = 'R-'.$filename;
+                $filename = 'R-' . $filename;
                 $extension = 'zip';
                 break;
             case 'cdr_xml':
-                $filename = 'R-'.$filename;
+                $filename = 'R-' . $filename;
                 $extension = 'xml';
                 $file_type = 'cdr';
                 break;
@@ -96,8 +99,8 @@ trait StorageDocument
                 break;
         }
 
-        $this->_filename = $filename.'.'.$extension;
-        $this->_folder = ($root)?$root.DIRECTORY_SEPARATOR.$file_type:$file_type;
+        $this->_filename = $filename . '.' . $extension;
+        $this->_folder = ($root) ? $root . DIRECTORY_SEPARATOR . $file_type : $file_type;
     }
 
 
@@ -113,7 +116,6 @@ trait StorageDocument
     public function existFileInStorage($filename, $file_type, $root = null)
     {
         $this->setData($filename, $file_type, $root);
-        return Storage::disk('tenant')->exists($this->_folder.DIRECTORY_SEPARATOR.$this->_filename);
+        return Storage::disk('tenant')->exists($this->_folder . DIRECTORY_SEPARATOR . $this->_filename);
     }
-
 }

@@ -5,6 +5,7 @@ import store from "./store";
 import ElementUI from "element-ui";
 import lang from "element-ui/lib/locale/lang/es";
 import locale from "element-ui/lib/locale";
+
 // import Calendar from "v-calendar/lib/components/calendar.umd";
 // import DatePicker from "v-calendar/lib/components/date-picker.umd";
 locale.use(lang);
@@ -16,6 +17,8 @@ ElementUI.Select.computed.readonly = function() {
 };
 export default ElementUI;
 Vue.use(ElementUI, { size: "small" });
+Vue.config.productionTip = false;
+Vue.config.devtools = true;
 Vue.prototype.$eventHub = new Vue();
 window.VueCalendarLang = () => ({
     daysOfWeek: ["D", "L", "M", "X", "J", "V", "S"],
@@ -72,6 +75,10 @@ Vue.component(
 Vue.component(
     "tenant-document-names",
     require("./views/tenant/setting/document_name.vue").default
+);
+Vue.component(
+    "tenant-yape-plin-qr",
+    require("./views/tenant/setting/yape_plin_qr.vue").default
 );
 Vue.component(
     "tenant-document_quotations",
@@ -392,6 +399,13 @@ Vue.component(
     "inventory-index",
     require("../../modules/Inventory/Resources/assets/js/inventory/index.vue").default
 );
+//tenant-inventory-references-index
+
+Vue.component(
+    "tenant-inventory-references-index",
+    require("./views/tenant/inventory_reference/index.vue").default
+);
+
 Vue.component(
     "inventory-transfers-index",
     require("../../modules/Inventory/Resources/assets/js/transfers/index.vue").default
@@ -520,6 +534,11 @@ Vue.component(
 Vue.component(
     "tenant-report-documents-index",
     require("../../modules/Report/Resources/assets/js/views/documents/index.vue").default
+);
+//
+Vue.component(
+    "tenant-report-summary-sales-index",
+    require("../../modules/Report/Resources/assets/js/views/summary_sales/index.vue").default
 );
 Vue.component(
     "tenant-state-account-index",
@@ -662,6 +681,10 @@ Vue.component(
 Vue.component(
     "tenant-item-lots-index",
     require("../../modules/Item/Resources/assets/js/views/item-lots/index.vue").default
+);
+Vue.component(
+    "tenant-item-sizes-index",
+    require("../../modules/Item/Resources/assets/js/views/item-sizes/index.vue").default
 );
 //
 Vue.component(
@@ -1353,8 +1376,23 @@ Vue.component(
     "tenant-sire-appendix",
     require("@viewsModuleSire/appendix.vue").default
 );
+Vue.component(
+    "tenant-sire-index",
+    require("./views/tenant/sire/index.vue").default
+);
+Vue.component(
+    "tenant-package-handler-index",
+    require("./views/tenant/package_handler/index.vue").default
+);
+Vue.component(
+    "tenant-package-handler-form",
+    require("./views/tenant/package_handler/form.vue").default
+)
 
-
+Vue.component(
+    "bill-of-exchange-index",
+    require("./views/tenant/bill_of_exchange/index.vue").default
+);
 import VueClipboard from "vue-clipboard2";
 Vue.use(VueClipboard);
 

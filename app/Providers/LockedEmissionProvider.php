@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\System\Plan;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Tenant\Document;
 use App\Models\Tenant\User;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 use App\Models\Tenant\SaleNote;
 use App\Models\Tenant\{
-    Establishment
+    Establishment,
+    Item
 };
 use App\Traits\LockedEmissionTrait;
 
@@ -42,6 +44,7 @@ class LockedEmissionProvider extends ServiceProvider
     {
         $this->locked_emission();
         $this->locked_users();
+        $this->locked_items();
         $this->update_quantity_documents();
 
         $this->lockedCreateEstablishments();
@@ -122,7 +125,26 @@ class LockedEmissionProvider extends ServiceProvider
 
         });
     }
+    private function locked_items()
+    {
 
+        Item::creating(function ($item) {
+            
+            $configuration = Configuration::first();
+
+            $quantity_items = Item::count();
+            $plan_id = $configuration->plan->id;
+            $plan = Plan::findOrFail($plan_id);
+            if($configuration->locked_items &&  $plan->limit_items !== 0){
+
+                if($quantity_items >= $plan->limit_items )
+                {
+                    throw new Exception("Ha superado el límite permitido para la creación de productos");
+                }
+            }
+
+        });
+    }
 
     private function locked_users()
     {

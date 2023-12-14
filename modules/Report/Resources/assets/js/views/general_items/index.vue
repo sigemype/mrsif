@@ -53,7 +53,7 @@
                         <th v-if="columns.platform.visible">Plataforma</th>
                         <th class="">U. Medida</th>
                         <th class="">Cantidad</th>
-                        <th>Series</th>
+                        <th>series</th>
                         <th>Plataforma</th>
                         <th class="">Moneda</th>
                         <th class="">Valor U.</th>

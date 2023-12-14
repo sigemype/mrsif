@@ -34,6 +34,8 @@ class PersonInput
             'number' => $person->number,
             'name' => $person->name,
             'trade_name' => $person->trade_name,
+            'is_driver' => $person->is_driver,
+            
             'country_id' => $person->country_id,
             'country' => [
                 'id' => ($customer_address) ? $customer_address->country_id : $person->country_id,

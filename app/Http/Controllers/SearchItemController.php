@@ -9,6 +9,7 @@ use App\Models\Tenant\ItemSupply;
 use App\Models\Tenant\ItemUnitType;
 use App\Models\Tenant\ItemWarehouse;
 use App\Models\Tenant\Warehouse;
+use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -130,6 +131,7 @@ class SearchItemController extends Controller
         $search_item_by_series = Configuration::first()->isSearchItemBySeries();
         $production = (bool)($request->production ?? false);
         $filter_categorie = $request->input('filter_categorie');
+        $factory_codes = $request->input('factory_codes');
         $filter_brand = $request->input('filter_brand');
         $order_search_price = $request->input('order_search_price');
         $order_search_stock = $request->input('order_search_stock');
@@ -164,7 +166,7 @@ class SearchItemController extends Controller
             $item->where('brand_id', $filter_brand);
             $ItemToSearchBySeries->where('brand_id', $filter_brand);
         }
-
+    
 
         if ($production !== false) {
             // busqueda de insumos, no se lista por codigo de barra o por series
@@ -234,7 +236,7 @@ class SearchItemController extends Controller
         }
 
         $item->whereIsActive();
-
+        $item->orderByDesc('frequent');
         if ($order_search_price || $order_search_stock) {
 
             if ($order_search_price) {
@@ -243,7 +245,6 @@ class SearchItemController extends Controller
             if ($order_search_stock) {
                 $item->orderBy('stock', 'desc');
             }
-
             return $item;
         } else {
 
@@ -277,7 +278,8 @@ class SearchItemController extends Controller
         /** @var Builder $item */
 
         $input = self::setInputByRequest($request);
-
+        $configuration = Configuration::select('all_products')->first();
+        $all_products = $configuration->all_products;
         $search_factory_code_items = $request->has('search_factory_code_items') && (bool) $request->search_factory_code_items;
         if (!empty($input)) {
             $whereItem[] = ['description', 'like', '%' . str_replace(' ', '%', $input) . '%'];
@@ -308,10 +310,14 @@ class SearchItemController extends Controller
 
             $item->OrWhereJsonContains('attributes', ['value' => $input]);
             //  Limita los resultados de busqueda, inicial 250, puede modificarse en el .env con NUMBER_SEARCH_ITEMS
-            $item->take(\Config('extra.number_items_in_search'));
+            // if (!$all_products) {
+                $item->take(\Config('extra.number_items_in_search'));
+            // }
         } else {
             // Si no se filtran datos, entonces se toman 20, puede añadirse en el env la variable NUMBER_ITEMS
-            $item->take(\Config('extra.number_items_at_start'));
+            if (!$all_products) {
+                $item->take(\Config('extra.number_items_at_start'));
+            }
         }
     }
 
@@ -548,10 +554,10 @@ class SearchItemController extends Controller
         $establishment_id = auth()->user()->establishment_id;
         $warehouse = Warehouse::where('establishment_id', $establishment_id)->first();
         // $items_u = Item::whereWarehouse()->whereIsActive()->whereNotIsSet()->orderBy('description')->take(20)->get();
-        $item_not_service = Item::with('warehousePrices')
+        $item_not_service = Item::with(['warehousePrices', 'clientTypePrices'])
             ->whereIsActive()
             ->orderBy('description');
-        $service_item = Item::with('warehousePrices')
+        $service_item = Item::with(['warehousePrices', 'clientTypePrices'])
             ->where('items.unit_type_id', 'ZZ')
             ->whereIsActive()
             ->orderBy('description');

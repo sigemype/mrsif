@@ -22,6 +22,7 @@ use Modules\Sale\Models\SaleOpportunity;
 use Modules\Sale\Models\TechnicalService;
 use App\Models\Tenant\Configuration;
 use Carbon\Carbon;
+use Modules\Dispatch\Models\DispatchAddress;
 use Modules\Suscription\Models\Tenant\SuscriptionPayment;
 use Modules\Suscription\Models\Tenant\UserRelSuscriptionPlan;
 
@@ -115,6 +116,7 @@ class Person extends ModelTenant
     ];
 
     protected $fillable = [
+        'is_driver',
         'color',
         'type',
         'identity_document_type_id',
@@ -157,6 +159,7 @@ class Person extends ModelTenant
     ];
 
     protected $casts = [
+        'is_driver' => 'bool',
         'perception_agent' => 'bool',
         'person_type_id' => 'int',
         'percentage_perception' => 'float',
@@ -330,6 +333,9 @@ class Person extends ModelTenant
         return $this->hasMany(Contract::class, 'customer_id');
     }
 
+    public function dispatch_addresses(){
+        return $this->hasMany(DispatchAddress::class);
+    }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -567,6 +573,9 @@ class Person extends ModelTenant
 
 
         $data = [
+            'dispatch_addresses' => $this->dispatch_addresses,
+
+            'is_driver' => (bool)$this->is_driver,
             'id' => $this->id,
             'color' => $this->color,
             'photo_filename' => $this->photo_filename,

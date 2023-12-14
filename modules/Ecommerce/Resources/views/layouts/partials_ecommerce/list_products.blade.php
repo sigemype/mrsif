@@ -61,7 +61,7 @@
                 <div class="product-action">
                     <a href="#" class="paction add-cart" data-product="{{ json_encode($item) }}"
                         title="Add to Cart">
-                        <span>Agregar a Carrito {{ $columns }}</span>
+                        <span>Agregar a Carrito</span>
                     </a>
                 </div>
             </div>

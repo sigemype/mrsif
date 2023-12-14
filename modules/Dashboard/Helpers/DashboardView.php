@@ -287,7 +287,25 @@ class DashboardView
             ->table('document_payments')
             ->select('document_id', DB::raw('SUM(payment) as total_payment'))
             ->groupBy('document_id');
-
+        $bills_of_exchanges_payments = DB::connection('tenant')
+            ->table('bills_of_exchange_payments')
+            ->select('bill_of_exchange_id', DB::raw('SUM(payment) as total_payment'))
+            ->groupBy('bill_of_exchange_id');
+        $bills_of_exchanges_select = "bills_of_exchange.id as id, " .
+            "DATE_FORMAT(bills_of_exchange.date_of_due, '%Y/%m/%d') as date_of_issue, " .
+            "persons.name as customer_name," .
+            "persons.id as customer_id," .
+            "null as document_type_id," .
+            "CONCAT(bills_of_exchange.series,'-',bills_of_exchange.number) AS number_full, " .
+            "bills_of_exchange.total as total, " .
+            "IFNULL(payments.total_payment, 0) as total_payment, " .
+            "null as total_credit_notes," .
+            "bills_of_exchange.total - IFNULL(total_payment, 0)    as total_subtraction, " .
+            "'bill_of_exchange' AS 'type', " .
+            "'PEN' as currency_type_id, " .
+            "'1' as exchange_rate_sale, " .
+            " bills_of_exchange.user_id, " .
+            "users.name as username";
         $document_select = "documents.id as id, " .
             "DATE_FORMAT(documents.date_of_issue, '%Y/%m/%d') as date_of_issue, " .
             "persons.name as customer_name," .
@@ -297,7 +315,7 @@ class DashboardView
             "documents.total as total, " .
             "IFNULL(payments.total_payment, 0) as total_payment, " .
             "IFNULL(credit_notes.total_credit_notes, 0) as total_credit_notes, " .
-            "documents.total - IFNULL(total_payment, 0) - IFNULL(total_credit_notes, 0)  as total_subtraction, " .
+            "documents.total - IFNULL(total_payment, 0)  - IFNULL(total_credit_notes, 0)  as total_subtraction, " .
             "'document' AS 'type', " .
             "documents.currency_type_id, " .
             "documents.exchange_rate_sale, " .
@@ -319,7 +337,23 @@ class DashboardView
             "sale_notes.exchange_rate_sale, " .
             " sale_notes.user_id, " .
             "users.name as username";
-
+        $bills_of_exchange = DB::connection('tenant')
+            ->table('bills_of_exchange')
+            //->where('customer_id', $customer_id)
+            ->join('persons', 'persons.id', '=', 'bills_of_exchange.customer_id')
+            ->join('users', 'users.id', '=', 'bills_of_exchange.user_id')
+            ->leftJoinSub($bills_of_exchanges_payments, 'payments', function ($join) {
+                $join->on('bills_of_exchange.id', '=', 'payments.bill_of_exchange_id');
+            })
+            // ->leftJoinSub($bill_of_exchanges, 'bills', function ($join) {
+            //     $join->on('documents.id', '=', 'bills.document_id');
+            // })
+            // ->leftJoinSub(Document::getQueryCreditNotes(), 'credit_notes', function ($join) {
+            //     $join->on('documents.id', '=', 'credit_notes.affected_document_id');
+            // })
+            // ->whereIn('state_type_id', ['01', '03', '05', '07', '13'])
+            // ->whereIn('document_type_id', ['01', '03', '08'])
+            ->select(DB::raw($bills_of_exchanges_select));
         $documents = DB::connection('tenant')
             ->table('documents')
             //->where('customer_id', $customer_id)
@@ -328,6 +362,9 @@ class DashboardView
             ->leftJoinSub($document_payments, 'payments', function ($join) {
                 $join->on('documents.id', '=', 'payments.document_id');
             })
+            // ->leftJoinSub($bill_of_exchanges, 'bills', function ($join) {
+            //     $join->on('documents.id', '=', 'bills.document_id');
+            // })
             ->leftJoinSub(Document::getQueryCreditNotes(), 'credit_notes', function ($join) {
                 $join->on('documents.id', '=', 'credit_notes.affected_document_id');
             })
@@ -345,6 +382,7 @@ class DashboardView
         if ($payment_method_type_id) {
             $documents->where('payment_method_type_id', $payment_method_type_id);
         }
+        $documents->whereNull('bill_of_exchange_id');
         /*
          * Sale Notes
          */
@@ -416,6 +454,8 @@ class DashboardView
                 ->pluck('document_id');
             $sale_notes->wherein('sale_notes.id', $sale_note_items_id);
         }
-        return $documents->union($sale_notes)->havingRaw('total_subtraction > 0');
+        return $documents->union($sale_notes)
+            ->union($bills_of_exchange)
+            ->havingRaw('total_subtraction > 0');
     }
 }

@@ -1,9 +1,18 @@
 @php
 $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 
 $document_number = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
 
@@ -74,7 +83,7 @@ $document_number = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_
     </table>
     <table class="full-width mt-5">
         <tr>
-            <td width="120px">FECHA DE EMISIÓN</td>
+            <td width="120px">Fecha de emisión</td>
             <td width="8px">:</td>
             <td>{{$document->date_of_issue->format('Y-m-d')}}</td>
         </tr>
@@ -95,11 +104,11 @@ $document_number = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_
     <table class="full-width mt-10 mb-10">
         <thead class="">
             <tr class="bg-grey">
-                <th class="border-top-bottom text-center py-2" width="8%">CANT.</th>
-                <th class="border-top-bottom text-center py-2" width="8%">UNIDAD</th>
-                <th class="border-top-bottom text-left py-2">DESCRIPCIÓN</th>
-                <th class="border-top-bottom text-center py-2" width="8%">LOTE</th>
-                <th class="border-top-bottom text-center py-2" width="8%">SERIE</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Cant.</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Unidad</th>
+                <th class="border-top-bottom text-left py-2">Descripción</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Lote</th>
+                <th class="border-top-bottom text-center py-2" width="8%">Serie</th>
             </tr>
         </thead>
         <tbody>

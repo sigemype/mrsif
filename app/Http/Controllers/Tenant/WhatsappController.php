@@ -15,6 +15,7 @@ use App\Models\System\Configuration;
 use Illuminate\Support\Facades\Storage;
 use Modules\Purchase\Models\PurchaseOrder;
 use App\Models\System\Configuration as Config;
+use Illuminate\Support\Facades\Log;
 use Modules\Purchase\Models\PurchaseQuotation;
 
 class WhatsappController extends Controller
@@ -124,11 +125,9 @@ class WhatsappController extends Controller
 
                     ]
                 ]);
-                //dd($request->all(),$sender_number,$document->filename . ".pdf",$response->getBody()->getContents());
-                //$data=$response->getBody()->getContents();
-                $data=json_decode($response->getBody()->getContents(), true);
+                $txt=$response->getBody()->getContents();
+                $data=json_decode($txt, true);
 
- 
                 return response()->json(
                     ['success' => true,
                     'message' => $data['success']==false ? $data['message'] : "Se envio el mensaje con éxito",

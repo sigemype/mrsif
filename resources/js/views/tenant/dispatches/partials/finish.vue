@@ -58,6 +58,14 @@
                     </button>
                     <p>Descargar A4</p>
                 </div>
+                  <div class="col-lg-6 col-md-6 col-sm-6 text-center font-weight-bold mt-3">
+                    <button class="btn btn-lg btn-info waves-effect waves-light"
+                            type="button"
+                            @click="clickDownload('a5')">
+                        <i class="fa fa-file-alt"></i>
+                    </button>
+                    <p>Descargar A5</p>
+                </div>
                 <div class="col-lg-6 col-md-6 col-sm-6 text-center font-weight-bold mt-3">
                     <button class="btn btn-lg btn-info waves-effect waves-light"
                             type="button"

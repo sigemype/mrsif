@@ -1,9 +1,5 @@
 @php
     $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
-}
     $customer = $document->customer;
     $invoice = $document->invoice;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
@@ -332,23 +328,6 @@ $logo = "{$establishment->logo}";
                     <br>
                     *** Pago Anticipado ***
                 @endif
-                @if($row->item->model)
-                    <br>
-                    Modelo:{{ $row->item->model }}
-                @endif
-                <br>
-                @inject('itemLotGroup', 'App\Services\ItemLotsGroupService')
-                    @if($itemLotGroup->getLote($row->item->IdLoteSelected) != '')
-                    Lote: {{ $itemLotGroup->getLote($row->item->IdLoteSelected) }}
-                    <br>
-                @endif
-                @isset($row->item->lots)
-                    @foreach($row->item->lots as $lot)
-                        @if( isset($lot->has_sale) && $lot->has_sale)
-                            <span style="font-size: 9px">{{ $lot->series }}</span><br>
-                        @endif
-                    @endforeach
-                @endisset
             </td>
             <td class="text-right desc-9 align-top">{{ number_format($row->unit_price, 2) }}</td>
             <td class="text-right desc-9 align-top">{{ number_format($row->total, 2) }}</td>
@@ -506,25 +485,7 @@ $logo = "{$establishment->logo}";
             </td>
         </tr>
     @endif
-    @if ($company->footer_logo)
-    @php
-        $footer_logo = "storage/uploads/logos/{$company->footer_logo}";
-    @endphp
-    <tr>
-        <td class="text-center pt-5">
-            <img  style="max-height: 35px;" src="data:{{mime_content_type(public_path("{$footer_logo}"))}};base64, {{base64_encode(file_get_contents(public_path("{$footer_logo}")))}}" alt="{{$company->name}}">
-        </td>
-    </tr>
-    @endif
-    @if($company->footer_text_template)
-    <tr>
-        <td class="text-center desc pt-2">
 
-            
-            {!!func_str_find_url($company->footer_text_template)!!}
-        </td>
-    </tr>
-    @endif
     <tr>
         <td class="text-center desc pt-5">Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
     </tr>

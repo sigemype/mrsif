@@ -1,10 +1,19 @@
 @php
     if ($document != null) {
-        $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+    $establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
         $customer = $document->customer;
         $invoice = $document->invoice;
         $document_base = ($document->note) ? $document->note : null;
@@ -70,13 +79,13 @@ $logo = "{$establishment->logo}";
     </table>
     <table class="full-width mt-10 mb-10 border-bottom">
         <tr>
-            <th class="border-box text-center py-1 desc">IMPORTE BRUTO</th>
-            <th class="border-box text-center py-1 desc">DESCUENTOS</th>
-            <th class="border-box text-center py-1 desc">TOTAL VALOR VENTA</th>
+            <th class="border-box text-center py-1 desc">Importe bruto</th>
+            <th class="border-box text-center py-1 desc">Descuentos</th>
+            <th class="border-box text-center py-1 desc">total VALOR VENTA</th>
             <th class="border-box text-center py-1 desc">I.G.V. 18%</th>
-            <th class="border-box text-center py-1 desc">TOTAL PRECIO VENTA</th>
-            <th class="border-box text-center py-1 desc">PAGO A CUENTA</th>
-            <th class="border-box text-center py-1 desc">NETO A PAGAR</th>
+            <th class="border-box text-center py-1 desc">total PRECIO VENTA</th>
+            <th class="border-box text-center py-1 desc">Pago a cuenta</th>
+            <th class="border-box text-center py-1 desc">Neto a pagar</th>
         </tr>
         <tr>
             <td class="border-box text-center py-1 desc">
@@ -128,8 +137,17 @@ $logo = "{$establishment->logo}";
     </table>
 @endif
 <table class="full-width">
-    <tr>
-        <td class="text-center desc">Representación Impresa de {{ isset($document->document_type) ? $document->document_type->description : 'Comprobante Electrónico'  }} {{ isset($document->hash) ? 'Código Hash: '.$document->hash : '' }} <br>Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
-    </tr>
+<tr>
+            @php
+                $document_description = null;
+            @endphp
+            @if ($document_description)
+                <td class="text-center desc">Representación impresa de la {{ $document_description }} <br />Esta puede
+                    ser consultada en {!! url('/buscar') !!}</td>
+            @else
+                <td class="text-center desc">Representación impresa del Comprobante de Pago Electrónico. <br />Esta
+                    puede ser consultada en {!! url('/buscar') !!}</td>
+            @endif
+        </tr>
 </table>
 </body>

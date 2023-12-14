@@ -33,6 +33,10 @@ class Guide extends Model
         'date_of_issue' => 'date',
     ];
 
+    public function inventory()
+    {
+        return $this->hasOne(Inventory::class);
+    }
     public function guideable()
     {
         return $this->morphTo();

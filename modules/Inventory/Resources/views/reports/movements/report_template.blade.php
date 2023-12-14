@@ -101,8 +101,12 @@
                     <th class="text-left">Documento</th>
                     <th class="text-left">Almacén</th>
                     <th class="text-left">Motivo de traslado</th>
+                    <th class="text-left">Referencia</th>
+                    <th class="text-right">Total Compra</th>
                     <th class="text-right">Entrada</th>
+                    <th class="text-right">Total Venta</th>
                     <th class="text-right">Salida</th>
+                    <th class="text-right">Total</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -114,8 +118,12 @@
                         <td class="celda text-left"> {{ $value['guide_number'] }} </td>
                         <td class="celda text-left"> {{ $value['warehouse_name'] }} </td>
                         <td class="celda text-left"> {{ $value['description'] }} </td>
+                        <td class="celda text-left"> {{ $value['reference'] }} </td>
+                        <td class="celda text-right"> {{ $value['total_purchase'] }} </td>
                         <td class="celda text-right"> {{ $value['input'] }} </td>
+                        <td class="celda text-right"> {{ $value['total_sale'] }} </td>
                         <td class="celda text-right"> {{ $value['output'] }} </td>
+                        <td class="celda text-right"> {{ $value['total'] }} </td>
                     </tr>
                 @endforeach
                 </tbody>

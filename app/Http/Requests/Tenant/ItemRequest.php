@@ -27,10 +27,10 @@ class ItemRequest extends FormRequest
                 Rule::unique('tenant.items')->ignore($id),
             ],
             'description' => [
-                'required', 'max:600'
+                'required', 'max:500'
             ],
             'name' => [
-                'max:600'
+                'max:500'
             ],
             'second_name' => [
                 'max:600'
@@ -100,7 +100,7 @@ class ItemRequest extends FormRequest
     {
         return [
             'description.required' => 'El campo nombre es obligatorio.',
-            'name.max' => 'La descripción debe ser inferior a 600 caracteres.',
+            'name.max' => 'La descripción debe ser inferior a 500 caracteres.',
             'sale_unit_price.gt' => 'El precio unitario de venta debe ser mayor que 0.',
         ];
     }

@@ -5,6 +5,7 @@ use App\Models\Tenant\Document;
 use App\Models\Tenant\ItemSet;
 use App\CoreFacturalo\Helpers\Template\TemplateHelper;
 use App\Models\Tenant\SaleNote;
+use App\Models\Tenant\Quotation;
 
 $data = \Modules\Report\Http\Resources\GeneralItemCollection::getDocument($value);
 if ($document_type_id == '80') {
@@ -19,6 +20,7 @@ $stablihsment = $stablihsment ?? [
     'department' => '',
     'province' => '',
 ];
+
 $discount = '';
 $unit_price = '';
 $unit_value = '';
@@ -131,7 +133,15 @@ $item_lots_groups_description = $item_lots_group_service->getItemLotGroupLineBre
     @endif
     <td class="celda">
         @if ($isSaleNote)
-            {{ $document->document_type ? $document->document_type->description : 'NOTA DE VENTA' }}
+        @php
+            $isQuotation = get_class($document) == Quotation::class;
+            
+        @endphp
+        @if ($isQuotation)
+            COTIZACIÓN
+        @else
+        {{ $document->document_type ? $document->document_type->description : 'NOTA DE VENTA' }}
+        @endif
         @else
             NOTA DE VENTA
         @endif
@@ -143,8 +153,8 @@ $item_lots_groups_description = $item_lots_group_service->getItemLotGroupLineBre
             80
         @endif
     </td>
-    <td class="celda">{{ $document->series }}</td>
-    <td class="celda">{{ $document->number }}</td>
+    <td class="celda">{{ $document->series ?? $document->prefix  }}</td>
+    <td class="celda">{{ $document->number ?? $document->id }}</td>
     <td class="celda">{{ $purchseOrder }}</td>
     <td class="celda">{{ $web_platform }}</td>
     <td class="celda">{{ $document->state_type_id == '11' ? 'SI' : 'NO' }}</td>

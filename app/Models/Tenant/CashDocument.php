@@ -18,7 +18,7 @@ class CashDocument extends ModelTenant
         'cash_id',
         'document_id',
         'sale_note_id',
-
+        'package_handler_id',
         'technical_service_id',
         // 'expense_id',
         'expense_payment_id',

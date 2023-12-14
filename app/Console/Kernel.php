@@ -24,7 +24,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('tenant:run')
+        $schedule->command('tenancy:run tenant:run')
             ->everyMinute();
 
         // Se ejecutara por hora guardando estado de cpu y memoria (windows/linux)

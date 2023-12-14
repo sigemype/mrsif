@@ -5,7 +5,8 @@
 /public/uploads
 public/cookie.txt
 /public/logo/
-/public/images/
+/public/images/*
+!/public/images/fondos/
 /public/storage
 /public/padron_extract/*
 /public/padron_rar/*

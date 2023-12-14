@@ -5,11 +5,22 @@
         </div> -->
         <div class="card mb-0">
             <div class="card-body">
-                <data-table :resource="resource">
+                <data-table
+                    :resource="resource"
+                    @setAllWarehouses="setAllWarehouses"
+                >
                     <tr slot="heading">
                         <th>#</th>
                         <th v-if="!item_id">Producto</th>
                         <th>Fecha y hora transacción</th>
+                        <th
+                            v-if="
+                                configuration.purchases_control &&
+                                all_warehouses
+                            "
+                        >
+                            Almacén
+                        </th>
                         <th>Tipo transacción</th>
                         <th>Número</th>
                         <th>NV. Asociada</th>
@@ -20,6 +31,9 @@
                         <th>Entrada</th>
                         <th>Salida</th>
                         <th v-if="item_id">Saldo</th>
+                        <th v-if="configuration.purchases_control">Placa</th>
+                        <th v-if="configuration.purchases_control">Responsable</th>
+                        <th v-if="configuration.purchases_control">Precio unitario</th>
                         <th></th>
                         <!--
                         <th >Almacen </th>
@@ -31,6 +45,13 @@
                         <td>{{ index }}</td>
                         <td v-if="!item_id">{{ row.item_name }}</td>
                         <td>{{ row.date_time }}</td>
+                        <td
+                            v-if="
+                                configuration.purchases_control  && all_warehouses
+                            "
+                        >
+                            {{ row.warehouse }}
+                        </td>
                         <td>{{ row.type_transaction }}</td>
                         <td>{{ row.number }}</td>
                         <td>{{ row.sale_note_asoc }}</td>
@@ -42,6 +63,17 @@
                         <td>{{ row.input }}</td>
                         <td>{{ row.output }}</td>
                         <td v-if="item_id">{{ row.balance }}</td>
+                        <td v-if="configuration.purchases_control">
+                            {{row.license}}
+                        </td>
+                        <td v-if="configuration.purchases_control">
+                            {{row.responsible}}
+                        </td>
+                        <td v-if="configuration.purchases_control">
+                          <template v-if="row.unit_price">
+                              {{Number(row.unit_price ||0).toFixed(2)}}
+                          </template>
+                        </td>
                         <td class="text-end">
                             <!-- <button @click="getStock(row)">Tesst</button> -->
                             <button
@@ -68,7 +100,7 @@
 import DataTable from "../../components/DataTableKardex.vue";
 
 export default {
-    // props: ["warehouse_id"],
+    props: ["configuration"],
     components: { DataTable },
     data() {
         return {
@@ -76,7 +108,8 @@ export default {
             resource: "reports/kardex",
             form: {},
             item_id: null,
-            warehouse_id: null
+            warehouse_id: null,
+            all_warehouses: false,
         };
     },
     created() {
@@ -87,6 +120,9 @@ export default {
         });
     },
     methods: {
+        setAllWarehouses(value) {
+            this.all_warehouses = value;
+        },
         downloadPdfGuide(guide_id) {
             if (guide_id) {
                 window.open(
@@ -94,7 +130,7 @@ export default {
                     "_blank"
                 );
             }
-        }
-    }
+        },
+    },
 };
 </script>

@@ -53,6 +53,7 @@ class QuotationCollection extends ResourceCollection
                 "quotations_optional_value"  => $row->quotations_optional_value,
                 'user_name' => ($row->user) ? $row->user->name : '',
                 'sale_opportunity_number_full' => ($row->sale_opportunity) ? $row->sale_opportunity->number_full : '',
+                'payments' => number_format($row->payments->sum('payment'),2),
             ];
         });
     }

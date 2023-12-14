@@ -14,6 +14,7 @@
                                     </th>
                                     <th>Ubicación</th>
                                     <th class="text-end">Stock</th>
+                                    <th class="text-end">Precio</th>
                                 </tr>
                             </thead>
                             <tbody>    
@@ -23,6 +24,7 @@
                                     </th>
                                     <th>{{ row.warehouse_description }}</th>
                                     <th class="text-end">{{ row.stock }}</th>
+                                    <th class="text-end">{{ Number(row.price).toFixed(2) }}</th>
                                 </tr>
                             </tbody>
                         </table>

@@ -50,7 +50,6 @@ class InventoryKardexServiceProvider extends ServiceProvider
     private function purchase()
     {
         PurchaseItem::created(function ($purchase_item) {
-
             $inventory_kardex = $this->saveInventoryKardex($purchase_item->purchase, $purchase_item->item_id, $purchase_item->purchase->establishment_id, $purchase_item->quantity);
 
             if ($this->getItemWarehouse($purchase_item->item_id, $purchase_item->purchase->establishment_id)) {

@@ -47,6 +47,9 @@
 </div>
 <br>
 @if(!empty($records))
+    
+        
+    @endif
     <div class="">
         <div class=" ">
             <table class="">
@@ -59,6 +62,7 @@
                     <th class="">Documento/Transacción</th>
                     <th class="">Moneda</th>
                     <th class="">Tipo</th>
+                    <th class="">Motivo</th>
                     <th class="">Destino</th>
                     <th class="">Cuenta/Caja</th>
                     <th class="">F. Pago</th>
@@ -72,7 +76,18 @@
                 @foreach($records as $key => $value)
                     <tr>
                         @php
-
+                        $reason = null;
+                        if($value->instance_type == 'expense'){
+                $payment_id = $value->payment_id;
+                if($payment_id){
+                    $payment = \Modules\Expense\Models\ExpensePayment::find($payment_id);
+                    if($payment){
+                        $expense = $payment->expense;
+                        $reason = $expense->expense_reason->description;
+                    }
+                }
+                // $reason = optional($row->associated_record_payment)->expense_type->description;
+            }
                         // Se obtienen los datos de modules/Finance/Http/Resources/GlobalPaymentCollection.php
                         $data_person = $value->data_person;
 
@@ -143,6 +158,7 @@
                         <td class="celda">{{ $data['number_full'] }}</td>
                         <td class="celda">{{ $data['currency_type_id'] }}</td>
                         <td class="celda">{{ $data['instance_type_description'] }}</td>
+                        <td class="celda">{{ $reason }}</td>
                         <td class="celda">{{ $data['destination_description'] }}</td>
                         <td class="celda">{{ $data['cci'] }}</td>
                         <td class="celda">{{ $data['date_of_payment'] }}</td>

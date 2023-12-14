@@ -31,8 +31,8 @@ use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
-   protected $soap_url;
-   protected $soap_password;
+    protected $soap_url;
+    protected $soap_password;
     //constructor
     public function __construct()
     {
@@ -69,41 +69,41 @@ class ClientController extends Controller
         return view('system.clients.form');
     }
 
-    public function delete_cert_file($type,$client_id){
+    public function delete_cert_file($type, $client_id)
+    {
         $client = Client::findOrFail($client_id);
         $path = 'app/public/uploads/certf';
-        if($type == 'pem'){
+        if ($type == 'pem') {
             $name = $client->cert_pem;
             $client->cert_pem = null;
-        }else{
+        } else {
             $name = $client->cert_pfx;
             $client->cert_pfx = null;
-
         }
         $client->save();
-        unlink(storage_path($path.'/'.$name));
+        unlink(storage_path($path . '/' . $name));
         return [
             'success' => true,
             'message' => 'Archivo eliminado correctamente',
             'name' => $name
         ];
     }
-   
-    public function store_cert_file($type,$client_id,Request $request){
+
+    public function store_cert_file($type, $client_id, Request $request)
+    {
         $client = Client::findOrFail($client_id);
 
         $file = $request->file('file');
         //create original name with extension 
         $name = $file->getClientOriginalName();
-        
+
         $path = 'app/public/uploads/certf';
         $file->move(storage_path($path), $name);
-   
-        if($type == 'pem'){
-            $client->cert_pem = $name;
-        }else{
-            $client->cert_pfx = $name;
 
+        if ($type == 'pem') {
+            $client->cert_pem = $name;
+        } else {
+            $client->cert_pfx = $name;
         }
         $client->save();
         return [
@@ -111,7 +111,6 @@ class ClientController extends Controller
             'message' => 'Archivo subido correctamente',
             'name' => $name
         ];
-
     }
 
     public function tables()
@@ -249,6 +248,9 @@ class ClientController extends Controller
                 ->soap_type_id;
             $row->count_user = DB::connection('tenant')
                 ->table('users')
+                ->count();
+            $row->count_item = DB::connection('tenant')
+                ->table('items')
                 ->count();
             $row->count_sales_notes = DB::connection('tenant')
                 ->table('configurations')
@@ -388,7 +390,7 @@ class ClientController extends Controller
             ->table('configurations')
             ->first();
 
-       // $client->config_system_env = $config->config_system_env;
+        // $client->config_system_env = $config->config_system_env;
 
         $company = DB::connection('tenant')
             ->table('companies')
@@ -399,10 +401,11 @@ class ClientController extends Controller
         $client->soap_username = $company->soap_username;
         $client->soap_password = $company->soap_password;
         $client->config_system_env = $client->config_system_env;
-        
+
         $client->soap_url = $company->soap_url;
         $client->certificate = $company->certificate;
         $client->number = $company->number;
+        $client->is_rus = $company->is_rus;
 
 
         return new ClientResource($client);
@@ -410,7 +413,7 @@ class ClientController extends Controller
 
     public function charts()
     {
-        $records = Client::where('active',0)->get();
+        $records = Client::where('active', 0)->get();
         $count_documents = [];
         foreach ($records as $row) {
             $tenancy = app(Environment::class);
@@ -419,7 +422,7 @@ class ClientController extends Controller
                 $date_initial = Carbon::parse(date('Y') . '-' . $i . '-1');
                 $year_before = Carbon::now()->subYear()->format('Y');
                 // $date_final = Carbon::parse(date('Y') . '-' . $i . '-' . cal_days_in_month(CAL_GREGORIAN, $i, $year_before));
-                $date_final = $date_initial->copy()->endOfMonth(); 
+                $date_final = $date_initial->copy()->endOfMonth();
                 $count_documents[] = [
                     'client' => $row->number,
                     'month' => $i,
@@ -469,6 +472,7 @@ class ClientController extends Controller
         $smtp_port = ($request->has('smtp_port')) ? $request->smtp_port : null;
         $smtp_user = ($request->has('smtp_user')) ? $request->smtp_user : null;
         $smtp_encryption = ($request->has('smtp_encryption')) ? $request->smtp_encryption : null;
+        $is_rus = ($request->has('is_rus')) ? $request->is_rus : false;
         try {
 
             $temp_path = $request->input('temp_path');
@@ -479,16 +483,15 @@ class ClientController extends Controller
 
                 try {
                     $password = $request->input('password_certificate');
-                    if($soap_send_id == "03"){
+                    if ($soap_send_id == "03") {
                         $name = 'certificate_smart.pem';
-                    }else{
+                    } else {
                         $name = 'certificate_' . $request->input('number') . '.pem';
-
                     }
                     $pfx = file_get_contents($temp_path);
-                    if($soap_send_id !== "03"){
-                    $pem = GenerateCertificate::typePEM($pfx, $password);}
-                    else{
+                    if ($soap_send_id !== "03") {
+                        $pem = GenerateCertificate::typePEM($pfx, $password);
+                    } else {
                         $pem = $pfx;
                     }
                     if (!file_exists(storage_path('app' . DIRECTORY_SEPARATOR . 'certificates'))) {
@@ -501,6 +504,20 @@ class ClientController extends Controller
                         'success' => false,
                         'message' => $e->getMessage()
                     ];
+                }
+            } else {
+                if ($soap_send_id == "03") {
+                    $name = 'certificate_smart.pem';
+                    if (file_exists(storage_path('app' . DIRECTORY_SEPARATOR . 'certificates' . DIRECTORY_SEPARATOR . $name))) {
+                        $name_certificate = $name;
+                    } else {
+                        $path_smart = storage_path('smart' . DIRECTORY_SEPARATOR . 'certificate_smart.pem');
+                        if (file_exists($path_smart)) {
+                            $pem = file_get_contents($path_smart);
+                            file_put_contents(storage_path('app' . DIRECTORY_SEPARATOR . 'certificates' . DIRECTORY_SEPARATOR . $name), $pem);
+                            $name_certificate = $name;
+                        }
+                    }
                 }
             }
 
@@ -516,8 +533,10 @@ class ClientController extends Controller
             if (!empty($smtp_password)) {
                 $client->setSmtpPassword($smtp_password);
             }
-            if($soap_send_id == "03"){
+            if ($soap_send_id == "03") {
                 $client->cert_smart = true;
+            } else {
+                $client->cert_smart = false;
             }
             $client->plan_id = $request->plan_id;
             $client->users = $request->input('users');
@@ -554,11 +573,26 @@ class ClientController extends Controller
                     'soap_send_id' => $request->soap_send_id == '03' ? '02' : $request->soap_send_id,
                     'soap_username' => $request->soap_username,
                     'soap_password' =>  $request->soap_send_id == '03' ? $this->soap_password : $request->soap_password,
-                    'soap_url' => $request->soap_send_id == '03' ? $this->soap_url : $request->soap_url ,
-                    'certificate' => $name_certificate
+                    'soap_url' => $request->soap_send_id == '03' ? $this->soap_url : $request->soap_url,
+                    'certificate' => $name_certificate,
+                    'is_rus' => $is_rus,
                 ]);
 
-
+            if($is_rus){
+                DB::connection('tenant')
+                    ->table('cat_document_types')
+                    ->where('id', '01')
+                    ->update([
+                        'active' => false,
+                    ]);
+            }else{
+                DB::connection('tenant')
+                    ->table('cat_document_types')
+                    ->where('id', '01')
+                    ->update([
+                        'active' => true,
+                    ]);
+            }
             //modules
             DB::connection('tenant')
                 ->table('module_user')
@@ -622,57 +656,57 @@ class ClientController extends Controller
                 ->table('configurations')
                 ->update($config);
 
-                if($request->create_restaurant ==true || $request->create_restaurant ==1 ){
-                         DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS=0');
-                         DB::connection('tenant')->table('ordens')->delete();
-                         DB::connection('tenant')->table('orden_item')->delete();
-                         DB::connection('tenant')->table('users')->whereNotNull('area_id')->delete();
-                         DB::connection('tenant')->table('workers_type')->delete();
-                         DB::connection('tenant')->table('status_orders')->delete();
-                         DB::connection('tenant')->table('tables')->delete();
-                         DB::connection('tenant')->table('status_table')->delete();
-                         DB::connection('tenant')->table('areas')->delete();
-                         DB::connection('tenant')->table('status_orders')->insert([
-                             ['id' => '1', 'description' => 'Pago sin verificar', 'created_at' => now()],
-                             ['id' => '2', 'description' => 'Pago verificado', 'created_at' => now()],
-                             ['id' => '3', 'description' => 'Despachado', 'created_at' => now()],
-                             ['id' => '4', 'description' => 'Confirmado por el cliente', 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->table('status_table')->insert([
-                             ['id' => '1', 'description' => 'Libre', 'active' => true, 'created_at' => now()],
-                             ['id' => '2', 'description' => 'Ocupado', 'active' => true, 'created_at' => now()],
-                             ['id' => '3', 'description' => 'mantenimiento', 'active' => true, 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->table('areas')->insert([
-                             ['id' => '1', 'description' => 'Cocina', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                             ['id' => '2', 'description' => 'Salon 1', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                             ['id' => '3', 'description' => 'Salon 2', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                             ['id' => '4', 'description' => 'Caja', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->table('tables')->insert([
-                             ['id' => '1', 'number' => '1', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                             ['id' => '2', 'number' => '2', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                             ['id' => '3', 'number' => '3', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                             ['id' => '4', 'number' => '4', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                             ['id' => '5', 'number' => '5', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->table('workers_type')->insert([
-                             ['id' => '1', 'description' => 'Cajera','active' => true, 'created_at' => now()],
-                             ['id' => '2', 'description' => 'Cocinero','active' => true, 'created_at' => now()],
-                             ['id' => '3', 'description' => 'Mozo','active' => true, 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->table('users')->insert([
-                             ['name' => 'Cajera', 'type' => "seller",'number' =>"1",'pin' => $this->generatePIN(4),'worker_type_id' =>'1','area_id' => '1', 'created_at' => now()],
-                         ]);    
-                         DB::connection('tenant')->table('users')->insert([
-                             ['name' => 'Cocinero', 'type' => "seller",'number' =>"2",'pin' => $this->generatePIN(4),'worker_type_id' =>'2','area_id' => '2', 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->table('users')->insert([
-                             ['name' => 'Mozo' , 'type' => "seller",'number' =>"3",'pin' => $this->generatePIN(4),'worker_type_id' =>'3','area_id' => '3', 'created_at' => now()],
-                         ]);
-                         DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS=1');
-                      }
-                
+            if ($request->create_restaurant == true || $request->create_restaurant == 1) {
+                DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS=0');
+                DB::connection('tenant')->table('ordens')->delete();
+                DB::connection('tenant')->table('orden_item')->delete();
+                DB::connection('tenant')->table('users')->whereNotNull('area_id')->delete();
+                DB::connection('tenant')->table('workers_type')->delete();
+                DB::connection('tenant')->table('status_orders')->delete();
+                DB::connection('tenant')->table('tables')->delete();
+                DB::connection('tenant')->table('status_table')->delete();
+                DB::connection('tenant')->table('areas')->delete();
+                DB::connection('tenant')->table('status_orders')->insert([
+                    ['id' => '1', 'description' => 'Pago sin verificar', 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Pago verificado', 'created_at' => now()],
+                    ['id' => '3', 'description' => 'Despachado', 'created_at' => now()],
+                    ['id' => '4', 'description' => 'Confirmado por el cliente', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('status_table')->insert([
+                    ['id' => '1', 'description' => 'Libre', 'active' => true, 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Ocupado', 'active' => true, 'created_at' => now()],
+                    ['id' => '3', 'description' => 'mantenimiento', 'active' => true, 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('areas')->insert([
+                    ['id' => '1', 'description' => 'Cocina', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Salon 1', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                    ['id' => '3', 'description' => 'Salon 2', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                    ['id' => '4', 'description' => 'Caja', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('tables')->insert([
+                    ['id' => '1', 'number' => '1', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '2', 'number' => '2', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '3', 'number' => '3', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '4', 'number' => '4', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '5', 'number' => '5', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('workers_type')->insert([
+                    ['id' => '1', 'description' => 'Cajera', 'active' => true, 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Cocinero', 'active' => true, 'created_at' => now()],
+                    ['id' => '3', 'description' => 'Mozo', 'active' => true, 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('users')->insert([
+                    ['name' => 'Cajera', 'type' => "seller", 'number' => "1", 'pin' => $this->generatePIN(4), 'worker_type_id' => '1', 'area_id' => '1', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('users')->insert([
+                    ['name' => 'Cocinero', 'type' => "seller", 'number' => "2", 'pin' => $this->generatePIN(4), 'worker_type_id' => '2', 'area_id' => '2', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('users')->insert([
+                    ['name' => 'Mozo', 'type' => "seller", 'number' => "3", 'pin' => $this->generatePIN(4), 'worker_type_id' => '3', 'area_id' => '3', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS=1');
+            }
+
             return [
                 'success' => true,
                 'message' => 'Cliente Actualizado satisfactoriamente',
@@ -724,12 +758,12 @@ class ClientController extends Controller
 
     public function store(ClientRequest $request)
     {
-       
+
         $temp_path = $request->input('temp_path');
         $configuration = Configuration::first();
 
         $name_certificate = $configuration->certificate;
-
+        $is_rus = $request->input('is_rus');
         if ($temp_path) {
 
             try {
@@ -783,55 +817,55 @@ class ClientController extends Controller
             $client->password = $request->input('password_sunat');
             $client->password_cdt = $request->input('password_cdt');
             $client->save();
-            if($request['create_restaurant']==true ){
+            if ($request['create_restaurant'] == true) {
                 //     DB::connection('tenant')->statement('SET FOREIGN_KEY_CHECKS=0');
-                     DB::connection('tenant')->table('ordens')->delete();
-                     DB::connection('tenant')->table('orden_item')->delete();
-                     DB::connection('tenant')->table('users')->whereNotNull('area_id')->delete();
-                     DB::connection('tenant')->table('workers_type')->delete();
-                     DB::connection('tenant')->table('status_orders')->delete();
-                     DB::connection('tenant')->table('tables')->delete();
-                     DB::connection('tenant')->table('status_table')->delete();
-                     DB::connection('tenant')->table('areas')->delete();
-                     DB::connection('tenant')->table('status_orders')->insert([
-                         ['id' => '1', 'description' => 'Pago sin verificar', 'created_at' => now()],
-                         ['id' => '2', 'description' => 'Pago verificado', 'created_at' => now()],
-                         ['id' => '3', 'description' => 'Despachado', 'created_at' => now()],
-                         ['id' => '4', 'description' => 'Confirmado por el cliente', 'created_at' => now()],
-                     ]);
-                     DB::connection('tenant')->table('status_table')->insert([
-                         ['id' => '1', 'description' => 'Libre', 'active' => true, 'created_at' => now()],
-                         ['id' => '2', 'description' => 'Ocupado', 'active' => true, 'created_at' => now()],
-                         ['id' => '3', 'description' => 'mantenimiento', 'active' => true, 'created_at' => now()],
-                     ]);
-                     DB::connection('tenant')->table('areas')->insert([
-                         ['id' => '1', 'description' => 'Cocina', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                         ['id' => '2', 'description' => 'Salon 1', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                         ['id' => '3', 'description' => 'Salon 2', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                         ['id' => '4', 'description' => 'Caja', 'copies' => null, 'printer' => null,'active' => true, 'created_at' => now()],
-                     ]);
-                     DB::connection('tenant')->table('tables')->insert([
-                         ['id' => '1', 'number' => '1', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                         ['id' => '2', 'number' => '2', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                         ['id' => '3', 'number' => '3', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                         ['id' => '4', 'number' => '4', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                         ['id' => '5', 'number' => '5', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
-                     ]);
-                     DB::connection('tenant')->table('workers_type')->insert([
-                         ['id' => '1', 'description' => 'Cajera','active' => true, 'created_at' => now()],
-                         ['id' => '2', 'description' => 'Cocinero','active' => true, 'created_at' => now()],
-                         ['id' => '3', 'description' => 'Mozo','active' => true, 'created_at' => now()],
-                     ]);
-                     DB::connection('tenant')->table('users')->insert([
-                         ['name' => 'Cajera', 'type' => "seller",'number' =>"1",'pin' => $this->generatePIN(4),'worker_type_id' =>'1','area_id' => '1', 'created_at' => now()],
-                     ]);    
-                     DB::connection('tenant')->table('users')->insert([
-                         ['name' => 'Cocinero', 'type' => "seller",'number' =>"2",'pin' => $this->generatePIN(4),'worker_type_id' =>'2','area_id' => '2', 'created_at' => now()],
-                     ]);
-                     DB::connection('tenant')->table('users')->insert([
-                         ['name' => 'Mozo', 'type' => "seller",'number' =>"3",'pin' => $this->generatePIN(4),'worker_type_id' =>'3','area_id' => '3', 'created_at' => now()],
-                     ]);
-                  }
+                DB::connection('tenant')->table('ordens')->delete();
+                DB::connection('tenant')->table('orden_item')->delete();
+                DB::connection('tenant')->table('users')->whereNotNull('area_id')->delete();
+                DB::connection('tenant')->table('workers_type')->delete();
+                DB::connection('tenant')->table('status_orders')->delete();
+                DB::connection('tenant')->table('tables')->delete();
+                DB::connection('tenant')->table('status_table')->delete();
+                DB::connection('tenant')->table('areas')->delete();
+                DB::connection('tenant')->table('status_orders')->insert([
+                    ['id' => '1', 'description' => 'Pago sin verificar', 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Pago verificado', 'created_at' => now()],
+                    ['id' => '3', 'description' => 'Despachado', 'created_at' => now()],
+                    ['id' => '4', 'description' => 'Confirmado por el cliente', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('status_table')->insert([
+                    ['id' => '1', 'description' => 'Libre', 'active' => true, 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Ocupado', 'active' => true, 'created_at' => now()],
+                    ['id' => '3', 'description' => 'mantenimiento', 'active' => true, 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('areas')->insert([
+                    ['id' => '1', 'description' => 'Cocina', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Salon 1', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                    ['id' => '3', 'description' => 'Salon 2', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                    ['id' => '4', 'description' => 'Caja', 'copies' => null, 'printer' => null, 'active' => true, 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('tables')->insert([
+                    ['id' => '1', 'number' => '1', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '2', 'number' => '2', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '3', 'number' => '3', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '4', 'number' => '4', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                    ['id' => '5', 'number' => '5', 'status_table_id' => '1', 'area_id' => '2', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('workers_type')->insert([
+                    ['id' => '1', 'description' => 'Cajera', 'active' => true, 'created_at' => now()],
+                    ['id' => '2', 'description' => 'Cocinero', 'active' => true, 'created_at' => now()],
+                    ['id' => '3', 'description' => 'Mozo', 'active' => true, 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('users')->insert([
+                    ['name' => 'Cajera', 'type' => "seller", 'number' => "1", 'pin' => $this->generatePIN(4), 'worker_type_id' => '1', 'area_id' => '1', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('users')->insert([
+                    ['name' => 'Cocinero', 'type' => "seller", 'number' => "2", 'pin' => $this->generatePIN(4), 'worker_type_id' => '2', 'area_id' => '2', 'created_at' => now()],
+                ]);
+                DB::connection('tenant')->table('users')->insert([
+                    ['name' => 'Mozo', 'type' => "seller", 'number' => "3", 'pin' => $this->generatePIN(4), 'worker_type_id' => '3', 'area_id' => '3', 'created_at' => now()],
+                ]);
+            }
             DB::connection('system')->commit();
         } catch (Exception $e) {
             DB::connection('system')->rollBack();
@@ -843,12 +877,18 @@ class ClientController extends Controller
                 'message' => $e->getMessage()
             ];
         }
-
+        $name = $request->input('name');
+        $trade_name = $request->input('trade_name');
+        if ($is_rus && $trade_name) {
+            $name = $trade_name;
+        }
         DB::connection('tenant')->table('companies')->insert([
             'identity_document_type_id' => '6',
             'number' => $request->input('number'),
             'name' => $request->input('name'),
-            'trade_name' => $request->input('name'),
+            'trade_name' => $name,
+            'is_rus' => $is_rus,
+
             'soap_type_id' => $request->soap_type_id,
             'soap_send_id' => $request->soap_send_id,
             'soap_username' => $request->soap_username,
@@ -857,7 +897,7 @@ class ClientController extends Controller
             'certificate' => $name_certificate,
             // 'cert_smart' => $request->soap_send_id == '03' ? true : false,
         ]);
-        
+
         $plan = Plan::findOrFail($request->input('plan_id'));
         $http = config('tenant.force_https') == true ? 'https://' : 'http://';
 
@@ -926,16 +966,16 @@ class ClientController extends Controller
             'code' => '0000'
         ]);
         $person = DB::connection('tenant')
-        ->table('persons')
-        ->where('number', '99999999')
-        ->where('type', 'customers')
-        ->first();
-        if($person && $person->id){
+            ->table('persons')
+            ->where('number', '99999999')
+            ->where('type', 'customers')
+            ->first();
+        if ($person && $person->id) {
             $person_id = $person->id;
             DB::connection('tenant')
-            ->table('establishments')
-            ->where('id', $establishment_id)
-            ->update(['customer_id' => $person_id]);
+                ->table('establishments')
+                ->where('id', $establishment_id)
+                ->update(['customer_id' => $person_id]);
         }
 
 
@@ -978,6 +1018,30 @@ class ClientController extends Controller
             'permission_edit_cpe' => true,
             'last_password_update' => date('Y-m-d H:i:s'),
         ]);
+
+        if ($is_rus) {
+            $serie = DB::connection('tenant')->table('series')->where('document_type_id', '03')
+                ->where('establishment_id', $establishment_id)
+                ->first();
+            if ($serie) {
+                DB::connection('tenant')->table('users')->where('id', $user_id)->update([
+                    'document_id' => '03',
+                    'series_id' => $serie->id,
+                ]);
+            }
+            DB::connection('tenant')->table('establishments')->
+            where('id', $establishment_id)
+            ->update([
+               'template_pdf' => 'rus',
+               'template_ticket_pdf' => 'rus',
+            ]);
+            DB::connection('tenant')->table('cat_document_types')
+            ->where('id', '01')
+            ->update([
+                'active' => false,
+            ]);
+        }
+
 
         DB::connection('tenant')->table('cash')->insert([
             'user_id' => $user_id,
@@ -1079,7 +1143,22 @@ class ClientController extends Controller
             'message' => 'Plan renovado con exito'
         ];
     }
+    public function lockedItem(Request $request)
+    {
 
+        $client = Client::findOrFail($request->id);
+        $client->locked_items = $request->locked_items;
+        $client->save();
+
+        $tenancy = app(Environment::class);
+        $tenancy->tenant($client->hostname->website);
+        DB::connection('tenant')->table('configurations')->where('id', 1)->update(['locked_items' => $client->locked_items]);
+
+        return [
+            'success' => true,
+            'message' => ($client->locked_items) ? 'Limitar creación de productos activado' : 'Limitar creación de productos desactivado'
+        ];
+    }
 
     public function lockedUser(Request $request)
     {

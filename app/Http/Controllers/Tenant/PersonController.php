@@ -66,13 +66,22 @@ class PersonController extends Controller
             $user->save();
         }
     }
+    public function drivers()
+    {
+        $type = 'customers';
+        $api_service_token = \App\Models\Tenant\Configuration::getApiServiceToken();
+        $driver = true;
+        $suscriptionames = SuscriptionNames::create_new();
+        return view('tenant.persons.index', compact('type', 'driver', 'api_service_token', 'suscriptionames'));
+    }
     public function index($type)
     {
         // $configuration = Configuration::first();
         // $api_service_token = $configuration->token_apiruc =! '' ? $configuration->token_apiruc : config('configuration.api_service_token');
         $api_service_token = \App\Models\Tenant\Configuration::getApiServiceToken();
+        $driver = false;
         $suscriptionames = SuscriptionNames::create_new();
-        return view('tenant.persons.index', compact('type', 'api_service_token', 'suscriptionames'));
+        return view('tenant.persons.index', compact('type', 'driver', 'api_service_token', 'suscriptionames'));
     }
 
     public function columns()
@@ -96,16 +105,16 @@ class PersonController extends Controller
         $ids = [];
         switch ($column) {
             case 'zone_id':
-                $ids = Zone::where('name', 'like', '%'.$value.'%')->pluck('id')->toArray();
+                $ids = Zone::where('name', 'like', '%' . $value . '%')->pluck('id')->toArray();
                 break;
             case 'department_id':
-                $ids = Department::where('description', 'like', '%'.$value.'%')->pluck('id')->toArray();
+                $ids = Department::where('description', 'like', '%' . $value . '%')->pluck('id')->toArray();
                 break;
             case 'province_id':
-                $ids = Province::where('description', 'like',  '%'.$value.'%')->pluck('id')->toArray();
+                $ids = Province::where('description', 'like',  '%' . $value . '%')->pluck('id')->toArray();
                 break;
             case 'district_id':
-                $ids = District::where('description', 'like', '%'.$value.'%')->pluck('id')->toArray();
+                $ids = District::where('description', 'like', '%' . $value . '%')->pluck('id')->toArray();
                 break;
         }
 
@@ -115,7 +124,8 @@ class PersonController extends Controller
     {
         $column = $request->column;
         $value = $request->value;
-        $order = $request->order;
+        $order = $request->order ?? 'asc';
+        $driver = filter_var($request->driver ?? "false", FILTER_VALIDATE_BOOLEAN);
         $records = Person::where('type', $type);
         if ($column == 'zone_id' || $column == 'department_id' || $column == 'province_id' || $column == 'district_id') {
             $ids = $this->get_ids($column, $value);
@@ -123,13 +133,17 @@ class PersonController extends Controller
         } else {
             $records = $records->where($column, 'like', "%{$value}%");
         }
-
+        if ($driver) {
+            $records = $records->where('is_driver', true);
+        } else {
+            $records = $records->where('is_driver', false);
+        }
 
 
         $records = $records->whereFilterCustomerBySeller($type);
-        if($column == 'name' || $column == 'internal_code' && $order){
+        if ($column == 'name' || $column == 'internal_code' && $order) {
             $records = $records->orderBy($column, $order);
-        }else{
+        } else {
 
             $records = $records->orderBy('name');
         }
@@ -142,6 +156,23 @@ class PersonController extends Controller
         return view('tenant.customers.form');
     }
 
+    public function getLastDocument()
+    {
+        $last_no_document = Person::where('identity_document_type_id', '0')
+            ->whereRaw('number REGEXP "^[0-9]{7}$"')
+            ->max('number');
+        if ($last_no_document == null) {
+            $last_no_document = "0000001";
+        } else {
+            $last_no_document = $last_no_document + 1;
+            $last_no_document = str_pad($last_no_document, 7, "0", STR_PAD_LEFT);
+        }
+        return [
+            'success' => true,
+            'data' => $last_no_document
+
+        ];
+    }
     public function tables()
     {
         $departments = Department::whereActive()->orderByDescription()->get();
@@ -181,7 +212,7 @@ class PersonController extends Controller
     public function store(PersonRequest $request)
     {
         /* dd($request->all()); */
-
+        
         if (!$request->barcode) {
             if ($request->internal_id) {
                 $request->merge(['barcode' => $request->internal_id]);
@@ -213,9 +244,14 @@ class PersonController extends Controller
         $person->save();
         $this->savePhoto($person, $request);
         $person->addresses()->delete();
+        $person->dispatch_addresses()->delete();
         $addresses = $request->input('addresses');
         foreach ($addresses as $row) {
             $person->addresses()->updateOrCreate(['id' => $row['id']], $row);
+        }
+        $dispatch_addresses = $request->input('dispatch_addresses');
+        foreach ($dispatch_addresses as $row) {
+            $person->dispatch_addresses()->updateOrCreate(['id' => $row['id']], $row);
         }
 
         $optional_email = $request->optional_email;
@@ -391,6 +427,19 @@ class PersonController extends Controller
             ->download($filename . Carbon::now() . '.xlsx');
     }
 
+    public function clientsForGenerateCPEById($id)
+    {
+
+        $persons = Person::without(['identity_document_type', 'country', 'department', 'province', 'district'])
+            ->select('id', 'name', 'identity_document_type_id', 'number')
+            ->where('id', $id)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'data' => $persons,
+        ], 200);
+    }
     public function clientsForGenerateCPE()
     {
         $typeFile = request('type');

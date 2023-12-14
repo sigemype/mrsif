@@ -69,7 +69,7 @@ class RetentionController extends Controller
     {
         $retention_types = RetentionType::get();
         $currency_types = CurrencyType::whereActive()->get();
-        $document_types = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
 
         return compact('document_types', 'currency_types', 'retention_types');
     }

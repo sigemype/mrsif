@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     $invoice = $document->invoice;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
@@ -87,7 +96,7 @@ $logo = "{$establishment->logo}";
 <table class="full-width" style="font-family: helvetica">
     <tr>
         <td class="desc text-uppercase" colspan="2">
-            Fecha de Emisión: {{ $document->date_of_issue->format('Y-m-d') }} <br>
+            Fecha de emisión: {{ $document->date_of_issue->format('Y-m-d') }} <br>
             @isset($invoice->date_of_due)
                 F. Vencimiento: {{ $invoice->date_of_due->format('Y-m-d') }} <br>
             @endisset
@@ -113,7 +122,7 @@ $logo = "{$establishment->logo}";
 
     @if ($document->detraction)
         <tr>
-            <td class="align-top"><p class="desc-ticket text-uppercase">N. Cta Detracciones:</p></td>
+            <td class="align-top"><p class="desc-ticket text-uppercase">N. Cta detracciones:</p></td>
             <td><p class="desc-ticket text-uppercase">{{ $document->detraction->bank_account}}</p></td>
         </tr>
         <tr>
@@ -124,7 +133,7 @@ $logo = "{$establishment->logo}";
             </td>
         </tr>
         <tr>
-            <td class="align-top"><p class="desc-ticket text-uppercase">Método de pago:</p></td>
+            <td class="align-top"><p class="desc-ticket text-uppercase">Método de Pago:</p></td>
             <td>
                 <p class="desc-ticket text-uppercase">{{ $detractionType->getPaymentMethodTypeDescription($document->detraction->payment_method_id ) }}</p>
             </td>
@@ -139,7 +148,7 @@ $logo = "{$establishment->logo}";
         </tr>
         @if($document->detraction->pay_constancy)
             <tr>
-                <td class="align-top"><p class="desc-ticket text-uppercase">Constancia de pago:</p></td>
+                <td class="align-top"><p class="desc-ticket text-uppercase">Constancia de Pago:</p></td>
                 <td><p class="desc-ticket text-uppercase">{{ $document->detraction->pay_constancy}}</p></td>
             </tr>
         @endif
@@ -150,7 +159,7 @@ $logo = "{$establishment->logo}";
                 <td colspan="2"></td>
             </tr>
             <tr>
-                <td colspan="2">DETALLE - SERVICIOS DE TRANSPORTE DE CARGA</td>
+                <td colspan="2">Detalle - Servicios de transporte de carga</td>
             </tr>
             <tr>
                 <td class="align-top"><p class="desc-ticket text-uppercase">Ubigeo origen:</p></td>
@@ -220,7 +229,7 @@ $logo = "{$establishment->logo}";
 
     @if ($document->purchase_order)
         <tr>
-            <td><p class="desc-ticket text-uppercase">Orden de Compra:</p></td>
+            <td><p class="desc-ticket text-uppercase">Orden de compra:</p></td>
             <td><p class="desc-ticket text-uppercase">{{ $document->purchase_order }}</p></td>
         </tr>
     @endif
@@ -309,9 +318,9 @@ $logo = "{$establishment->logo}";
     <tr>
         <td class="border-top-bottom desc text-left"></td>
         <td class="border-top-bottom desc text-left">UdM</td>
-        <td class="border-top-bottom desc text-left">DESCRIPCIÓN</td>
-        <td class="border-top-bottom desc text-right" style="padding-right:5px;">P.UNIT</td>
-        <td class="border-top-bottom desc text-right">TOTAL</td>
+        <td class="border-top-bottom desc text-left">Descripción</td>
+        <td class="border-top-bottom desc text-right" style="padding-right:5px;">V.Unit</td>
+        <td class="border-top-bottom desc text-right">Total</td>
     </tr>
     @foreach($document->items as $row)
         <tr>
@@ -370,8 +379,8 @@ $logo = "{$establishment->logo}";
                 @endif
             </td>
             <td class="text-right desc align-top"
-                style="padding-right:5px;">{{ number_format($row->unit_price, 2) }}</td>
-            <td class="text-right desc align-top">{{ number_format($row->total, 2) }}</td>
+                style="padding-right:5px;">{{ number_format($row->unit_value, 2) }}</td>
+            <td class="text-right desc align-top">{{ number_format($row->total_value, 2) }}</td>
         </tr>
         <tr>
             <td colspan="5" class="border-bottom"></td>
@@ -379,7 +388,7 @@ $logo = "{$establishment->logo}";
     @endforeach
     @if($document->total_exportation > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">OP. EXPORTACIÓN:
+            <td colspan="3" class="desc-ticket text-uppercase">Op. Exportación:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_exportation, 2) }}</td>
@@ -387,7 +396,7 @@ $logo = "{$establishment->logo}";
     @endif
     @if($document->total_free > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">OP. GRATUITAS:
+            <td colspan="3" class="desc-ticket text-uppercase">Op. Gratuitas:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_free, 2) }}</td>
@@ -395,7 +404,7 @@ $logo = "{$establishment->logo}";
     @endif
     @if($document->total_unaffected > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">OP. INAFECTAS:
+            <td colspan="3" class="desc-ticket text-uppercase">Op. Inafectas:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_unaffected, 2) }}</td>
@@ -403,7 +412,7 @@ $logo = "{$establishment->logo}";
     @endif
     @if($document->total_exonerated > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">OP. EXONERADAS:
+            <td colspan="3" class="desc-ticket text-uppercase">Op. Exoneradas:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_exonerated, 2) }}</td>
@@ -411,7 +420,7 @@ $logo = "{$establishment->logo}";
     @endif
     @if($document->total_taxed > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">OP. GRAVADAS:
+            <td colspan="3" class="desc-ticket text-uppercase">Op. Gravadas:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_taxed, 2) }}</td>
@@ -419,7 +428,7 @@ $logo = "{$establishment->logo}";
     @endif
     @if($document->total_plastic_bag_taxes > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">ICBPER:
+            <td colspan="3" class="desc-ticket text-uppercase">Icbper:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_plastic_bag_taxes, 2) }}</td>
@@ -452,7 +461,7 @@ $logo = "{$establishment->logo}";
     @if($document->total_discount > 0)
         <tr>
             <td colspan="3"
-                class="desc-ticket text-uppercase">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}
+                class="desc-ticket text-uppercase">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento TOTAL')}}
                 :
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
@@ -485,14 +494,14 @@ $logo = "{$establishment->logo}";
     @endif
 
     <tr>
-        <td colspan="3" class="desc-ticket text-uppercase">TOTAL A PAGAR:
+        <td colspan="3" class="desc-ticket text-uppercase">Total a pagar:
             {{ $document->currency_type->symbol }}</td>
         <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total, 2) }}</td>
     </tr>
 
     @if(($document->retention || $document->detraction) && $document->total_pending_payment > 0)
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">M. PENDIENTE:
+            <td colspan="3" class="desc-ticket text-uppercase">M. Pendiente:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2"
                 class="text-right desc-ticket text-uppercase">{{ number_format($document->total_pending_payment, 2) }}</td>
@@ -502,7 +511,7 @@ $logo = "{$establishment->logo}";
     @if($balance < 0)
         <tr>
             <td colspan="3" class="desc-ticket text-uppercase">
-                VUELTO:
+                Vuelto:
                 <span class="text-right">{{ $document->currency_type->symbol }}</span>
             </td>
             <td colspan="2"
@@ -545,14 +554,14 @@ $logo = "{$establishment->logo}";
                 @if($document->payment_method_type_id)
                     <tr>
                         <td class="desc-ticket">
-                            PAGO: {{ $document->payment_method_type->description }}
+                            Pago: {{ $document->payment_method_type->description }}
                         </td>
                     </tr>
                 @endif
                 @if($payments->count())
                     <tr>
                         <td class="desc-ticket">
-                            PAGOS:
+                            Pagos:
                         </td>
                     </tr>
                     @foreach($payments as $row)
@@ -570,7 +579,7 @@ $logo = "{$establishment->logo}";
                 <table class="full-width" style="font-family: helvetica">
                     <tr>
                         <td class="desc-ticket">
-                            <span>PAGOS: {{ $paymentMethod->description }}</span>
+                            <span>Pagos: {{ $paymentMethod->description }}</span>
                         </td>
                     </tr>
                     @foreach($document->fee as $key => $quote)
@@ -668,7 +677,7 @@ $logo = "{$establishment->logo}";
             </tr>
             @endif
             <tr>
-                <td class="text-center desc-9 pt-2">Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
+                <td class="text-center desc-9 pt-2">Representación impresa del Comprobante de Pago Electrónico. <br/>Esta puede ser consultada en {!! url('/buscar') !!}</td>
             </tr>
 </table>
 

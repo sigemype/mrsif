@@ -50,9 +50,9 @@
 <table class="full-width mt-10 mb-10">
     <thead class="">
     <tr>
-        <th class="border-top-bottom desc-9 text-center">CANT.</th>
-        <th class="border-top-bottom desc-9 text-center">UNIDAD</th>
-        <th class="border-top-bottom desc-9 text-left">DESCRIPCIÓN</th>
+        <th class="border-top-bottom desc-9 text-center">Cant.</th>
+        <th class="border-top-bottom desc-9 text-center">Unidad</th>
+        <th class="border-top-bottom desc-9 text-left">Descripción</th>
     </tr>
     </thead>
     <tbody>

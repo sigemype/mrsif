@@ -101,14 +101,16 @@ $description = (strlen($value->item->description) > 50) ? substr($value->item->d
 $description = $pack_prefix . $description;
 $isSaleNote = ($document_type_id != '80' && $type == 'sale') ? true : false;
 
-    $seller = \App\CoreFacturalo\Helpers\Template\ReportHelper::getSellerData($value);
+    // $seller = \App\CoreFacturalo\Helpers\Template\ReportHelper::getSellerData($value);
     try{
+        $seller = \App\CoreFacturalo\Helpers\Template\ReportHelper::getSellerData($value);
         $user = $seller->name;
     }catch (ErrorException $e){
         $user = '';
     }
 
 ?>
+
 <tr>
     <td class="celda">{{ $document->date_of_issue->format('Y-m-d') }}</td>
     <td class="celda">{{ $user}}</td>
@@ -117,8 +119,8 @@ $isSaleNote = ($document_type_id != '80' && $type == 'sale') ? true : false;
         <td class="celda">{{ $stablihsment['department'] }}</td>
         <td class="celda">{{ $stablihsment['province'] }}</td>
     @endif
-    <td class="celda">{{ $document->series }}</td>
-    <td class="celda">{{ $document->number }}</td>
+    <td class="celda">{{ $document->series ?? $document->prefix }}</td>
+    <td class="celda">{{ $document->number ?? $document->id }}</td>
     @if( $type == 'sale')
         <td class="celda">{{ $purchseOrder }} </td>
         <td class="celda">{{ $web_platform }}</td>

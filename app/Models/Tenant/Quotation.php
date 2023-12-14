@@ -15,7 +15,7 @@ class Quotation extends ModelTenant
 {
     use SellerIdTrait;
 
-    protected $with = ['user', 'soap_type', 'state_type', 'currency_type', 'items', 'payments'];
+    protected $with = ['user', 'soap_type', 'state_type', 'currency_type', 'items', 'payments',"project"];
 
     protected $fillable = [
         'id',
@@ -26,7 +26,7 @@ class Quotation extends ModelTenant
         'soap_type_id',
         'state_type_id',
         'payment_method_type_id',
-
+        'number',
         'prefix',
 
         'date_of_issue',
@@ -78,6 +78,10 @@ class Quotation extends ModelTenant
         'quotations_optional_value'
     ];
 
+    protected $cast =[
+        'discounts' => 'array',
+    ];
+
     public static function boot()
     {
         parent::boot();
@@ -91,10 +95,16 @@ class Quotation extends ModelTenant
         // 'date_of_due' => 'date',
         // 'delivery_date' => 'date',
     ];
-
+    public function project(){
+        return $this->hasOne(QuotationProject::class);
+    }
     public function getEstablishmentAttribute($value)
     {
         return (is_null($value))?null:(object) json_decode($value);
+    }
+    public function relation_establishment()
+    {
+        return $this->belongsTo(Establishment::class, 'establishment_id');
     }
 
     public function setEstablishmentAttribute($value)
@@ -194,7 +204,11 @@ class Quotation extends ModelTenant
 
     public function getIdentifierAttribute()
     {
-        return $this->prefix.'-'.$this->id;
+        if($this->number == null){
+            return $this->prefix.'-'.$this->id;
+        }else{
+            return $this->prefix.'-'.$this->number;
+        }
     }
 
     public function user()

@@ -371,6 +371,16 @@
                                                             @click.prevent="clickDocumentPayment(row.id)"
                                                         >Pagos</button>
                                                         </template>
+                                                        <template
+                                                        v-else-if="row.type == 'bill_of_exchange'"
+                                                        >
+                                                              <button
+                                                            type="button"
+                                                            style="min-width: 41px"
+                                                            class="btn waves-effect waves-light btn-sm btn-info m-1__2"
+                                                            @click.prevent="clickBillOfExchangePayment(row.id)"
+                                                        >Pagos</button>  
+                                                        </template>
                                                         <template v-else>
                                                         <button
                                                             type="button"
@@ -410,18 +420,24 @@
             :configuration="this.configuration"
             ></document-payments>
 
-        <sale-note-payments
+        <bill-of-exchange-payments
+            :showDialog.sync="showDialogBillOfExchangePayments"
+            :documentId="recordId"
+            :external="true"
+            :configuration="this.configuration"
+            ></bill-of-exchange-payments>
+     <sale-note-payments
             :showDialog.sync="showDialogSaleNotePayments"
             :documentId="recordId"
             :external="true"
             :configuration="this.configuration"
             ></sale-note-payments>
-
     </div>
 </template>
 
 <script>
 
+    import BillOfExchangePayments from "@views/bill_of_exchange/partials/payments.vue";
     import DocumentPayments from "@views/documents/partials/payments.vue";
     import SaleNotePayments from "@views/sale_notes/partials/payments.vue";
     // import DataTable from '../../components/DataTableWithoutPaging.vue'
@@ -429,9 +445,10 @@
 
     export default {
         props:['typeUser','configuration'],
-        components: {DocumentPayments, SaleNotePayments},
+        components: {DocumentPayments, SaleNotePayments,BillOfExchangePayments},
         data() {
             return {
+                showDialogBillOfExchangePayments:false,
                 resource: 'finances/unpaid',
                 form: {},
                 customers: [],
@@ -650,6 +667,11 @@
                     limit: this.limit,
                     ...this.form
                 })
+            },
+            clickBillOfExchangePayment(recordId) {
+
+                this.recordId = recordId;
+                this.showDialogBillOfExchangePayments = true;
             },
             clickDocumentPayment(recordId) {
                 this.recordId = recordId;

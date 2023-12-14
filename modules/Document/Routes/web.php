@@ -33,12 +33,14 @@ if ($current_hostname) {
                 Route::get('data-table/customers', 'DocumentController@dataTableCustomers');
                 Route::get('prepayments/{type}', 'DocumentController@prepayments');
                 Route::get('search-items', 'DocumentController@searchItems');
+                Route::get('search-items-factory-codes/{id}', 'DocumentController@searchItemsFactoryCode');
                 Route::get('search/item/{item}', 'DocumentController@searchItemById');
                 Route::get('consult_cdr/{document}', 'DocumentController@consultCdr');
 
                 Route::get('item-lots', 'DocumentController@searchLots');
                 Route::get('regularize-lots/{document_item_id}', 'DocumentController@regularizeLots');
                 Route::post('item_lots', 'DocumentController@searchItemLots');
+                Route::post('item_sizes', 'DocumentController@searchItemSizes');
             });
 
             Route::prefix('series-configurations')->group(function () {

@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
 
@@ -116,7 +125,7 @@ $logo = "{$establishment->logo}";
     @endif
 
     <tr>
-        <td>Peso Bruto Total({{ $document->unit_type_id }}): {{ $document->total_weight }}</td>
+        <td>Peso Bruto total({{ $document->unit_type_id }}): {{ $document->total_weight }}</td>
         @if($document->packages_number)
             <td>Número de Bultos: {{ $document->packages_number }}</td>
         @endif
@@ -262,11 +271,11 @@ $logo = "{$establishment->logo}";
         $document_data_affected_document = $document->data_affected_document;
 
     $number = (property_exists($document_data_affected_document,'number'))?$document_data_affected_document->number:null;
-    $series = (property_exists($document_data_affected_document,'series'))?$document_data_affected_document->series:null;
+    $Series = (property_exists($document_data_affected_document,'Series'))?$document_data_affected_document->series:null;
     $document_type_id = (property_exists($document_data_affected_document,'document_type_id'))?$document_data_affected_document->document_type_id:null;
 
     @endphp
-    @if($number !== null && $series !== null && $document_type_id !== null)
+    @if($number !== null && $Series !== null && $document_type_id !== null)
 
         @php
             $documentType  = App\Models\Tenant\Catalogs\DocumentType::find($document_type_id);
@@ -277,7 +286,7 @@ $logo = "{$establishment->logo}";
                 <td class="text-bold border-bottom font-bold">{{$textDocumentType}}</td>
             </tr>
             <tr>
-                <td>{{$series }}-{{$number}}</td>
+                <td>{{$Series }}-{{$number}}</td>
             </tr>
         </table>
     @endif

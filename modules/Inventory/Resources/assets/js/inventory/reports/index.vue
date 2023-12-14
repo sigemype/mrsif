@@ -4,7 +4,7 @@
             <div class="card card-primary" v-loading="loading">
                 <div class="card-header">
                     <h4 class="card-title">Consulta de inventarios</h4>
-                    <div class="data-table-visible-columns" style="top:10px">
+                    <div class="data-table-visible-columns" style="top: 10px">
                         <el-dropdown :hide-on-click="false">
                             <el-button type="primary">
                                 Mostrar/Ocultar filtros<i
@@ -189,6 +189,13 @@
                                 Reportes
                             </el-button>
                         </div>
+                        <div class="col-auto">
+                            <el-checkbox
+                                @change="getRecords"
+                                v-model="form.must_sales"
+                                >Ordenar por más vendidos
+                            </el-checkbox>
+                        </div>
                     </div>
 
                     <div v-if="records.length > 0" class="row">
@@ -212,11 +219,25 @@
                                                 Modelo
                                             </th>
                                             <th>Categoria</th>
+                                            <template
+                                                v-if="
+                                                    configuration &&
+                                                    configuration.is_pharmacy
+                                                "
+                                            >
+                                                <th>Laboratorio</th>
+                                                <th>Registro Sanitario</th>
+                                                <th>Lote</th>
+                                            </template>
+                                            <th v-if="isMajolica">Metraje</th>
                                             <th class="text-end">
                                                 Stock mínimo
                                             </th>
                                             <th class="text-end">
                                                 Stock actual
+                                            </th>
+                                            <th class="text-end">
+                                                Productos vendidos
                                             </th>
                                             <th class="text-end">
                                                 Precio de venta
@@ -276,11 +297,39 @@
                                             <td>
                                                 {{ row.item_category_name }}
                                             </td>
+                                            <template
+                                                v-if="
+                                                    configuration &&
+                                                    configuration.is_pharmacy
+                                                "
+                                            >
+                                                <td>{{ row.Laboratory }}</td>
+                                                <td>{{ row.num_reg_san }}</td>
+                                                <td>
+                                                    <div
+                                                        v-for="(
+                                                            lot, index
+                                                        ) in row.lots_group"
+                                                        :key="index"
+                                                    >
+                                                        {{ lot.code }} <br />
+                                                        <small>{{
+                                                            lot.date_of_due
+                                                        }}</small>
+                                                    </div>
+                                                </td>
+                                            </template>
+                                            <td v-if="isMajolica">
+                                                {{ row.meter }}
+                                            </td>
                                             <td class="text-end">
                                                 {{ row.stock_min }}
                                             </td>
                                             <td class="text-end">
                                                 {{ row.stock }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ row.kardex_quantity }}
                                             </td>
                                             <td class="text-end">
                                                 {{ row.sale_unit_price }}
@@ -360,12 +409,13 @@ import moment from "moment";
 import queryString from "query-string";
 import ModalReportsFiles from "./modal_report.vue";
 export default {
-    props: [],
+    props: ["configuration"],
     components: {
-        ModalReportsFiles
+        ModalReportsFiles,
     },
     data() {
         return {
+            isMajolica: false,
             // loading_submit: false,
             // showDialogLots: false,
             // showDialogLotsOutput: false,
@@ -386,45 +436,50 @@ export default {
             records: [],
             totals: {
                 purchase_unit_price: 0,
-                sale_unit_price: 0
+                sale_unit_price: 0,
             },
             pickerOptionsDates: {
-                disabledDate: time => {
+                disabledDate: (time) => {
                     time = moment(time).format("YYYY-MM-DD");
                     return this.form.date_start > time;
-                }
+                },
             },
-            pagination: {}
+            pagination: {},
         };
     },
     created() {
+        this.configuration;
+        console.log(
+            "🚀 ~ file: index.vue:432 ~ created ~ this.configuration:",
+            this.configuration
+        );
         this.initTables();
         this.initForm();
         this.filters = {
             description: {
                 title: "Descripción",
-                visible: false
+                visible: false,
             },
             categories: {
                 title: "Categorias",
-                visible: false
+                visible: false,
             },
             model: {
                 title: "Modelo",
-                visible: false
+                visible: false,
             },
             brand: {
                 title: "Marcas",
-                visible: false
+                visible: false,
             },
             active: {
                 title: "Estado",
-                visible: false
+                visible: false,
             },
             range: {
                 title: "Rango de fechas",
-                visible: false
-            }
+                visible: false,
+            },
         };
     },
     methods: {
@@ -440,7 +495,7 @@ export default {
         initTotals() {
             this.totals = {
                 purchase_unit_price: 0,
-                sale_unit_price: 0
+                sale_unit_price: 0,
             };
         },
         initForm() {
@@ -449,7 +504,7 @@ export default {
                 filter: "01",
                 category_id: null,
                 brand_id: null,
-                active: null
+                active: null,
             };
         },
         calculeTotalProfit() {
@@ -460,7 +515,7 @@ export default {
 
             if (this.records.length > 0) {
                 let el = this;
-                this.records.forEach(function(a, b) {
+                this.records.forEach(function (a, b) {
                     el.total_profit += Math.abs(a.profit);
                     el.total_all_profit += Math.abs(a.profit * a.stock);
 
@@ -474,25 +529,24 @@ export default {
             this.total_profit = this.total_profit.toFixed(2);
             this.total_all_profit = this.total_all_profit.toFixed(2);
 
-            this.totals.purchase_unit_price = this.totals.purchase_unit_price.toFixed(
-                6
-            );
-            this.totals.sale_unit_price = this.totals.sale_unit_price.toFixed(
-                6
-            );
+            this.totals.purchase_unit_price =
+                this.totals.purchase_unit_price.toFixed(6);
+            this.totals.sale_unit_price =
+                this.totals.sale_unit_price.toFixed(6);
         },
         initTables() {
-            this.$http.get(`/${this.resource}/tables`).then(response => {
+            this.$http.get(`/${this.resource}/tables`).then((response) => {
                 this.warehouses = response.data.warehouses;
                 this.brands = response.data.brands;
                 this.categories = response.data.categories;
+                this.isMajolica = response.data.is_majolica;
             });
         },
         getQueryParameters() {
             return queryString.stringify({
                 page: this.pagination.current_page,
                 limit: this.limit,
-                ...this.form
+                ...this.form,
             });
         },
         async getRecords() {
@@ -515,7 +569,7 @@ export default {
 
             await this.$http
                 .get(`/${this.resource}/records?${this.getQueryParameters()}`)
-                .then(response => {
+                .then((response) => {
                     this.records = response.data.data;
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(
@@ -545,10 +599,10 @@ export default {
                     filter: this.form.filter,
                     warehouse_id: this.form.warehouse_id,
                     brand_id: this.form.brand_id,
-                    category_id: this.form.category_id
-                }
+                    category_id: this.form.category_id,
+                },
             })
-                .then(response => {
+                .then((response) => {
                     let res = response.data;
                     if (res.success) {
                         this.$message.success(res.message);
@@ -562,7 +616,7 @@ export default {
                         link.click();*/
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     console.log(error);
                     this.errors = error;
                 })
@@ -573,7 +627,7 @@ export default {
                 });
             // this.loadingSubmit = false;
             //
-        }
-    }
+        },
+    },
 };
 </script>

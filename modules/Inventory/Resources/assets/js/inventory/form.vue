@@ -25,6 +25,7 @@
                         <div class="form-group" :class="{'has-danger': errors.quantity}">
                             <label class="control-label">Cantidad</label>
                             <el-input-number
+                                :disabled="form.has_sizes"
                                 v-model="form.quantity"
                                 :min="0"
                                 :controls="false"
@@ -45,6 +46,22 @@
                             </el-select>
                             <small class="text-danger" v-if="errors.warehouse_id"
                                    v-text="errors.warehouse_id[0]"></small>
+                        </div>
+                    </div>
+                           <div class="col-md-4">
+                        <div class="form-group">
+                              <label class="control-label" for="references">Referencias</label>
+                        <el-select
+                            v-model="form.inventory_reference_id"
+                            filterable
+                        >
+                            <el-option
+                                v-for="option in references"
+                                :key="option.id"
+                                :value="option.id"
+                                :label="option.description"
+                            ></el-option>
+                        </el-select>
                         </div>
                     </div>
                     <div class="col-md-4" v-if="type == 'input' && form.lots_enabled">
@@ -86,6 +103,13 @@
                                    v-text="errors.inventory_transaction_id[0]"></small>
                         </div>
                     </div>
+                    <div class="col-md-4"
+                    v-if="form.has_sizes && form.warehouse_id && form.item_id"
+                    >
+                      <a href="#" class="text-center font-weight-bold text-info" @click.prevent="clickSizes">[&#10004;
+                            Ingresar Tallas]</a>
+
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-3">
@@ -121,6 +145,13 @@
             :lots="form.lots"
             @addRowOutputLot="addRowOutputLot">
         </output-lots-form>
+        <form-size
+            :type="type"
+            :showDialog.sync="showDialogSizes"
+            :sizes="form.sizes"
+            @addRowSize="addRowSize">
+        </form-size>
+
 
     </el-dialog>
 
@@ -129,10 +160,11 @@
 <script>
 import InputLotsForm from '../../../../../../resources/js/views/tenant/items/partials/lots.vue'
 import OutputLotsForm from './partials/lots.vue'
+import FormSize from './form_size.vue'
 import {filterWords} from "../../../../../../resources/js/helpers/functions";
 
 export default {
-    components: {InputLotsForm, OutputLotsForm},
+    components: {InputLotsForm, OutputLotsForm,FormSize},
     props: ['showDialog', 'recordId', 'type'],
     data() {
         return {
@@ -140,6 +172,7 @@ export default {
             loading_search: false,
             loading_submit: false,
             showDialogLots: false,
+            showDialogSizes: false,
             showDialogLotsOutput: false,
             titleDialog: null,
             resource: 'inventory',
@@ -149,12 +182,21 @@ export default {
             warehouses: [],
             inventory_transactions: [],
             precision:4,
+                        references: [],
         }
     },
     // created() {
     //     this.initForm()
     // },
     methods: {
+        addRowSize(sizes){
+            this.form.sizes = sizes
+            console.log("🚀 ~ file: form.vue:194 ~ addRowSize ~ this.form.sizes:", this.form.sizes)
+            this.form.quantity = sizes.reduce((a, b) => a + Number(b['quantity'] || 0), 0)
+        },
+        clickSizes(){
+            this.showDialogSizes = true
+        },
         async changeItem() {
             if (this.items.length > 0) {
                 if (this.type === 'output') {
@@ -166,12 +208,31 @@ export default {
                     this.form.lots = lots
                     this.form.lots_enabled = item.lots_enabled
                     this.form.series_enabled = item.series_enabled
+                          this.form.has_sizes  = item.has_sizes
+                    this.form.all_sizes = item.sizes
                 } else {
                     let item = await _.find(this.items, {'id': this.form.item_id})
                     this.form.lots_enabled = item.lots_enabled
                     this.form.series_enabled = item.series_enabled
+                    this.form.has_sizes  = item.has_sizes
+                    this.form.all_sizes = item.sizes
+                  
+                    
                 }
+                      this.filterSizes();
                 this.ChangePrecision();
+            }
+        },
+        filterSizes(){
+            if(this.form.warehouse_id){
+                this.form.sizes = this.form.all_sizes.filter(x => x.warehouse_id == this.form.warehouse_id).
+                map(x => {
+                    return {
+                       ...x,
+                       originalSize: x.size,
+                       quantity: 0,
+                    }
+                })
             }
         },
         addRowOutputLot(lots) {
@@ -202,6 +263,7 @@ export default {
                 lots: [],
                 date_of_due: null,
                 created_at: null,
+                    inventory_reference_id: null,
                 comments: null
 
             }
@@ -218,6 +280,7 @@ export default {
             await this.$http.get(`/${this.resource}/tables/transaction/${this.type}`)
                 .then(response => {
                     // this.items = response.data.items
+                        this.references = response.data.references;
                     this.warehouses = response.data.warehouses
                     this.inventory_transactions = response.data.inventory_transactions
                 })
@@ -225,7 +288,7 @@ export default {
         },
         async create() {
             this.loading = true;
-            this.titleDialog = (this.type === 'input') ? 'Ingreso de producto al almacén 3' : 'Salida de producto del almacén'
+            this.titleDialog = (this.type === 'input') ? 'Ingreso de producto al almacén' : 'Salida de producto del almacén'
             await this.initTables();
             this.initForm();
             this.loading = false;
@@ -244,6 +307,7 @@ export default {
             this.loading_search = false;
         },
         async submit() {
+   
             let total_qty =  this.form.quantity * 1;
             if (this.type === 'input') {
                 if (this.form.lots_enabled) {

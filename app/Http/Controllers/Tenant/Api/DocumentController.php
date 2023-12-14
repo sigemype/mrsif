@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Tenant\DocumentCollection;
 use App\CoreFacturalo\Helpers\Storage\StorageDocument;
+use App\Models\Tenant\Company;
 use Facades\App\Http\Controllers\Tenant\DocumentController as DocumentControllerSend;
 
 class DocumentController extends Controller
@@ -30,7 +31,12 @@ class DocumentController extends Controller
             $facturalo = new Facturalo();
             $facturalo->save($request->all());
             $facturalo->createXmlUnsigned();
-            $facturalo->signXmlUnsigned();
+            $company = Company::active();
+            if ($company->pse && $company->soap_type_id == '02') {
+                $facturalo->sendPseNew();
+            } else {
+                $facturalo->signXmlUnsigned();
+            }
             $facturalo->updateHash();
             $facturalo->updateQr();
             $facturalo->createPdf();

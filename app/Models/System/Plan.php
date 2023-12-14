@@ -15,6 +15,7 @@ class Plan extends Model
         'pricing',
         'limit_users',
         'limit_documents',
+        'limit_items',
         'plan_documents', 
         'locked', 
         'establishments_limit', 

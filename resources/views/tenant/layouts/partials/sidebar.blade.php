@@ -112,7 +112,12 @@ $thridLevel = $path[2] ?? null;
                                 href="{{ route('tenant.sale_notes.index') }}">Notas de Venta</a>
                         </li>
                     @endif
-
+                    @if ($configuration->package_handlers)
+                        <li>
+                            <a class="{{ $firstLevel === 'package-handler' ? 'active' : '' }}"
+                                href="{{ route('tenant.package_handler.index') }}">Tickets de encomienda</a>
+                        </li>
+                    @endif
                     @if (in_array('documents', $vc_modules) && $vc_company->soap_type_id != '03')
 
                         @if (in_array('document_not_sent', $vc_module_levels))
@@ -420,7 +425,7 @@ $thridLevel = $path[2] ?? null;
                     @if (in_array('items_lots', $vc_module_levels))
                         <li class="{{ $firstLevel === 'item-lots' ? 'active' : '' }}">
                             <a class="nav-link" href="{{ route('tenant.item-lots.index') }}">
-                                <span class="label">Series</span>
+                                <span class="label">series</span>
                             </a>
                         </li>
                     @endif
@@ -429,7 +434,17 @@ $thridLevel = $path[2] ?? null;
                             <span class="label">Lotes</span>
                         </a>
                     </li>
-
+                    @php
+                        $isClothesShoes = \Modules\BusinessTurn\Models\BusinessTurn::isClothesShoes();
+                        
+                    @endphp
+                    @if ($isClothesShoes)
+                        <li class="{{ $firstLevel === 'item-sizes' ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('tenant.item-sizes.index') }}">
+                                <span class="label">Tallas</span>
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </li>
         @endif
@@ -449,6 +464,14 @@ $thridLevel = $path[2] ?? null;
                             <a class="{{ $firstLevel === 'persons' && $secondLevel === 'customers' ? 'active' : '' }}"
                                 href="{{ route('tenant.persons.index', ['type' => 'customers']) }}">
                                 <span class="label"> Nuevo </span>
+                            </a>
+                        </li>
+                    @endif
+                    @if ($configuration->package_handlers)
+                        <li>
+                            <a class="{{ $firstLevel === 'persons' && $secondLevel === 'customers' ? 'active' : '' }}"
+                                href="{{ route('tenant.persons_drivers.index') }}">
+                                <span class="label"> Conductores </span>
                             </a>
                         </li>
                     @endif
@@ -582,6 +605,12 @@ $thridLevel = $path[2] ?? null;
                     id="inventory" data-parent="#accordionExample">
 
                     @if (in_array('inventory', $vc_module_levels))
+                    <li>
+                        <a class="{{ $firstLevel === 'inventory-reference' ? 'active' : '' }}"
+                            href="{{ route('tenant.inventory_references.index') }}">
+                            <span class="label">Referencias</span>
+                        </a>
+                    </li>
                         <li>
                             <a class="{{ $firstLevel === 'inventory' ? 'active' : '' }}"
                                 href="{{ route('inventory.index') }}">
@@ -861,6 +890,18 @@ $thridLevel = $path[2] ?? null;
                             <span class="label">Anexos </span>
                         </a>
                     </li>
+                    <li>
+                        <a class="{{ $firstLevel === 'sire' && $secondLevel === 'purchase' ? 'active' : '' }}"
+                            href="{{route('tenant.sire.purchase')}}">
+                            <span class="label">Compras </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="{{ $firstLevel === 'sire' && $secondLevel === 'sale' ? 'active' : '' }}"
+                            href="{{route('tenant.sire.sale')}}">
+                            <span class="label">Ventas </span>
+                        </a>
+                    </li>
                 </ul>
             </li>
         @endif
@@ -877,6 +918,11 @@ $thridLevel = $path[2] ?? null;
                 </a>
                 <ul class="collapse submenu list-unstyled {{ $firstLevel === 'finances' && in_array($secondLevel, ['global-payments', 'balance', 'payment-method-types', 'unpaid', 'to-pay', 'income', 'movements']) ? 'show' : '' }}"
                     id="finance" data-parent="#accordionExample">
+                    <li class="{{ $firstLevel === 'bill-of-exchange' ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('tenant.bill_of_exchange.index') }}">
+                            <span class="label">Letras de cambio</span>
+                        </a>
+                    </li>
                     @if (in_array('finances_movements', $vc_module_levels))
                         <li class="{{ $firstLevel === 'finances' && $secondLevel == 'movements' ? 'active' : '' }}">
                             <a class="nav-link" href="{{ route('tenant.finances.movements.index') }}">

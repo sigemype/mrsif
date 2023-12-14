@@ -986,7 +986,8 @@ export default {
         });
     },
     methods: {
-        open() {
+       async open() {
+
             if (this.item) {
                 let { item } = this.item;
                 item.purchase_unit_price = this.item.unit_price;
@@ -995,6 +996,8 @@ export default {
                 this.form.item_id = item.id;
                 this.lots = this.item.lots;
                 this.changeItem();
+            }else{
+            await this.reloadDataItems();
             }
         },
         ...mapActions([

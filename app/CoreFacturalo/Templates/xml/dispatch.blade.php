@@ -129,10 +129,12 @@
                 <cbc:ID schemeAgencyName="PE:INEI"
                         schemeName="Ubigeos">{{ $document['delivery_location_id'] }}</cbc:ID>
                 <!-- CODIGO DE ESTABLECIMIENTO ANEXO DE LLEGADA -->
-                @if($document['customer_identity_document_type_id'] === '6')
-                <cbc:AddressTypeCode listAgencyName="PE:SUNAT"
-                                     listName="Establecimientos anexos"
-                                     listID="{{ $document['customer_number'] }}">0000</cbc:AddressTypeCode>
+                @if($document['transfer_reason_type_id'] != '02')
+                    @if($document['customer_identity_document_type_id'] === '6')
+                        <cbc:AddressTypeCode listAgencyName="PE:SUNAT"
+                                             listName="Establecimientos anexos"
+                                             listID="{{ $document['customer_number'] }}">0000</cbc:AddressTypeCode>
+                    @endif
                 @endif
                 <cac:AddressLine>
                     <cbc:Line><![CDATA[{{ $document['delivery_address'] }}]]></cbc:Line>
@@ -144,10 +146,14 @@
                     <!-- UBIGEO DE PARTIDA -->
                     <cbc:ID schemeAgencyName="PE:INEI"
                             schemeName="Ubigeos">{{ $document['origin_location_id'] }}</cbc:ID>
-                    <!-- CODIGO DE ESTABLECIMIENTO ANEXO DE PARTIDA -->
-                    <cbc:AddressTypeCode listName="Establecimientos anexos"
-                                         listAgencyName="PE:SUNAT"
-                                         listID="{{ $document['company_number'] }}">0000</cbc:AddressTypeCode>
+                    <!-- CODIGO DE ESTABLECIMIENTO ANEXO DE PARTIDA --> 
+                    @if($document['transfer_reason_type_id'] != '02')
+                        @if($document['customer_identity_document_type_id'] === '6')
+                            <cbc:AddressTypeCode listName="Establecimientos anexos"
+                                             listAgencyName="PE:SUNAT"
+                                             listID="{{ $document['company_number'] }}">0000</cbc:AddressTypeCode>
+                        @endif
+                    @endif
                     <!-- DIRECCION COMPLETA Y DETALLADA DE PARTIDA -->
                     <cac:AddressLine>
                         <cbc:Line><![CDATA[{{ $document['origin_address'] }}]]></cbc:Line>

@@ -204,6 +204,11 @@
                                 <i data-cs-icon="file-data" class="icon" data-cs-size="18"></i>
                                 PDF - Cotizaciones - Facturas</a>
                         </li>
+                        <li>
+                            <a href="{{ route('tenant.yape_plin_qr.index') }}">
+                                <i data-cs-icon="file-data" class="icon" data-cs-size="18"></i>
+                                PDF - QR - Yape/Plin</a>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -13,11 +13,25 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('configurations', function (Blueprint $table) {
-           $table->string('bg_image')->nullable()->after('certificate');
-           $table->string('logo')->nullable()->after('certificate');
-           $table->string('whatsapp')->nullable()->after('certificate');
-        });
+
+        if (!Schema::hasColumn('configurations', 'bg_image')) {
+            Schema::table('configurations', function (Blueprint $table) {
+                $table->string('bg_image')->nullable()->after('certificate');
+            });
+        }
+
+        if (!Schema::hasColumn('configurations', 'logo')) {
+            Schema::table('configurations', function (Blueprint $table) {
+                $table->string('logo')->nullable()->after('certificate');
+            });
+        }
+
+        if (!Schema::hasColumn('configurations', 'whatsapp')) {
+            Schema::table('configurations', function (Blueprint $table) {
+                $table->string('whatsapp')->nullable()->after('certificate');
+            });
+        }
+        
     }
 
     /**

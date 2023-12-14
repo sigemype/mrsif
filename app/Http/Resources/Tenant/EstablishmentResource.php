@@ -15,6 +15,7 @@ class EstablishmentResource extends JsonResource
     public function toArray($request)
     {
         return [
+            'print_format' => $this->print_format,
             'id' => $this->id,
             'description' => $this->description,
             'country_id' => $this->country_id,
@@ -25,6 +26,12 @@ class EstablishmentResource extends JsonResource
             'telephone' => $this->telephone,
             'email' => $this->email,
             'code' => $this->code,
+            'yape_owner' => $this->yape_owner,
+            'yape_number' => $this->yape_number,
+            'yape_logo' => $this->yape_logo,
+            'plin_owner' => $this->plin_owner,
+            'plin_number' => $this->plin_number,
+            'plin_logo' => $this->plin_logo,
             'trade_address' => $this->trade_address,
             'web_address' => $this->web_address,
             'aditional_information' => $this->aditional_information,

@@ -87,6 +87,7 @@ class PosController extends Controller
             return [
                 'id' => $row->id,
                 'item_id' => $row->id,
+                'sizes' => $row->sizes,                
                 'full_description' => $full_description,
                 'description' => ($row->brand->name) ? $row->description . ' - ' . $row->brand->name : $row->description,
                 'currency_type_id' => $row->currency_type_id,
@@ -160,6 +161,8 @@ class PosController extends Controller
     }
     public function tables()
     {
+
+        $company = Company::active();
         $affectation_igv_types = AffectationIgvType::whereActive()->get();
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $currency_types = CurrencyType::whereActive()->get();
@@ -173,6 +176,7 @@ class PosController extends Controller
         $categories = Category::all();
         $payment_method_types = PaymentMethodType::getPaymentMethodTypes();
         return compact(
+            'company',
             'configuration',
             'sellers',
             'items',
@@ -239,6 +243,7 @@ class PosController extends Controller
                     return [
                         'id' => $row->id,
                         'item_id' => $row->id,
+                        'sizes' => $row->sizes,
                         'full_description' => $full_description,
                         'description' => ($row->brand->name) ? $row->description . ' - ' . $row->brand->name : $row->description,
                         'currency_type_id' => $row->currency_type_id,

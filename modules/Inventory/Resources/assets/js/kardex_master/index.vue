@@ -8,7 +8,9 @@
                 <div class="col-lg-12 col-md-12 col-sm-12  ">
                     <el-tabs v-model="activeName">
                         <el-tab-pane label="General" name="first">
-                            <tenant-report-kardex-index></tenant-report-kardex-index>
+                            <tenant-report-kardex-index
+                            :configuration="configuration"
+                            ></tenant-report-kardex-index>
                         </el-tab-pane>
                         <el-tab-pane label="Por Lotes" name="second">
                             <tenant-report-kardex-lots></tenant-report-kardex-lots>

@@ -2,7 +2,7 @@
 @php
      $company = \App\Models\Tenant\Company::first();
     if ($document != null) {
-        $establishment = $document->establishment;
+    $establishment = $document->establishment;
         $logo = "storage/uploads/logos/{$company->logo}";
         if($establishment->logo) {
         $logo = "{$establishment->logo}";
@@ -64,8 +64,17 @@
         </td>
     </tr>
     @endif
-    <tr>
-        <td class="text-center desc font-bold">Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
-    </tr>
+        <tr>
+            @php
+                $document_description = null;
+            @endphp
+            @if ($document_description)
+                <td class="text-center desc">Representación impresa de la {{ $document_description }} <br />Esta puede
+                    ser consultada en {!! url('/buscar') !!}</td>
+            @else
+                <td class="text-center desc">Representación impresa del Comprobante de Pago Electrónico. <br />Esta
+                    puede ser consultada en {!! url('/buscar') !!}</td>
+            @endif
+        </tr>
 </table>
 </body>

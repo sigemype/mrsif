@@ -20,7 +20,6 @@
       :is-print="{{json_encode($configuration->auto_print)}}">
     </tenant-pos-index>
 @endsection
-
 @push('scripts')
   <!-- QZ -->
   <script src="{{ asset('js/sha-256.min.js') }}"></script>

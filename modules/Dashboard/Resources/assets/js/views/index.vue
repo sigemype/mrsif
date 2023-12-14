@@ -38,7 +38,8 @@
                                     >
                                     <el-select
                                         v-model="form.establishment_id"
-                                        @change="loadAll">
+                                        @change="loadAll"
+                                    >
                                         <el-option
                                             v-for="option in establishments"
                                             :key="option.id"
@@ -367,6 +368,7 @@
                                         v-if="loaders.general"
                                     >
                                         <template>
+                                           
                                             <loader-graph
                                                 :rows="2"
                                                 :columns="3"
@@ -385,6 +387,26 @@
                                             >
                                                 <div class="summary">
                                                     <div class="row no-gutters">
+                                                          <div
+                                                            class="col-md-12 m-b-10"
+                                                        >
+                                                            <h2
+                                                                class="small-title"
+                                                            >
+                                                                Ventas
+                                                                <el-tooltip
+                                                                    class="item"
+                                                                    effect="dark"
+                                                                    content="Aplica filtro por establecimiento"
+                                                                    placement="top-start"
+                                                                >
+                                                                    <i
+                                                                        class="fa fa-info-circle"
+                                                                    ></i>
+                                                                </el-tooltip>
+                                                            </h2>
+                                                       
+                                                        </div>
                                                         <div
                                                             class="col-md-12 m-b-10"
                                                         >
@@ -1065,7 +1087,7 @@
                             </div>
                         </template>
                         <template v-if="configuration.dashboard_clients">
-                            <div class="col-xl-3 col-md-6">
+                            <div class="col-xl-6 col-md-6">
                                 <section class="card card-dashboard">
                                     <div
                                         class="card-body"
@@ -1185,7 +1207,7 @@
                                     <div class="card-body">
                                         <table
                                             class="table responsive table-0-p"
-
+                                           
                                         >
                                             <thead>
                                                 <tr>

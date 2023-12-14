@@ -118,12 +118,19 @@ class FormatController extends Controller
      * @return \App\Models\Tenant\Document[]|\Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|\Illuminate\Support\Collection|mixed
      */
     private function getSaleDocuments($d_start, $d_end)
-    {
+    {   $company = Company::active();
+        $soap_type_id = $company->soap_type_id;
         $data = Document::query()
-            ->whereBetween('date_of_issue', [$d_start, $d_end])
+            ->whereBetween('date_of_issue', [$d_start, $d_end]);
+        if($soap_type_id == '01'){
+            $data = $data->where('soap_type_id', '01');
+        }else{
+            $data = $data->whereIn('soap_type_id', ['02','03']);
+        }
+
             // ->whereIn('document_type_id', ['01', '03'])
             // ->whereIn('currency_type_id', ['PEN', 'USD'])
-            ->orderBy('series')
+            $data = $data->orderBy('series')
             ->orderBy('number')
             ->get()
             ->transform(function ($row) {

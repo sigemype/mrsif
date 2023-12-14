@@ -60,8 +60,13 @@ class KardexServiceProvider extends ServiceProvider
     private function purchase()
     {
         PurchaseItem::created(function (PurchaseItem $purchase_item) {
-            $kardex = $this->saveKardex('purchase', $purchase_item->item_id, $purchase_item->purchase_id, $purchase_item->quantity, 'purchase');
-            $this->updateStock($purchase_item->item_id, $kardex->quantity, false);
+            $purchase = $purchase_item->purchase;
+            $factor = 1;
+            if($purchase->is_note_credit()){
+                $factor = -1;
+            }
+            $kardex = $this->saveKardex('purchase', $purchase_item->item_id, $purchase_item->purchase_id, $purchase_item->quantity  , 'purchase');
+            $this->updateStock($purchase_item->item_id, $kardex->quantity*$factor, false);
             // $this->average($purchase_item);
         });
     }

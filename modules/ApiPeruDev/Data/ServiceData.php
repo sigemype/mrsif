@@ -49,7 +49,6 @@ class ServiceData
         $this->trackApi = $trackApi;
         $this->company = $company;
 
-
         $this->client = new Client(['base_uri' => $url]);
         $this->parameters = [
             'http_errors' => false,
@@ -159,9 +158,9 @@ class ServiceData
                     'name' => $data['nombre_o_razon_social'],
                     'trade_name' => '',
                     'address' => $address,
-//                        'department_id' => $department_id,
-//                        'province_id' => $province_id,
-//                        'district_id' => $district_id,
+                    'department_id' => $department_id,
+                    'province_id' => $province_id,
+                    'district_id' => $district_id,
                     'location_id' => $data['ubigeo'],
                     'condition' => $data['condicion'],
                     'state' => $data['estado'],
@@ -218,27 +217,35 @@ class ServiceData
             'fecha' => $date,
         ];
         $this->parameters['form_params'] = $form_params;
-        $res = $this->client->request('POST', '/api/tipo_de_cambio', $this->parameters);
-        $response = json_decode($res->getBody()->getContents(), true);
-
-        if ($response['success']) {
-            $data = $response['data'];
-          //  dd($data,$response);
-            ExchangeRate::query()->create([
-                'date' => $date,
-                'date_original' => $data['date'],
-                'sale_original' => $data['sale'],
-                'sale' => $data['sale'],
-                'purchase_original' => $data['purchase'],
-                'purchase' => $data['purchase'],
-            ]);
+        try{
+            $res = $this->client->request('POST', '/api/tipo_de_cambio', $this->parameters);
+            $response = json_decode($res->getBody()->getContents(), true);
+    
+            if ($response['success']) {
+                $data = $response['data'];
+              //  dd($data,$response);
+                ExchangeRate::query()->create([
+                    'date' => $date,
+                    'date_original' => $data['date'],
+                    'sale_original' => $data['sale'],
+                    'sale' => $data['sale'],
+                    'purchase_original' => $data['purchase'],
+                    'purchase' => $data['purchase'],
+                ]);
+                return [
+                    'date' => $date,
+                    'purchase' => $data['purchase'],
+                    'sale' => $data['sale']
+                ];
+            }
+            $this->saveService(4);
+        }catch(\Exception $e){
             return [
                 'date' => $date,
-                'purchase' => $data['purchase'],
-                'sale' => $data['sale']
+                'purchase' => 1,
+                'sale' => 1,
             ];
         }
-        $this->saveService(4);
 
         return [
             'date' => $date,

@@ -49,6 +49,8 @@ use stdClass;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 use App\Models\Tenant\GeneralPaymentCondition;
+use App\Models\Tenant\PurchaseLicense;
+use App\Models\Tenant\PurchaseResponsible;
 use Modules\Inventory\Models\CostAverage;
 use Modules\Inventory\Models\InventoryKardex;
 
@@ -109,7 +111,7 @@ class PurchaseController extends Controller
 
         return new PurchaseCollection($records->paginate(config('tenant.items_per_page')));
     }
-
+    
     public function getRecords($request)
     {
 
@@ -158,6 +160,19 @@ class PurchaseController extends Controller
 
     public function tables()
     {
+        $responsibles = PurchaseResponsible::take(20)->get()->transform(function($row){
+            return [
+                'id' => $row->id,
+                'name' => $row->name,
+                'number' => $row->number,
+            ];
+        });
+        $licenses = PurchaseLicense::take(20)->get()->transform(function($row){
+            return [
+                'id' => $row->id,
+                'license' => $row->license,
+            ];
+        });
         $suppliers = $this->table('suppliers');
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $currency_types = CurrencyType::whereActive()->get();
@@ -176,6 +191,8 @@ class PurchaseController extends Controller
         $global_discount_types = ChargeDiscountType::whereIn('id', ['02', '03'])->whereActive()->get();
 
         return compact(
+            'licenses',
+            'responsibles',
             'suppliers',
             'establishment',
             'currency_types',
@@ -368,6 +385,7 @@ class PurchaseController extends Controller
         try {
             $purchase =  DB::connection('tenant')->transaction(function () use ($data) {
                 $doc = Purchase::create($data);
+                $is_credit_note = ($doc->document_type_id === '07') ? true : false;
                 foreach ($data['items'] as $row) {
                     $p_item = new PurchaseItem();
                     $p_item->fill($row);

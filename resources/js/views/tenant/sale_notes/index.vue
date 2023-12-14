@@ -58,7 +58,11 @@
                 </el-dropdown>
             </div>
             <div class="card-body">
-                <data-table ref="dataTable" :resource="resource">
+                <data-table
+                :isDriver="isDriver"
+                    
+                    
+                 ref="dataTable" :resource="resource">
                     <tr slot="heading">
                         <th>#</th>
                         <th class="text-end" v-if="columns.seller_name.visible">
@@ -162,6 +166,12 @@
                             v-if="columns.license_plate.visible"
                         >
                             Placa
+                        </th>
+                            <th
+                            class="text-center"
+                            v-if="columns.observation.visible"
+                        >
+                            Observación
                         </th>
                         <th class="text-end">Acciones</th>
                         <th v-if="configuration.college">
@@ -334,7 +344,12 @@
                         >
                             {{ row.license_plate }}
                         </td>
-
+  <td
+                            class="text-end"
+                            v-if="columns.observation.visible"
+                        >
+                            {{ row.observation }}
+                        </td>
                         <td class="text-end">
                             <div class="ms-1">
                                 <button
@@ -370,7 +385,7 @@
                                         @click.prevent="clickCreate(row.id)"
                                         v-if="
                                             row.btn_generate &&
-                                                row.state_type_id != '11'
+                                                row.state_type_id != '11' && row.not_blocked
                                         "
                                     >
                                         <!--                                        <i class="dropdown-item fas fa-file-signature"></i>-->
@@ -607,6 +622,10 @@ export default {
             saleNotesNewId: null,
             recordId: null,
             columns: {
+                observation:{
+                    title: "Observación",
+                    visible: false
+                },
                 due_date: {
                     title: "Fecha de Vencimiento",
                     visible: false
@@ -679,7 +698,8 @@ export default {
                     title: "Fecha de pago",
                     visible: false
                 }
-            }
+            },
+            isDriver:false,
             // showDialogDeleteRelationInvoice: false,
             // dataDeleteRelation: {
             //     documents: {},
@@ -690,6 +710,8 @@ export default {
     created() {
         this.loadConfiguration();
         this.$store.commit("setConfiguration", this.configuration);
+        let {package_handlers} = this.configuration;
+        this.isDriver = package_handlers;
         this.getColumnsToShow();
     },
     filters: {

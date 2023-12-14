@@ -36,7 +36,7 @@
                                 <button type="button" class="btn waves-effect waves-light btn-sm btn-info" @click.prevent="clickCreate(row.id)">Editar</button>
                                 <button type="button" class="btn waves-effect waves-light btn-sm btn-danger" v-if="typeUser != 'integrator'" @click.prevent="clickDelete(row.id)">Eliminar</button>
                                 <button type="button" class="btn waves-effect waves-light btn-sm btn-warning"
-                                @click.prevent="clickSeries(row.id)">Series</button>
+                                @click.prevent="clickSeries(row.id)">series</button>
                             </td>
                         </tr>
                         </tbody>

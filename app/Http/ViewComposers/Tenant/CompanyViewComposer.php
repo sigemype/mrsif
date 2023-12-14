@@ -20,7 +20,14 @@ class CompanyViewComposer
 
         $view->vc_videos = Tutorial::where('type',1)->first();
  
-        $view->vc_logotipo = $establishments->count() > 1 ?  $establishments->first()->logo : 'storage/uploads/logos/' . $view->vc_company->logo;
+        $logo =  $establishments->count() > 1 ?  $establishments->first()->logo : 'storage/uploads/logos/' . $view->vc_company->logo;
+        if($logo == null || $logo == ''  ){
+            $logo = 'storage/uploads/logos/' . $view->vc_company->logo;
+        }
+        $view->vc_logotipo = $logo;
+        
+        // $view->vc_logotipo = $establishments->count() > 1 ?  $establishments->first()->logo : 'storage/uploads/logos/' . $view->vc_company->logo;
+
 
         $view->vc_orders = Order::where('status_order_id', 1)
             ->count();

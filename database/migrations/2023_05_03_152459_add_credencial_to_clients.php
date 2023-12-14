@@ -13,11 +13,25 @@ class AddCredencialToClients extends Migration
      */
     public function up()
     {
-        Schema::table('clients', function (Blueprint $table) {
-            $table->string('users')->nullable()->after('token');
-            $table->string('password')->nullable()->after('token');
-            $table->string('password_cdt')->nullable()->after('token');
-        });
+
+        if (!Schema::hasColumn('clients', 'users')) {
+            Schema::table('clients', function (Blueprint $table) {
+                $table->string('users')->nullable()->after('token');
+            });
+        }
+
+        if (!Schema::hasColumn('clients', 'password')) {
+            Schema::table('clients', function (Blueprint $table) {
+                $table->string('password')->nullable()->after('token');
+            });
+        }
+
+        if (!Schema::hasColumn('clients', 'password_cdt')) {
+            Schema::table('clients', function (Blueprint $table) {
+                $table->string('password_cdt')->nullable()->after('token');
+            });
+        }
+        
     }
 
     /**

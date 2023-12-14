@@ -219,6 +219,9 @@ export default {
             this.form.item_id = null;
             this.$refs.advanced_items_search.cleanItemId();
             this.$refs.advanced_items_search.initData(this.form.warehouse_id);
+
+            this.$emit("setAllWarehouses", this.form.warehouse_id == "all");
+
         },
         async getFilters() {
             await this.$http
@@ -277,6 +280,7 @@ export default {
                 .then(response => {
                     this.items = response.data.items;
                 });
+                 this.$emit("setAllWarehouses", this.form.warehouse_id == "all");
         },
         changeDisabledDates() {
             if (this.form.date_end < this.form.date_start) {
@@ -319,7 +323,6 @@ export default {
                 .get(`/${this.resource}/records?${this.getQueryParameters()}`)
                 .then(response => {
                     this.records = response.data.data;
-                    console.log(response.data.data);
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(
                         response.data.meta.per_page

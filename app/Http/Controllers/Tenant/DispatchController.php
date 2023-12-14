@@ -45,7 +45,8 @@ use Modules\Order\Mail\DispatchEmail;
 use Modules\Order\Models\OrderNote;
 use App\Models\Tenant\PaymentCondition;
 use App\Models\Tenant\Catalogs\RelatedDocumentType;
-
+use App\Models\Tenant\InventoryReference;
+use App\Services\PseServiceDispatch;
 
 /**
  * Class DispatchController
@@ -77,6 +78,14 @@ class DispatchController extends Controller
         ];
     }
 
+    public function download_file($id)
+    {
+        $dispatch = Dispatch::find($id);
+        $pse = new PseServiceDispatch($dispatch);
+        $res = $pse->download_file();
+
+        return $res;
+    }
     public function records(Request $request)
     {
         $records = $this->getRecords($request);
@@ -93,7 +102,7 @@ class DispatchController extends Controller
         $number = $request->number;
         $series = $request->series;
         $customer_id = $request->customer_id;
-
+        $inventory_reference_id = $request->inventory_reference_id;
 
         if ($d_start && $d_end) {
             $query = Dispatch::query()
@@ -110,6 +119,10 @@ class DispatchController extends Controller
             $query->where('number', $number);
         }
 
+        if ($inventory_reference_id) {
+            $query->where('inventory_reference_id', $inventory_reference_id);
+        }
+
         if ($customer_id) {
             $query->where('customer_id', $customer_id);
         }
@@ -117,6 +130,29 @@ class DispatchController extends Controller
         return $query->latest();
     }
 
+    public function send_pse($id)
+    {
+        $document = Dispatch::find($id);
+        $pse = new PseServiceDispatch($document);
+
+        $response = $pse->sendToPse();
+
+        return $response;
+    }
+    public function json_pse($id)
+    {
+        $dispatch = Dispatch::find($id);
+        $filename = $dispatch->getNumberFullAttribute() . '.json';
+        $pse = new PseServiceDispatch($dispatch);
+
+
+        $payload = $pse->payloadToJson();
+        $response = response()->make($payload);
+        $response->header('Content-Disposition', 'attachment; filename=' . $filename);
+        $response->header('Content-Type', 'application/json');
+
+        return $response;
+    }
     public function data_table()
     {
         $customers = Person::whereType('customers')->orderBy('name')->take(20)->get()->transform(function ($row) {
@@ -130,8 +166,8 @@ class DispatchController extends Controller
         });
 
         $series = Series::where('document_type_id', '09')->get();
-
-        return compact('customers', 'series');
+        $references = InventoryReference::all();
+        return compact('customers', 'series', 'references');
     }
 
 
@@ -341,11 +377,12 @@ class DispatchController extends Controller
             ->select('soap_type_id')
             ->first();
         $configuration = Configuration::first();
+
         $res = [];
         if ($request->series[0] == 'T') {
-            try{
+            try {
                 $this->checkQuantity($request);
-            }catch(Exception $e){
+            } catch (Exception $e) {
                 return [
                     'success' => false,
                     'message' => $e->getMessage(),
@@ -358,7 +395,12 @@ class DispatchController extends Controller
                 $document = $facturalo->getDocument();
                 $data = (new ServiceDispatchController())->getData($document->id);
                 $facturalo->setXmlUnsigned((new ServiceDispatchController())->createXmlUnsigned($data));
-                $facturalo->signXmlUnsigned();
+                $company = Company::active();
+                if ($company->pse && $company->soap_type_id == '02') {
+                    $facturalo->sendPseNewDispatch();
+                } else {
+                    $facturalo->signXmlUnsigned();
+                }
                 //                $facturalo->createXmlUnsigned();
                 //                $facturalo->signXmlUnsigned();
                 $facturalo->createPdf();
@@ -590,8 +632,9 @@ class DispatchController extends Controller
         $transports = (new TransportController())->getOptions();
         $dispatchers = (new DispatcherController())->getOptions();
         $related_document_types = RelatedDocumentType::get();
-
+        $references = InventoryReference::all();
         return compact(
+            'references',
             'establishments',
             'customers',
             'series',
@@ -750,7 +793,9 @@ class DispatchController extends Controller
         });
 
         $series = Series::where('establishment_id', $establishment->id)->get();
-        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])
+            ->where('active', true)
+            ->get();
         // $document_types_invoice = DocumentType::whereIn('id', ['01', '03', '80'])->get();
         $payment_method_types = PaymentMethodType::all();
         $payment_destinations = $this->getPaymentDestinations();
@@ -820,14 +865,29 @@ class DispatchController extends Controller
         }
     }
 
-    public function dispatchesByClient($clientId)
+    public function dispatchesByClient(Request $request, $clientId)
     {
+
+        $isCarrier = $request->isCarrier === 'true' ? true : false;
         $records = Dispatch::without([
             'user', 'soap_type', 'state_type', 'document_type', 'unit_type', 'transport_mode_type',
             'transfer_reason_type', 'items', 'reference_document'
         ])
-            ->select('series', 'number', 'id', 'date_of_issue', 'soap_shipping_response')
-            ->where('customer_id', $clientId)
+            ->select(
+                'series',
+                'number',
+                'id',
+                'date_of_issue',
+                'soap_shipping_response',
+
+                'receiver_id'
+            );
+        if ($isCarrier) {
+            $records->where('sender_id', $clientId);
+        } else {
+            $records->where('customer_id', $clientId);
+        }
+        $records = $records
             ->whereNull('reference_document_id')
             ->whereStateTypeAccepted()
             ->orderBy('series')

@@ -2,6 +2,8 @@
 
 @section('content')
 
-    <tenant-inventory-report></tenant-inventory-report>
+    <tenant-inventory-report
+    :configuration="{{\App\Models\Tenant\Configuration::getPublicConfig()}}"
+    ></tenant-inventory-report>
 
 @endsection

@@ -15,9 +15,13 @@ class ConfigSystemEnvToConfigurations extends Migration
     public function up()
     {
         if (Schema::hasTable('clients')) {
-            Schema::table('clients', function (Blueprint $table) {
-                $table->boolean('config_system_env')->default(false)->nullable()->after('end_billing_cycle');
-            });
+
+            if (!Schema::hasColumn('clients', 'config_system_env')) {
+                Schema::table('clients', function (Blueprint $table) {
+                    $table->boolean('config_system_env')->default(false)->nullable()->after('end_billing_cycle');
+                });
+            }
+
             Client::query()->update([
                 'config_system_env' => false,
             ]);

@@ -14,6 +14,12 @@ if($current_hostname) {
             Route::prefix('service')->group(function () {
                 Route::get('{type}/{number}', 'ServiceController@service');
             });
+
+            Route::prefix('app/service')->group(function () {
+                Route::get('exchange/{date}', 'ServiceController@exchange');
+                Route::get('{type}/{number}', 'ServiceController@service');
+            });
+            
         });
     });
 }

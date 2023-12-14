@@ -8,6 +8,7 @@ use App\Models\Tenant\Company;
 use App\Models\Tenant\Configuration;
 use App\Models\Tenant\Document;
 use App\Models\Tenant\DocumentPayment;
+use App\Models\Tenant\PackageHandlerPayment;
 use App\Models\Tenant\PaymentMethodType;
 use App\Models\Tenant\PurchasePayment;
 use App\Models\Tenant\SaleNote;
@@ -133,7 +134,9 @@ class CashController extends Controller
 
             );
 
-        $sale_note_credit = SaleNote::where('payment_method_type_id',  '09')
+        $sale_note_credit = SaleNote::whereHas('payment_method_type', function ($query) {
+            $query->where('is_credit', true);
+        } )
             ->where('cash_id', $cash_id)
             ->get()->transform(
                 function ($row) {
@@ -293,6 +296,74 @@ class CashController extends Controller
                     foreach ($sale_note->items as $item) {
                         $items++;
                         array_push($all_items, $item);
+                    
+                        $collection_items->push($item);
+                    }
+                }
+                // dd($items);
+                // fin items
+
+            }
+            elseif (
+                $cash_document->payment_type == 'App\Models\Tenant\PackageHandlerPayment'
+            ){
+                $package_handler_payment = PackageHandlerPayment::find($cash_document->payment_id);
+                if ($package_handler_payment) {
+                    $package_handler = $package_handler_payment->package_handler;
+                    $pays = [];
+                    // if (in_array($package_handler->state_type_id, $status_type_id)) {
+                        $record_total = 0;
+                        $total = self::CalculeTotalOfCurency(
+                            $package_handler->total,
+                            $package_handler->currency_type_id,
+                            $package_handler->exchange_rate_sale
+                        );
+                        $cash_income += $package_handler_payment->payment;
+                        $final_balance += $package_handler_payment->payment;
+                      
+
+                        foreach ($methods_payment as $record) {
+                            if ($package_handler_payment->payment_method_type_id == $record->id) {
+                                $record->sum = ($record->sum + $package_handler_payment->payment);
+                                if ($record->id === '01') $data['total_payment_cash_01_sale_note'] += $package_handler_payment->payment;
+                                if ($record->id === '01') $cash_income_x += $package_handler_payment->payment;
+                            }
+                        }
+
+                        $data['total_cash_income_pmt_01'] += $package_handler_payment->payment;
+                        $data['total_tips'] +=0;
+                    // }
+
+                    $order_number = 3;
+                    $date_payment = Carbon::now()->format('Y-m-d');
+                    if (count($pays) > 0) {
+                        foreach ($pays as $value) {
+                            $date_payment = $value->date_of_payment->format('Y-m-d');
+                        }
+                    }
+                    $temp = [
+                        'type_transaction'          => 'Venta',
+                        'document_type_description' => 'TICKET DE ENCOMIENDA',
+                        'number'                    => $package_handler->series."-".$package_handler->number,
+                        'date_of_issue'             => $date_payment,
+                        'date_sort'                 => $package_handler->date_of_issue,
+                        'customer_name'             => $package_handler->sender->name,
+                        'customer_number'           => $package_handler->sender->number,
+                        'total'                     => $package_handler->total,
+                        'currency_type_id'          => $package_handler->currency_type_id,
+                        'usado'                     => $usado . " " . __LINE__,
+                        'tipo'                      => 'sale_note',
+                        'total_payments'            => (!in_array($package_handler->state_type_id, $status_type_id)) ? 0 : $package_handler->payments->sum('payment'),
+                        'type_transaction_prefix'   => 'income',
+                        'order_number_key'          => $order_number . '_' . $package_handler->created_at->format('YmdHis'),
+                    ];
+
+                    // items
+                    // dd($document->items);
+                    foreach ($package_handler->items as $item) {
+                        $items++;
+                        array_push($all_items, $item);
+                      
                         $collection_items->push($item);
                     }
                 }
@@ -509,7 +580,6 @@ class CashController extends Controller
                     // $final_balance -= $total;
                     foreach ($methods_payment as $record) {
                         if ($expense_payment->expense_method_type_id == "1" && $record->id == "01") {
-                            // dump($record->sum);
                             $record->sum = ($record->sum - $expense_payment->payment);
                         }
                     }
@@ -806,9 +876,7 @@ class CashController extends Controller
         $data['document_credit'] = $document_credit;
         //$data["all_documents"] es un array de arrays, cada elemento tiene una key "number" quiero eliminar los repetidos
         $data["all_documents"] = array_map("unserialize", array_unique(array_map("serialize", $data["all_documents"])));
-        // dump($data["all_documents"]);
         //$cash_income = ($final_balance > 0) ? ($cash_final_balance - $cash->beginning_balance) : 0;
-        // dump($data["methods_payment"]);
         return $data;
     }
 
@@ -827,6 +895,7 @@ class CashController extends Controller
         $group_cat = [];
         foreach ($grouped as $group) {
             $id = $group[0]->item_id;
+        
             $name = $group[0]->item->description;
             $unit_price = $group[0]->unit_price;
             $quantity = 0;
@@ -1109,7 +1178,6 @@ class CashController extends Controller
     public function reportA4($cash)
     {
 
-        
         $temp = tempnam(sys_get_temp_dir(), 'cash_pdf_a4');
         file_put_contents($temp, $this->getPdf($cash, 'a4'));
 

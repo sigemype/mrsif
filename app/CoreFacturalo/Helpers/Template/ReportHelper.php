@@ -196,8 +196,14 @@
          * @return \App\Models\Tenant\User
          */
         public static function getSellerData($model){
-            if(get_class($model)== DocumentItem::class){
+            if(get_class($model)== DocumentItem::class && $model->document && $model->document->date_of_issue){
                 $model = $model->document;
+            }
+            if( $model->sale_note && $model->sale_note->date_of_issue){
+                $model = $model->sale_note;
+            }
+            if( $model->quotation && $model->quotation->date_of_issue){
+                $model = $model->quotation;
             }
             try{
                     if ( !empty($model->seller_id)) {

@@ -468,6 +468,10 @@ class DocumentItem extends ModelTenant
     {
         return $this->belongsTo(SaleNote::class)->withDefault();
     }
+    public function quotation()
+    {
+        return $this->belongsTo(Quotation::class)->withDefault();
+    }
     /**
      *
      * Obtener total y realizar conversión a soles de acuerdo al tipo de cambio
@@ -545,6 +549,10 @@ class DocumentItem extends ModelTenant
         return $this->document->currency_type_id === 'USD';
     }
 
+    public function getExchangeRateSale()
+    {
+        return $this->document->exchange_rate_sale;
+    }
 
     /**
      *

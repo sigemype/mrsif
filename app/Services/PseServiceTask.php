@@ -234,7 +234,6 @@ class PseServiceTask
                             ]);
                         }
                         if ($document->state_type_id == self::ACCEPTED) {
-                            // dump('enviando a web service');
                             $this->sendFilesToWebService();
                         }
                     }

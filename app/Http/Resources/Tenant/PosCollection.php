@@ -24,6 +24,7 @@ class PosCollection extends ResourceCollection
                 'stock' => $row->getStockByWarehouse(),
                 'id' => $row->id,
                 'item_id' => $row->id,
+                'sizes' => $row->sizes,
                 'full_description' => ($row->internal_id) ? $row->internal_id . ' - ' . $row->description : $row->description,
                 'name' => $row->name,
                 'second_name' => $row->second_name,

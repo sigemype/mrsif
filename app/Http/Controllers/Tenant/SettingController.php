@@ -42,6 +42,10 @@ class SettingController extends Controller
     {
         return view('tenant.settings.document_names');
     }
+    public function YaplePlinQr(){
+
+        return view('tenant.settings.yape_plin_qr');
+    }
     public function document_quotations()
     {
         return view('tenant.settings.document_quotations');

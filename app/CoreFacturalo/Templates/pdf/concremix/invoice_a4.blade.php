@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     $invoice = $document->invoice;
     $document_base = ($document->note) ? $document->note : null;
@@ -78,13 +87,13 @@ $logo = "{$establishment->logo}";
             <table class="full-width">
                 <tr>
                     <td colspan="2" class="font-lg">
-                        <strong>SEÑOR(ES): </strong>
+                        <strong>Señor(es):</strong>
                         {{ $customer->name }}
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2" class="font-lg">
-                        <strong>DIRECCIÓN: </strong>
+                        <strong>Dirección: </strong>
                         @if ($customer->address !== '')
                             <span style="text-transform: uppercase;">
                                 {{ $customer->address }}
@@ -111,18 +120,18 @@ $logo = "{$establishment->logo}";
                 </tr>
                 <tr>
                     <td colspan="2"  class="font-lg">
-                        <strong>MONEDA: </strong>
+                        <strong>Moneda:</strong>
                         <span class="text-upp">{{ $document->currency_type->description }}</span>
                     </td>
                 </tr>
                 <tr>
                     <td  class="font-lg">
-                        <strong>FECHA: </strong>
+                        <strong>Fecha:</strong>
                         {{$document->date_of_issue->format('Y-m-d')}}
                     </td>
                     <td  class="font-lg">
                         @if($invoice)
-                            <strong>FECHA VENC.:</strong>
+                            <strong>Fecha venc.:</strong>
                             {{$invoice->date_of_due->format('Y-m-d')}}
                         @endif
                     </td>
@@ -136,12 +145,12 @@ $logo = "{$establishment->logo}";
 </table>
 <table class="full-width my-3 text-center" border="1">
     <tr>
-        <td width="16.6%" class="desc">UBIGEO</td>
+        <td width="16.6%" class="desc">Ubigeo</td>
         <td width="16.6%" class="desc">O/C</td>
-        <td width="16.6%" class="desc">CONDICIONES DE PAGO</td>
-        <td width="16.6%" class="desc">VENDEDOR</td>
+        <td width="16.6%" class="desc">Condiciones de pago</td>
+        <td width="16.6%" class="desc">Vendedor</td>
         <td width="16.6%" class="desc">GUÍA DE REMISIÓN</td>
-        <td width="16.6%" class="desc">AGENCIA DE TRANSPORTE</td>
+        <td width="16.6%" class="desc">Agencia de transporte</td>
     </tr>
     <tr>
         <td class="desc"></td>
@@ -188,13 +197,13 @@ $logo = "{$establishment->logo}";
 <table class="full-width my-0 py-0 align-top" border="1" style="margin-top: -218px">
     <thead >
         <tr class="mt-0">
-            <th class="border-bottom text-center py-1 desc" width="10%">CÓDIGO</th>
+            <th class="border-bottom text-center py-1 desc" width="10%">Código</th>
             <th class="border-bottom text-center py-1 desc" width="10%">MARCA</th>
-            <th class="border-bottom text-center py-1 desc" width="">DESCRIPCIÓN</th>
-            <th class="border-bottom text-center py-1 desc" width="10%">CANT.</th>
+            <th class="border-bottom text-center py-1 desc" width="">Descripción</th>
+            <th class="border-bottom text-center py-1 desc" width="10%">Cant.</th>
             <th class="border-bottom text-center py-1 desc" width="10%">U.M.</th>
             <th class="border-bottom text-center py-1 desc" width="10%">P.U</th>
-            <th class="border-bottom text-center py-1 desc" width="10%">IMPORTE</th>
+            <th class="border-bottom text-center py-1 desc" width="10%">Importe</th>
         </tr>
     </thead>
     <tbody class="">
@@ -274,13 +283,13 @@ $logo = "{$establishment->logo}";
     </table>
     <table class="full-width mt-10 mb-10 border-bottom">
         <tr>
-            <th class="border-box text-center py-1 desc">IMPORTE BRUTO</th>
-            <th class="border-box text-center py-1 desc">DESCUENTOS</th>
-            <th class="border-box text-center py-1 desc">TOTAL VALOR VENTA</th>
+            <th class="border-box text-center py-1 desc">Importe bruto</th>
+            <th class="border-box text-center py-1 desc">Descuentos</th>
+            <th class="border-box text-center py-1 desc">Total valor venta</th>
             <th class="border-box text-center py-1 desc">I.G.V. 18%</th>
-            <th class="border-box text-center py-1 desc">TOTAL PRECIO VENTA</th>
-            <th class="border-box text-center py-1 desc">PAGO A CUENTA</th>
-            <th class="border-box text-center py-1 desc">NETO A PAGAR</th>
+            <th class="border-box text-center py-1 desc">Total precio venta</th>
+            <th class="border-box text-center py-1 desc">Pago a cuenta</th>
+            <th class="border-box text-center py-1 desc">Neto a pagar</th>
         </tr>
         <tr>
             <td class="border-box text-center py-1 desc">
@@ -332,7 +341,16 @@ $logo = "{$establishment->logo}";
     </table>
 @endif
 <table class="full-width">
-    <tr>
-        <td class="text-center desc">Representación Impresa de {{ isset($document->document_type) ? $document->document_type->description : 'Comprobante Electrónico'  }} {{ isset($document->hash) ? 'Código Hash: '.$document->hash : '' }} <br>Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
-    </tr>
+<tr>
+            @php
+                $document_description = null;
+            @endphp
+            @if ($document_description)
+                <td class="text-center desc">Representación impresa de la {{ $document_description }} <br />Esta puede
+                    ser consultada en {!! url('/buscar') !!}</td>
+            @else
+                <td class="text-center desc">Representación impresa del Comprobante de Pago Electrónico. <br />Esta
+                    puede ser consultada en {!! url('/buscar') !!}</td>
+            @endif
+        </tr>
 </table>

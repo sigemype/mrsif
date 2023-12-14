@@ -197,7 +197,17 @@ class InventoryKardex extends ModelTenant
                 break;
 
             case $models[1]:
+                $license = optional($inventory_kardexable->purchase_license)->license;
+                $responsible = optional($inventory_kardexable->purchase_responsible)->name;
+                $unit_price = 0;
+                $item_purchase = $inventory_kardexable->items()->where('item_id', $this->item_id)->first();
+                if ($item_purchase) {
+                    $unit_price = $item_purchase->unit_price;
+                }
                 $data['balance'] = $balance += $qty;
+                $data['unit_price'] = $unit_price;
+                $data['license'] = $license;
+                $data['responsible'] = $responsible;
                 $data['number'] = optional($inventory_kardexable)->series . '-' . optional($inventory_kardexable)->number;
                 $data['type_transaction'] = ($qty < 0) ? "Anulación Compra" : "Compra";
                 $data['date_of_issue'] = isset($inventory_kardexable->date_of_issue) ? $inventory_kardexable->date_of_issue->format('Y-m-d') : '';

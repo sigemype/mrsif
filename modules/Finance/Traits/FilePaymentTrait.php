@@ -17,7 +17,6 @@ trait FilePaymentTrait
     {
 
         $temp_path = $request->temp_path;
-
         if($temp_path) {
 
             $file_name_old = $request->filename;

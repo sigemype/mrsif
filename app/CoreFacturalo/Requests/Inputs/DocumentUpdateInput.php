@@ -211,6 +211,7 @@ class DocumentUpdateInput
                     'name_product_xml' => Functions::valueKeyInArray($row, 'name_product_pdf') ? DocumentInput::getNameProductXml($row, $inputs) : null,
                     'update_description' => Functions::valueKeyInArray($row, 'update_description', false),
                     'additional_data' => Functions::valueKeyInArray($row, 'additional_data'),
+                    'seller_id' => Functions::valueKeyInArray($row, 'seller_id'),
                 ];
             }
 

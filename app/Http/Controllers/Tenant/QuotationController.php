@@ -49,6 +49,8 @@ use App\CoreFacturalo\Helpers\Storage\StorageDocument;
 use App\CoreFacturalo\Requests\Inputs\Common\PersonInput;
 use Modules\Inventory\Models\Warehouse as ModuleWarehouse;
 use App\CoreFacturalo\Requests\Inputs\Common\EstablishmentInput;
+use App\Models\Tenant\QuotationProject;
+use App\Models\Tenant\QuotationProjectItem;
 
 class QuotationController extends Controller
 {
@@ -63,30 +65,30 @@ class QuotationController extends Controller
     public function index()
     {
         $data = NameQuotations::first();
-        $quotations_optional =  $data!=null ? $data->quotations_optional : null;
-        $quotations_optional_value =  $data!=null ? $data->quotations_optional_value : null;
+        $quotations_optional =  $data != null ? $data->quotations_optional : null;
+        $quotations_optional_value =  $data != null ? $data->quotations_optional_value : null;
         $company = Company::select('soap_type_id')->first();
         $soap_company = $company->soap_type_id;
         $generate_order_note_from_quotation = Configuration::getRecordIndividualColumn('generate_order_note_from_quotation');
-        return view('tenant.quotations.index', compact('soap_company', 'generate_order_note_from_quotation','quotations_optional','quotations_optional_value'));
+        return view('tenant.quotations.index', compact('soap_company', 'generate_order_note_from_quotation', 'quotations_optional', 'quotations_optional_value'));
     }
 
 
     public function create($saleOpportunityId = null)
     {
         $data = NameQuotations::first();
-        $quotations_optional =  $data!=null ? $data->quotations_optional : null;
-        $quotations_optional_value =  $data!=null ? $data->quotations_optional_value : null;
-        return view('tenant.quotations.form', compact('saleOpportunityId','quotations_optional','quotations_optional_value'));
+        $quotations_optional =  $data != null ? $data->quotations_optional : null;
+        $quotations_optional_value =  $data != null ? $data->quotations_optional_value : null;
+        return view('tenant.quotations.form', compact('saleOpportunityId', 'quotations_optional', 'quotations_optional_value'));
     }
 
     public function edit($id)
     {
         $resourceId = $id;
         $data = NameQuotations::first();
-        $quotations_optional =  $data!=null ? $data->quotations_optional : null;
-        $quotations_optional_value =  $data!=null ? $data->quotations_optional_value : null;
-        return view('tenant.quotations.form_edit', compact('resourceId','quotations_optional','quotations_optional_value'));
+        $quotations_optional =  $data != null ? $data->quotations_optional : null;
+        $quotations_optional_value =  $data != null ? $data->quotations_optional_value : null;
+        return view('tenant.quotations.form_edit', compact('resourceId', 'quotations_optional', 'quotations_optional_value'));
     }
 
     public function columns()
@@ -163,15 +165,16 @@ class QuotationController extends Controller
 
     public function searchCustomers(Request $request)
     {
-
         $customers = Person::whereType('customers')
             ->orderBy('name')
             ->whereIsEnabled();
         if ($request->has('customer_id')) {
             $customers->where('id', $request->customer_id);
         } else {
-            $customers->where('number', 'like', "%{$request->input}%")
-                ->orWhere('name', 'like', "%{$request->input}%");
+            $customers->where(function ($query) use ($request) {
+                $query->where('number', 'like', "%{$request->input}%")
+                    ->orWhere('name', 'like', "%{$request->input}%");
+            });
         }
         $customers = $customers->get()->transform(function ($row) {
             /** @var Person $row */
@@ -198,7 +201,7 @@ class QuotationController extends Controller
         $customers = $this->table('customers');
         $establishments = Establishment::where('id', auth()->user()->establishment_id)->get();
         $currency_types = CurrencyType::whereActive()->get();
-        // $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        // $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         $discount_types = ChargeDiscountType::whereType('discount')->whereLevel('item')->get();
         $charge_types = ChargeDiscountType::whereType('charge')->whereLevel('item')->get();
         $company = Company::active();
@@ -207,8 +210,21 @@ class QuotationController extends Controller
         $document_type_03_filter = config('tenant.document_type_03_filter');
         $payment_method_types = PaymentMethodType::orderBy('id', 'desc')->get();
         $payment_destinations = $this->getPaymentDestinations();
-        $configuration = Configuration::select('destination_sale')->first();
+        $configuration = Configuration::select('package_handlers', 'quotation_projects', 'destination_sale')->first();
+
         $serie = Series::where('document_type_id', "COT")->where("establishment_id", $establishments[0]->id)->first();
+        $series = collect(Series::where(
+            'establishment_id',
+            $establishments[0]->id
+        )->get())->transform(function ($row) {
+            return [
+                'id' => $row->id,
+                'contingency' => (bool) $row->contingency,
+                'document_type_id' => $row->document_type_id,
+                'establishment_id' => $row->establishment_id,
+                'number' => $row->number
+            ];
+        });
         if ($serie) {
             $serie = $serie->number;
         }
@@ -223,6 +239,7 @@ class QuotationController extends Controller
         $sellers = User::GetSellers(false)->get();
 
         return compact(
+            'series',
             'categories',
             'brands',
             'customers',
@@ -245,7 +262,7 @@ class QuotationController extends Controller
     {
         $establishment = Establishment::where('id', auth()->user()->establishment_id)->first();
         $series = Series::where('establishment_id', $establishment->id)->get();
-        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->where('active',true)->get();
         // $payment_method_types = PaymentMethodType::all();
         $payment_method_types = PaymentMethodType::getPaymentMethodTypes();
         $payment_destinations = $this->getPaymentDestinations();
@@ -311,29 +328,107 @@ class QuotationController extends Controller
 
         return $desc;
     }
-
+    function duplicateQuotationProjectItem($quotation_item_id, $new_quotation_item_id)
+    {
+        $reference_quotation_item_project = QuotationProjectItem::where('quotation_item_id', $quotation_item_id)->first();
+        $quotation_item_project = new QuotationProjectItem;
+        $quotation_item_project->quotation_item_id = $new_quotation_item_id;
+        $quotation_item_project->disponibility = $reference_quotation_item_project->disponibility;
+        $quotation_item_project->header = $reference_quotation_item_project->header;
+        $quotation_item_project->save();
+    }
+    function createQuotationProjectItem($quotation_item, $row)
+    {
+        $quotation_item_project = new QuotationProjectItem;
+        $quotation_item_project->quotation_item_id = $quotation_item->id;
+        if (isset($row["disponibilidad"])) {
+            $quotation_item_project->disponibility = $row["disponibilidad"];
+        }
+        if (isset($row["disponibility"])) {
+            $quotation_item_project->disponibility = $row["disponibility"];
+        }
+        $quotation_item_project->header = $row["header"];
+        $quotation_item_project->save();
+    }
+    function duplicateQuotationProject($quotation_id)
+    {
+        $reference_quotation_project = QuotationProject::where('quotation_id', $quotation_id)->first();
+        $quotation_project = new QuotationProject;
+        $quotation_project->quotation_id = $this->quotation->id;
+        $quotation_project->project_name = $reference_quotation_project->project_name;
+        $quotation_project->atention = $reference_quotation_project->atention;
+        $quotation_project->direction = $reference_quotation_project->direction;
+        $quotation_project->email = $reference_quotation_project->email;
+        $quotation_project->telephone = $reference_quotation_project->telephone;
+        $quotation_project->limit_date = $reference_quotation_project->limit_date;
+        $quotation_project->observations = $reference_quotation_project->observations;
+        $quotation_project->percentage = $reference_quotation_project->percentage;
+        $quotation_project->save();
+    }
+    function createQuotationProject($request)
+    {
+        $quotation_project = new QuotationProject;
+        $quotation_project->quotation_id = $this->quotation->id;
+        $quotation_project->project_name = $request->project_name;
+        $quotation_project->atention = $request->atention;
+        $quotation_project->direction = $request->direction;
+        $quotation_project->email = $request->email;
+        $quotation_project->telephone = $request->telephone;
+        $quotation_project->observations = $request->observations;
+        $quotation_project->limit_date = $request->limit_date;
+        $quotation_project->percentage = $request->percentage;
+        $quotation_project->save();
+    }
     public function store(QuotationRequest $request)
     {
         DB::connection('tenant')->transaction(function () use ($request) {
+            $configuration = Configuration::first();
+            $is_project = $configuration->quotation_projects == 1;
             $data = $this->mergeData($request);
             $data['terms_condition'] = $this->getTermsCondition();
             $data['quotations_optional'] = $request->quotations_optional;
             $data['quotations_optional_value'] = $request->quotations_optional_value;
             $series = Functions::valueKeyInArray($data, "prefix", null);
+            $series_id = Functions::valueKeyInArray($data, "series_id", null);
+
+            if ($series_id) {
+                $series_configuration = Series::find($series_id);
+                $data["prefix"] = $series_configuration->number;
+            }
             if (Quotation::count() == 0 && $series) {
                 $series_configuration = SeriesConfiguration::where([['document_type_id', "COT"], ['series', $series]])->first();
                 $number = $series_configuration->number ?? 1;
                 $data["id"] = $number;
+                $data["number"] = $number;
+            }
+            $number = Functions::valueKeyInArray($data, "number", null);
+            if (!$number) {
+                //get last id from table
+                $last_id = Quotation::where('prefix', $data["prefix"])->orderBy('id', 'desc')->first();
+                if ($last_id) {
+                    if ($last_id->number) {
+                        $data["number"] = $last_id->number + 1;
+                    } else {
+                        $data["number"] = $last_id->id + 1;
+                    }
+                }
             }
             $this->quotation = Quotation::create($data);
 
+            if ($is_project) {
+                $this->createQuotationProject($request);
+            }
             foreach ($data['items'] as $row) {
-                $this->quotation->items()->create($row);
+                $quotation_item =  $this->quotation->items()->create($row);
+                if ($is_project) {
+                    $this->createQuotationProjectItem($quotation_item, $row);
+                }
             }
 
             $this->savePayments($this->quotation, $data['payments']);
 
             $this->setFilename();
+
             $this->createPdf($this->quotation, "a4", $this->quotation->filename);
         });
 
@@ -352,20 +447,34 @@ class QuotationController extends Controller
         DB::connection('tenant')->transaction(function () use ($request) {
             // $data = $this->mergeData($request);
             // return $request['id'];
-            $configuration = Configuration::select('terms_condition')->first();
+            $configuration = Configuration::select('terms_condition', 'quotation_projects')->first();
             $request['terms_condition'] = $this->getTermsCondition();
             $data['quotations_optional'] = $request->quotations_optional;
             $data['quotations_optional_value'] = $request->quotations_optional_value;
+            $series_id = Functions::valueKeyInArray($request, "series_id", null);
+            if ($series_id) {
+                $series_configuration = Series::find($series_id);
+                $request["prefix"] = $series_configuration->number;
+            }
             $this->quotation = Quotation::firstOrNew(['id' => $request['id']]);
             $this->quotation->fill($request->all());
+            QuotationProject::where('quotation_id', $this->quotation->id)->delete();
+            if ($configuration->quotation_projects == 1) {
+                $this->createQuotationProject($request);
+            }
             $this->quotation->customer = PersonInput::set($request['customer_id'], isset($request['customer_address_id']) ? $request['customer_address_id'] : null);
+            $items_id = $this->quotation->items->pluck('id')->toArray();
+            QuotationProjectItem::whereIn('quotation_item_id', $items_id)->delete();
             $this->quotation->items()->delete();
 
             $this->deleteAllPayments($this->quotation->payments);
 
             foreach ($request['items'] as $row) {
 
-                $this->quotation->items()->create($row);
+                $quotation_item =   $this->quotation->items()->create($row);
+                if ($configuration->quotation_projects == 1) {
+                    $this->createQuotationProjectItem($quotation_item, $row);
+                }
             }
 
             $this->savePayments($this->quotation, $request['payments']);
@@ -397,16 +506,30 @@ class QuotationController extends Controller
     public function duplicate(Request $request)
     {
         // return $request->id;
+        $configuration = Configuration::first();
+        $get_last_quotation = Quotation::orderBy('id', 'desc')->first();
+        $number = $get_last_quotation->number + 1;
+        if(!$number){
+            $number = $get_last_quotation->id + 1;
+        }
         $obj = Quotation::find($request->id);
         $this->quotation = $obj->replicate();
+        $this->quotation->number = $number;
         $this->quotation->external_id = Str::uuid()->toString();
         $this->quotation->state_type_id = '01';
+        $is_project = $configuration->quotation_projects == 1;
         $this->quotation->save();
+        if ($is_project) {
+            $this->duplicateQuotationProject($obj->id);
+        }
 
         foreach ($obj->items as $row) {
             $new = $row->replicate();
             $new->quotation_id = $this->quotation->id;
             $new->save();
+            if ($is_project) {
+                $this->duplicateQuotationProjectItem($row->id, $new->id);
+            }
         }
 
         $this->setFilename();
@@ -453,7 +576,7 @@ class QuotationController extends Controller
     private function setFilename()
     {
 
-        $name = [$this->quotation->prefix, $this->quotation->id, date('Ymd')];
+        $name = [$this->quotation->prefix, $this->quotation->number ?? $this->quotation->id, date('Ymd')];
         $this->quotation->filename = join('-', $name);
         $this->quotation->save();
     }
@@ -637,6 +760,13 @@ class QuotationController extends Controller
         $configuration = Configuration::first();
 
         $base_template = Establishment::find($document->establishment_id)->template_pdf;
+        $is_project = $configuration->quotation_projects == 1;
+        if ($is_project) {
+            $quotation_project = QuotationProject::where('quotation_id', $document->id)->first();
+            if ($quotation_project && $format_pdf == 'a4' || $format_pdf == null) {
+                $base_template = 'project';
+            }
+        }
 
         $html = $template->pdf($base_template, "quotation", $company, $document, $format_pdf);
 
@@ -833,7 +963,7 @@ class QuotationController extends Controller
                 $pdf = new Mpdf($default);
             }
 
-            if (in_array($base_template, ['personalizada_latinfac_coti', 'personalizada_gonzalo_ultramix', 'personalizada_famavet', 'rounded'])) {
+            if (in_array($base_template, ['personalizada_latinfac_coti', 'personalizada_gonzalo_ultramix', 'personalizada_famavet', 'famavet', 'rounded'])) {
                 $default = [
                     'mode' => 'utf-8',
                     'margin_top' => 5,
@@ -894,8 +1024,23 @@ class QuotationController extends Controller
             //$html_footer = $template->pdfFooter();
             //$pdf->SetHTMLFooter($html_footer);
         }
+        if ($base_template == 'corvels') {
+            $chunks = preg_split('/(<img[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE);
 
-        $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
+            $base64Image = '';
+
+            foreach ($chunks as $chunk) {
+                if (stripos($chunk, 'data:') === 0) {
+                    $base64Image = $chunk;
+                } else {
+                    $pdf->WriteHTML($base64Image . $chunk, HTMLParserMode::HTML_BODY);
+                    $base64Image = '';
+                }
+            }
+        } else {
+
+            $pdf->WriteHTML($html, HTMLParserMode::HTML_BODY);
+        }
 
         $this->uploadFile($filename, $pdf->output('', 'S'), 'quotation');
     }

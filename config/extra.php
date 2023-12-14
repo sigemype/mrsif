@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'number_items_in_search' =>env('NUMBER_SEARCH_ITEMS', 250),
+    'number_items_in_search' =>env('NUMBER_SEARCH_ITEMS', 20),
     'number_items_at_start' =>env('NUMBER_ITEMS', 20),
     'extra_log' =>env('EXTRA_LOG', false),
     'suscription_facturalo' =>env('FACTURALO_SUSCRIPTION', false),

@@ -25,6 +25,7 @@ class ReportMovementController extends Controller
     public function filter()
     {
         return [
+            'references'            => $this->optionsReference(),
             'warehouses'             => $this->optionsWarehouse(),
             'inventory_transactions' => $this->allInventoryTransaction(),
         ];
@@ -50,6 +51,7 @@ class ReportMovementController extends Controller
         $date_start = $request['date_start'];
         $date_end = $request['date_end'];
         $item_id = $request['item_id'];
+        $inventory_reference_id = $request['inventory_reference_id'];
         $movement_type = $request['movement_type'];
         $order_inventory_transaction_id = $request['order_inventory_transaction_id'];
 
@@ -62,7 +64,8 @@ class ReportMovementController extends Controller
             $date_end,
             $item_id,
             $order_inventory_transaction_id,
-            $movement_type
+            $movement_type,
+            $inventory_reference_id
         );
     }
 

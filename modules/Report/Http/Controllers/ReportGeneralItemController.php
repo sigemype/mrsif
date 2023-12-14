@@ -14,6 +14,8 @@ use App\Models\Tenant\DocumentItem;
 use App\Models\Tenant\SaleNoteItem;
 use App\Models\Tenant\Company;
 use App\Models\Tenant\Configuration;
+use App\Models\Tenant\Quotation;
+use App\Models\Tenant\QuotationItem;
 use App\Models\Tenant\SaleNote;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -39,7 +41,7 @@ class ReportGeneralItemController extends Controller
         $items = $this->getItems('items');
         $brands = $this->getBrands();
         $web_platforms = $this->getWebPlatforms();
-        $document_types = DocumentType::whereIn('id', ['01', '03', '07', '80'])->get();
+        $document_types = DocumentType::whereIn('id', ['01', '03', '07', '80','COT'])->get();
         $categories = $this->getCategories();
         $users = $this->getUsers();
 
@@ -59,9 +61,7 @@ class ReportGeneralItemController extends Controller
     {
 
         $records = $this->getRecordsItems($request->all())->latest('id');
-
         // $quantity = $records->sum("utility_item");
-
         return new GeneralItemCollection($records->paginate(config('tenant.items_per_page')));
     }
 
@@ -146,7 +146,7 @@ class ReportGeneralItemController extends Controller
 
                 $query->whereNotIn('state_type_id', $documents_excluded);
             });
-            if ($configuration->multi_sellers) {
+            if ($configuration->multi_sellers && !empty($user_id)) {
                 $data->whereHas('sellers', function ($query) use ($user_id) {
                     $query->where('seller_id', $user_id);
                 });
@@ -155,13 +155,14 @@ class ReportGeneralItemController extends Controller
             $document_types = ['01', '03'];
             $documents = DocumentItem::select(
                 'id',
+                DB::raw('NULL as quotation_id'), // Columna ficticia para document_id
                 DB::raw('NULL as sale_note_id'), // Columna ficticia para document_id
                 'document_id',
                 'item_id',
                 'item',
                 'quantity',
                 'unit_value',
-                'total'
+                'total',
             )->whereHas('document', function ($query) use ($date_start, $date_end, $document_types, $documents_excluded) {
                 $query
                     ->whereBetween('date_of_issue', [$date_start, $date_end])
@@ -177,7 +178,7 @@ class ReportGeneralItemController extends Controller
             }
             if ($user_id && $user_type === 'VENDEDOR') {
 
-                if ($configuration->multi_sellers) {
+                if ($configuration->multi_sellers && !empty($user_id)) {
                     $documents = $documents->whereHas('sellers', function ($query) use ($user_id) {
 
                         $query->where('seller_id', $user_id);
@@ -214,16 +215,17 @@ class ReportGeneralItemController extends Controller
                     }
                 });
             }
-            $documents = $documents->with(['relation_item', 'document','sale_note']);
+            $documents = $documents->with(['relation_item','quotation', 'sale_note','document']);
             $sale_notes = SaleNoteItem::select(
                 'id',
+                DB::raw('NULL as quotation_id'), // Columna ficticia para document_id
                 'sale_note_id',
                 DB::raw('NULL as document_id'), // Columna ficticia para document_id
                 'item_id',
                 'item',
                 'quantity',
                 'unit_value',
-                'total'
+                'total',
             )->whereHas('sale_note', function ($query) use ($date_start, $date_end, $user_id, $documents_excluded) {
                 $query
                     ->whereBetween('date_of_issue', [$date_start, $date_end])
@@ -235,7 +237,7 @@ class ReportGeneralItemController extends Controller
 
                 $query->whereNotIn('state_type_id', $documents_excluded);
             });
-            if ($configuration->multi_sellers) {
+            if ($configuration->multi_sellers && !empty($user_id)) {
                 $sale_notes->whereHas('sellers', function ($query) use ($user_id) {
                     $query->where('seller_id', $user_id);
                 });
@@ -266,11 +268,87 @@ class ReportGeneralItemController extends Controller
                     }
                 });
             }
-            $sale_notes = $sale_notes->with(['relation_item', 'sale_note','document']);
-            $data = $documents->union($sale_notes);
+            $sale_notes = $sale_notes->with(['relation_item','quotation', 'sale_note','document']);
+            $quotations = QuotationItem::select(
+                'id',
+                'quotation_id',
+                DB::raw('NULL as sale_note_id'), // Columna ficticia para document_id
+                DB::raw('NULL as document_id'), // Columna ficticia para document_id
+                'item_id',
+                'item',
+                'quantity',
+                'unit_value',
+                'total',
+            )->whereHas('quotation', function ($query) use ($date_start, $date_end, $user_id, $documents_excluded) {
+                $query
+                ->where('changed', 0)
+                    ->whereBetween('date_of_issue', [$date_start, $date_end])
+                    ->latest()
+                    ->whereTypeUser();
+                if (!empty($user_id)) {
+                    $query->where('user_id', $user_id);
+                }
+
+                $query->whereNotIn('state_type_id', $documents_excluded);
+            });
+            if ($configuration->multi_sellers && !empty($user_id)) {
+                $quotations->whereHas('sellers', function ($query) use ($user_id) {
+                    $query->where('seller_id', $user_id);
+                });
+            }
+            if ($person_id && $type_person) {
+
+                $column = ($type_person == 'customers') ? 'customer_id' : 'supplier_id';
+
+                $quotations =  $quotations->whereHas('quotation', function ($query) use ($column, $person_id) {
+                    $query->where($column, $person_id);
+                });
+            }
+
+            if ($item_id) {
+                $quotations =  $quotations->where('item_id', $item_id);
+            }
+
+            if ($web_platform_id || $brand_id || $category_id) {
+                $quotations = $quotations->whereHas('relation_item', function ($q) use ($web_platform_id, $brand_id, $category_id) {
+                    if ($web_platform_id) {
+                        $q->where('web_platform_id', $web_platform_id);
+                    }
+                    if ($brand_id) {
+                        $q->where('brand_id', $brand_id);
+                    }
+                    if ($category_id) {
+                        $q->where('category_id', $category_id);
+                    }
+                });
+            }
+            $quotations = $quotations->with(['relation_item','quotation', 'sale_note','document']);
+            $data = $documents->union($sale_notes)->union($quotations);
 
             return $data;
-        } else {
+        } 
+        else if($document_type_id && $document_type_id == 'COT'){
+            $relation = 'quotation';
+            $data = QuotationItem::whereHas('quotation', function ($query) use ($date_start, $date_end, $user_id, $documents_excluded) {
+                $query
+                    ->where('changed', 0)
+                    ->whereBetween('date_of_issue', [$date_start, $date_end])
+                    ->latest()
+                    ->whereTypeUser();
+                if (!empty($user_id)) {
+                    $query->where('user_id', $user_id);
+                }
+
+                $query->whereNotIn('state_type_id', $documents_excluded);
+            });
+            if ($configuration->multi_sellers && !empty($user_id)) {
+                $data->whereHas('sellers', function ($query) use ($user_id) {
+                    $query->where('seller_id', $user_id);
+                });
+            }
+        }
+        
+        else {
 
             $model = $data_type['model'];
 
@@ -294,7 +372,7 @@ class ReportGeneralItemController extends Controller
             }
             if ($user_id && $user_type === 'VENDEDOR') {
 
-                if ($configuration->multi_sellers && $model == DocumentItem::class) {
+                if ($configuration->multi_sellers && $model == DocumentItem::class && !empty($user_id)) {
                     $data = $data->whereHas('sellers', function ($query) use ($user_id) {
 
                         $query->where('seller_id', $user_id);
@@ -349,7 +427,13 @@ class ReportGeneralItemController extends Controller
             } else if ($request['document_type_id'] == '01' || $request['document_type_id'] == '03') {
                 $data['model'] = DocumentItem::class;
                 $data['relation'] = 'document';
-            } else {
+            } 
+            
+            else if($request['document_type_id'] == 'COT'){
+                $data['model'] = QuotationItem::class;
+                $data['relation'] = 'quotation';
+            }
+            else {
                 $data['model'] = "all";
                 $data['relation'] = 'all';
             }

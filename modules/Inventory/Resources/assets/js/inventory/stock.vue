@@ -1,48 +1,107 @@
 <template>
-    <el-dialog :title="titleDialog" :visible="showDialog" @close="close" @open="create">
+    <el-dialog
+        :title="titleDialog"
+        :visible="showDialog"
+        @close="close"
+        @open="create"
+    >
         <form autocomplete="off" @submit.prevent="submit">
             <div class="form-body">
                 <div class="row">
                     <div class="col-md-8">
                         <div class="form-group">
                             <label class="control-label">Producto</label>
-                            <el-input v-model="form.item_description" :readonly="true"></el-input>
+                            <el-input
+                                v-model="form.item_description"
+                                :readonly="true"
+                            ></el-input>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="control-label">Stock en el sistema</label>
-                            <el-input v-model="form.quantity" :readonly="true"></el-input>
+                            <label class="control-label"
+                                >Stock en el sistema</label
+                            >
+                            <el-input
+                                v-model="form.quantity"
+                                :readonly="true"
+                            ></el-input>
                         </div>
                     </div>
                     <div class="col-md-8">
                         <div class="form-group">
                             <label class="control-label">Almacén</label>
-                            <el-input v-model="form.warehouse_description" :readonly="true"></el-input>
+                            <el-input
+                                v-model="form.warehouse_description"
+                                :readonly="true"
+                            ></el-input>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="control-label">Stock real</label>
-                            <el-input v-model="form.quantity_real"></el-input>
+                            <el-input
+                                :disabled="form.sizes && form.sizes.length > 0"
+                                v-model="form.quantity_real"
+                            ></el-input>
                         </div>
                     </div>
 
-                    <div class="col-md-4 mt-4" v-if="form.item_id && form.warehouse_id && form.series_enabled">
+                    <div
+                        class="col-md-4 mt-4"
+                        v-if="
+                            form.item_id &&
+                            form.warehouse_id &&
+                            form.series_enabled
+                        "
+                    >
                         <!-- <el-button type="primary" native-type="submit" icon="el-icon-check">Elegir serie</el-button> -->
-                        <a href="#" class="text-center font-weight-bold text-info" @click.prevent="clickLotcodeOutput">[&#10004;
-                            Seleccionar series]</a>
+                        <a
+                            href="#"
+                            class="text-center font-weight-bold text-info"
+                            @click.prevent="clickLotcodeOutput"
+                            >[&#10004; Seleccionar series]</a
+                        >
                     </div>
 
-                    <div class="col-md-4 mt-4" v-if="form.item_id && form.warehouse_id && form.lots_enabled">
-                        <a href="#" class="text-center font-weight-bold text-info"
-                           @click.prevent="clickSelectLotsGroup">[&#10004; Seleccionar lotes]</a>
+                    <div
+                        class="col-md-4 mt-4"
+                        v-if="
+                            form.item_id &&
+                            form.warehouse_id &&
+                            form.lots_enabled
+                        "
+                    >
+                        <a
+                            href="#"
+                            class="text-center font-weight-bold text-info"
+                            @click.prevent="clickSelectLotsGroup"
+                            >[&#10004; Seleccionar lotes]</a
+                        >
+                    </div>
+                    <div
+                        class="col-md-4 mt-4"
+                        v-if="
+                            form.item_id && form.warehouse_id && form.has_sizes
+                        "
+                    >
+                        <a
+                            href="#"
+                            class="text-center font-weight-bold text-info"
+                            @click.prevent="clickSelectSizes"
+                            >[&#10004; Seleccionar tallas]</a
+                        >
                     </div>
                 </div>
             </div>
             <div class="form-actions text-end mt-4">
                 <el-button @click.prevent="close()">Cancelar</el-button>
-                <el-button type="primary" native-type="submit" :loading="loading_submit">Aceptar</el-button>
+                <el-button
+                    type="primary"
+                    native-type="submit"
+                    :loading="loading_submit"
+                    >Aceptar</el-button
+                >
             </div>
         </form>
         <output-lots-form
@@ -52,7 +111,8 @@
             :lots="form.lots"
             :quantity="form.quantity_real"
             :warehouseId="form.warehouse_id"
-            @addRowOutputLot="addRowOutputLot">
+            @addRowOutputLot="addRowOutputLot"
+        >
         </output-lots-form>
 
         <output-lots-group-form
@@ -62,58 +122,75 @@
             :lots_group="form.lots_group"
             :quantity="form.quantity_real"
             @addRowLotGroup="addRowLotGroup"
-            :compromise-all-quantity="true">
+            :compromise-all-quantity="true"
+        >
         </output-lots-group-form>
-
+        <output-sizes-form
+            :showDialog.sync="showDialogSizes"
+            :itemId="form.item_id"
+            :sizes.sync="form.sizes"
+            :quantity="form.quantity_real"
+            @addRowSelectSize="addRowSelectSize"
+        >
+        </output-sizes-form>
     </el-dialog>
-
 </template>
 
 <script>
-
-import OutputLotsForm from '../../../../../../resources/js/views/tenant/documents/partials/lots.vue'
-import OutputLotsGroupForm from '../../../../../../resources/js/views/tenant/documents/partials/lots_group'
+import OutputLotsForm from "../../../../../../resources/js/views/tenant/documents/partials/lots.vue";
+import OutputLotsGroupForm from "../../../../../../resources/js/views/tenant/documents/partials/lots_group";
+import OutputSizesForm from "./sizes.vue";
 //import OutputLotsForm from './partials/lots.vue'
 
 export default {
-    components: {OutputLotsForm, OutputLotsGroupForm},
-    props: ['showDialog', 'recordId'],
+    components: { OutputLotsForm, OutputLotsGroupForm, OutputSizesForm },
+    props: ["showDialog", "recordId"],
     data() {
         return {
             loading_submit: false,
             titleDialog: null,
             showDialogLotsOutput: false,
             showDialogLotsGroup: false,
-            resource: 'inventory',
+            showDialogSizes: false,
+            resource: "inventory",
             errors: {},
             form: {},
             warehouses: [],
             lotsAll: [],
             lotsGroupAll: [],
-        }
+        };
     },
     async created() {
-        this.initForm()
-        await this.$http.get(`/${this.resource}/tables`)
-            .then(response => {
-                this.warehouses = response.data.warehouses
-            })
+        this.initForm();
+        await this.$http.get(`/${this.resource}/tables`).then((response) => {
+            this.warehouses = response.data.warehouses;
+        });
     },
     methods: {
         addRowOutputLot(lots) {
-            this.form.lots = lots
+            this.form.lots = lots;
+        },
+        addRowSelectSize(sizes) {
+            this.form.sizes = sizes;
+            this.form.quantity_real = sizes.reduce(
+                (a, b) => a + Number(b.qty||0),
+                0
+            );
         },
         addRowLotGroup(id) {
-            this.form.selected_lots_group = id
+            this.form.selected_lots_group = id;
         },
         clickLotcodeOutput() {
-            this.showDialogLotsOutput = true
+            this.showDialogLotsOutput = true;
+        },
+        clickSelectSizes() {
+            this.showDialogSizes = true;
         },
         clickSelectLotsGroup() {
-            this.showDialogLotsGroup = true
+            this.showDialogLotsGroup = true;
         },
         initForm() {
-            this.errors = {}
+            this.errors = {};
             this.form = {
                 id: null,
                 item_id: null,
@@ -125,55 +202,64 @@ export default {
                 lots_enabled: false,
                 series_enabled: false,
                 lots: [],
-            }
+            };
         },
         async create() {
-            this.titleDialog = 'Ajuste de stock 3'
-            await this.$http.get(`/${this.resource}/record/${this.recordId}`)
-                .then(response => {
+            this.titleDialog = "Ajuste de stock";
+            await this.$http
+                .get(`/${this.resource}/record/${this.recordId}`)
+                .then((response) => {
                     let data = response.data.data;
                     this.form = _.clone(data);
+                
                     this.form.lots = [];
                     this.form.lots_group = []; //Object.values(response.data.data.lots)
                     this.lotsAll = data.lots;
                     this.lotsGroupAll = data.lots_group; //Object.values(response.data.data.lots);
-                    this.form = Object.assign({}, this.form, {'quantity_real': 0});
-                })
+                    this.form = Object.assign({}, this.form, {
+                        quantity_real: 0,
+                    });
+                });
         },
         async submit() {
             if (this.form.series_enabled) {
                 //let select_lots = await _.filter(this.form.lots, {'has_sale': true})
-                if (this.form.lots.length !== parseInt(this.form.quantity_real)) {
-                    return this.$message.error('La cantidad ingresada es diferente a las series seleccionadas');
+                if (
+                    this.form.lots.length !== parseInt(this.form.quantity_real)
+                ) {
+                    return this.$message.error(
+                        "La cantidad ingresada es diferente a las series seleccionadas"
+                    );
                 }
             }
 
-            this.loading_submit = true
-            await this.$http.post(`/${this.resource}/stock`, this.form)
-                .then(response => {
+            this.loading_submit = true;
+            await this.$http
+                .post(`/${this.resource}/stock`, this.form)
+                .then((response) => {
                     if (response.data.success) {
-                        this.$message.success(response.data.message)
-                        this.$eventHub.$emit('reloadData')
-                        this.close()
+                        this.$message.success(response.data.message);
+                        this.$eventHub.$emit("reloadData");
+                        this.close();
                     } else {
-                        this.$message.error(response.data.message)
+                        this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 422) {
-                        this.errors = error.response.data.errors
+                        this.errors = error.response.data.errors;
                     } else {
-                        console.log(error)
+                        console.log(error);
                     }
                 })
                 .then(() => {
-                    this.loading_submit = false
-                })
+                    this.loading_submit = false;
+                });
         },
         close() {
-            this.$emit('update:showDialog', false)
-            this.initForm()
+            this.$emit("update:showDialog", false);
+            this.initForm();
         },
-    }
-}
+    },
+};
 </script>

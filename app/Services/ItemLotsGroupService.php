@@ -78,6 +78,10 @@
                     $result = $record->date_of_due;
                 }
             }
+
+            if (substr($result, 0, 1) == '/') {
+                $result = substr($result, 1);
+            }
             return $result;
 
         }

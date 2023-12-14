@@ -13,7 +13,7 @@
     {
         use AttributePerItems;
         public $timestamps = false;
-        protected $with = ['affectation_igv_type', 'system_isc_type', 'price_type'];
+        protected $with = ['affectation_igv_type', 'system_isc_type', 'price_type','projectItem'];
         protected $fillable = [
             'quotation_id',
             'item_id',
@@ -55,12 +55,17 @@
             'name_product_pdf',
         ];
 
-
+        public function projectItem(){
+            return $this->hasOne(QuotationProjectItem::class);
+        }
         public function getItemAttribute($value)
         {
             return (is_null($value)) ? null : (object)json_decode($value);
         }
-
+        public function sellers()
+    {
+        return $this->hasOne(ItemSeller::class)->withDefault();
+    }
         public function setItemAttribute($value)
         {
             $this->attributes['item'] = (is_null($value)) ? null : json_encode($value);
@@ -75,15 +80,41 @@
         {
             $this->attributes['attributes'] = (is_null($value)) ? null : json_encode($value);
         }
-
+        public function getConvertUnitValueToPen()
+        {
+            return $this->generalConvertValueToPen($this->unit_value, $this->quotation->exchange_rate_sale);
+        }
+        public function getConvertUnitPriceToPen()
+        {
+            return $this->generalConvertValueToPen($this->unit_price, $this->quotation->exchange_rate_sale);
+        }
+        public function getConvertTotalIscToPen()
+        {
+            return $this->generalConvertValueToPen($this->total_isc, $this->quotation->exchange_rate_sale);
+        }
+        public function getConvertTotalIgvToPen()
+        {
+            return $this->generalConvertValueToPen($this->total_igv, $this->quotation->exchange_rate_sale);
+        }
+        public function getConvertTotalValueToPen()
+        {
+            return $this->generalConvertValueToPen($this->total_value, $this->quotation->exchange_rate_sale);
+        }
         public function getChargesAttribute($value)
         {
             return (is_null($value)) ? null : (object)json_decode($value);
         }
-
+        public function isCurrencyTypeUsd()
+        {
+            return $this->quotation->currency_type_id === 'USD';
+        }
         public function setChargesAttribute($value)
         {
             $this->attributes['charges'] = (is_null($value)) ? null : json_encode($value);
+        }
+        public function getExchangeRateSale()
+        {
+            return $this->quotation->exchange_rate_sale;
         }
 
         public function getDiscountsAttribute($value)
@@ -155,7 +186,11 @@
             $itemModel->getExtraDataToPrint($data);
             return $data;
         }
-
+        public function getConvertTotalToPen()
+        {
+            
+            return $this->generalConvertValueToPen($this->total, $this->quotation->exchange_rate_sale);
+        }
         /**
          * @return Item|Item[]|Collection|Model|mixed|null
          */

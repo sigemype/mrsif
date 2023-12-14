@@ -32,7 +32,7 @@ class DispatchItem extends ModelTenant
         'item',
         'quantity',
         'name_product_pdf',
-        'additional_data'
+        'additional_data',
     ];
 
     public function getAdditionalDataAttribute($value)
@@ -115,10 +115,13 @@ class DispatchItem extends ModelTenant
         if (null === $configuration) {
             $configuration = Configuration::first();
         }
-
+        $reference = optional($dispatches->inventory_reference)->description;
         $this->quantity = number_format($this->quantity,2);
         $data = $this->toArray();
         $data['item'] = [];
+        $data['reference'] = $reference;
+        $data['sale_price'] = $item->sale_unit_price;
+        $data['total_sale_price'] = $item->sale_unit_price * $this->quantity;
         $data['dispatches'] = [];
         if (!empty($dispatches)) {
             $data['dispatches'] = $dispatches->getCollectionData();

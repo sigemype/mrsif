@@ -6,19 +6,23 @@ use Illuminate\Database\Migrations\Migration;
 
 class AddObservationPurchaseOrdens extends Migration
 {
-    /**
+   
+     /**
      * Run the migrations.
      *
      * @return void
      */
     public function up()
     {
-        Schema::table('purchase_orders', function (Blueprint $table) {
-            $table->text('observation')->nullable()->after('filename');
-        });
+        $tableName = 'purchase_orders';
+        $columnName = 'observation';
+
+        if (!Schema::hasColumn($tableName, $columnName)) {
+            Schema::table($tableName, function (Blueprint $table) use ($columnName) {
+                $table->text($columnName)->nullable()->after('filename');
+            });
+        }
     }
-
-
 
     /**
      * Reverse the migrations.
@@ -27,8 +31,13 @@ class AddObservationPurchaseOrdens extends Migration
      */
     public function down()
     {
-        Schema::table('purchase_orders', function (Blueprint $table) {
-            $table->dropColumn('observation');
-        });
+        $tableName = 'purchase_orders';
+        $columnName = 'observation';
+
+        if (Schema::hasColumn($tableName, $columnName)) {
+            Schema::table($tableName, function (Blueprint $table) use ($columnName) {
+                $table->dropColumn($columnName);
+            });
+        }
     }
 }

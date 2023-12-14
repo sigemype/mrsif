@@ -400,7 +400,7 @@
 
         // I think this is only in case of threshold plugin
         if (item.series.label === null && item.series.originSeries) {
-            item.series.label = item.series.originSeries.label;
+            item.series.label = item.series.originseries.label;
         }
 
         // if it is a function callback get the content string

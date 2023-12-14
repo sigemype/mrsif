@@ -36,7 +36,10 @@
 </head>
 <style>
 
-
+.h-5.w-5{
+    width: 20px;
+    height: 20px;
+}
 </style>
 <body>
     <div class="page-wrapper">

@@ -29,7 +29,7 @@ class UserController extends Controller
         $part = $url[0];
         $password = $request->input('password');
         $password_confirmation = $request->input('password_confirmation');
-     
+
 
         if ($password != $password_confirmation) {
             return [
@@ -106,7 +106,13 @@ class UserController extends Controller
             ['type' => 'seller', 'description' => 'Vendedor'],
         ];
 
-        $configuration = Configuration::select(['permission_to_edit_cpe', 'regex_password_user'])->first();
+        $configuration = Configuration::select(['package_handlers', 'permission_to_edit_cpe', 'regex_password_user'])->first();
+        if ($configuration->package_handlers) {
+            $types = [
+                ['type' => 'admin', 'description' => 'Administrador'],
+                ['type' => 'seller', 'description' => 'Cajero'],
+            ];
+        }
         $config_permission_to_edit_cpe = $configuration->permission_to_edit_cpe;
         $config_regex_password_user = $configuration->regex_password_user;
         $zones = Zone::all();
@@ -280,6 +286,18 @@ class UserController extends Controller
     }
 
 
+    public function records_lite()
+    {
+        $records = User::where('type', '!=', 'integrator')->get()
+            ->transform(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ];
+            });
+
+        return $records;
+    }
     public function records()
     {
         $records = User::where('type', '!=', 'integrator')->get();

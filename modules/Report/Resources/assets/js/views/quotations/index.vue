@@ -25,6 +25,7 @@
                             <th class="text-end">T.Gravado</th>
                             <th class="text-end">T.Igv</th>
                             <th class="text-end">Total</th>
+                            <th class="text-end">Pagos</th>
                         </tr>
                         <tr slot-scope="{ index, row }">
                             <td>{{ index }}</td>
@@ -57,6 +58,7 @@
                             <td>{{ row.total_taxed}}</td>
                             <td>{{ row.total_igv}}</td>
                             <td>{{ row.total}}</td>
+                            <td>{{ row.payments}}</td>
 
                         </tr>
 

@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $payments = $document->payments;
     $left =  ($document->series) ? $document->series : $document->prefix;
     $tittle = $left.'-'.str_pad($document->number, 8, '0', STR_PAD_LEFT);
@@ -74,7 +83,7 @@ $logo = "{$establishment->logo}";
                         $payment = 0;
                     @endphp
                     @foreach($payments as $row)
-                    Fecha de Emisión: {{ $row->date_of_payment->format('Y-m-d') }} <br>
+                    Fecha de emisión: {{ $row->date_of_payment->format('Y-m-d') }} <br>
                         @php
                             $payment += (float) $row->payment;
                         @endphp
@@ -98,8 +107,8 @@ $logo = "{$establishment->logo}";
     <tr>
         <td class="border-top-bottom desc text-left"></td>
         <td class="border-top-bottom desc text-left">UdM</td>
-        <td class="border-top-bottom desc text-left">DESCRIPCIÓN</td>
-        <td class="border-top-bottom desc text-right" style="padding-right:5px;">P.UNIT </td>
+        <td class="border-top-bottom desc text-left">Descripción</td>
+        <td class="border-top-bottom desc text-right" style="padding-right:5px;">P.Unit </td>
         <td class="border-top-bottom desc text-right">TOTAL </td>
     </tr>
     </thead>
@@ -175,7 +184,7 @@ $logo = "{$establishment->logo}";
             <td class="text-left desc align-top">1</td>
             <td class="text-left desc align-top">NIU</td>
             <td class="text-left desc align-top">
-                ANTICIPO: {{($p->document_type_id == '02')? 'FACTURA':'BOLETA'}} NRO. {{$p->number}}
+                Anticipo: {{($p->document_type_id == '02')? 'Factura':'Boleta'}} Nro. {{$p->number}}
             </td>
             <td class="text-left desc align-top"></td>
             <td class="text-left desc align-top"></td>
@@ -192,42 +201,42 @@ $logo = "{$establishment->logo}";
 
     @if($document->total_exportation > 0)
     <tr>
-        <td colspan="3" class="desc-ticket text-uppercase">OP. EXPORTACIÓN:
+        <td colspan="3" class="desc-ticket text-uppercase">Op. Exportación:
             {{ $document->currency_type->symbol }}</td>
         <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_exportation, 2) }}</td>
     </tr>
         @endif
         @if($document->total_free > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">OP. GRATUITAS:
+                <td colspan="3" class="desc-ticket text-uppercase">Op. Gratuitas:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_free, 2) }}</td>
             </tr>
         @endif
         @if($document->total_unaffected > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">OP. INAFECTAS:
+                <td colspan="3" class="desc-ticket text-uppercase">Op. Inafectas:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_unaffected, 2) }}</td>
             </tr>
         @endif
         @if($document->total_exonerated > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">OP. EXONERADAS:
+                <td colspan="3" class="desc-ticket text-uppercase">Op. Exoneradas:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_exonerated, 2) }}</td>
             </tr>
         @endif
         @if($document->total_taxed > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">OP. GRAVADAS:
+                <td colspan="3" class="desc-ticket text-uppercase">Op. Gravadas:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_taxed, 2) }}</td>
             </tr>
         @endif
         @if($document->total_plastic_bag_taxes > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">ICBPER:
+                <td colspan="3" class="desc-ticket text-uppercase">Icbper:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_plastic_bag_taxes, 2) }}</td>
             </tr>
@@ -256,7 +265,7 @@ $logo = "{$establishment->logo}";
 
         @if($document->total_discount > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">{{(($document->total_prepayment > 0) ? 'ANTICIPO':'DESCUENTO TOTAL')}}:
+                <td colspan="3" class="desc-ticket text-uppercase">{{(($document->total_prepayment > 0) ? 'Anticipo':'Descuento TOTAL')}}:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_discount, 2) }}</td>
             </tr>
@@ -285,14 +294,14 @@ $logo = "{$establishment->logo}";
         @endif
 
         <tr>
-            <td colspan="3" class="desc-ticket text-uppercase">TOTAL A PAGAR:
+            <td colspan="3" class="desc-ticket text-uppercase">Total a pagar:
                 {{ $document->currency_type->symbol }}</td>
             <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total, 2) }}</td>
         </tr>
 
         @if(($document->retention || $document->detraction) && $document->total_pending_payment > 0)
             <tr>
-                <td colspan="3" class="desc-ticket text-uppercase">M. PENDIENTE:
+                <td colspan="3" class="desc-ticket text-uppercase">M. Pendiente:
                     {{ $document->currency_type->symbol }}</td>
                 <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format($document->total_pending_payment, 2) }}</td>
             </tr>
@@ -301,7 +310,7 @@ $logo = "{$establishment->logo}";
         @if($balance < 0)
            <tr>
                <td colspan="3" class="desc-ticket text-uppercase">
-                    VUELTO:
+                    Vuelto:
                     <span class="text-right">{{ $document->currency_type->symbol }}</span>
                 </td>
                <td colspan="2" class="text-right desc-ticket text-uppercase">{{ number_format(abs($balance),2, ".", "") }}</td>
@@ -318,7 +327,7 @@ $logo = "{$establishment->logo}";
     <table class="full-width">
         <tr>
             <td class="desc-ticket">
-                <strong>PAGO: </strong>{{ $document->payment_method_type->description }}
+                <strong>Pago: </strong>{{ $document->payment_method_type->description }}
             </td>
         </tr>
     </table>
@@ -329,7 +338,7 @@ $logo = "{$establishment->logo}";
 <table class="full-width" style="font-family: 'Courier New', Courier, monospace">
 <tr>
     <td>
-    <strong>PAGOS:</strong> </td></tr>
+    <strong>Pagos:</strong> </td></tr>
         @php
             $payment = 0;
         @endphp
@@ -339,7 +348,7 @@ $logo = "{$establishment->logo}";
                 $payment += (float) $row->payment;
             @endphp
         @endforeach
-        <tr><td class="pb-10"><strong>SALDO:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</td>
+        <tr><td class="pb-10"><strong>Saldo:</strong> {{ $document->currency_type->symbol }} {{ number_format($document->total - $payment, 2) }}</td>
     </tr>
 
 </table>

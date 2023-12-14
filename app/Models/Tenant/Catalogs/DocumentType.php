@@ -148,7 +148,7 @@ class DocumentType extends ModelCatalog
      */
     public function scopeOnlyAvaibleDocuments($query)
     {
-        return $query->OnlyActive()->wherein('id', ['01', '03', '07', '08', '09', '20', '40', '80', '04', 'U2', 'U3', 'U4', '31', 'PD', 'COT']);
+        return $query->OnlyActive()->wherein('id', ['01', '03', '07', '08', '09', '20', '40', '80', '04', 'U2', 'U3', 'U4', '31', 'PD', 'COT','TE']);
     }
 
     /**

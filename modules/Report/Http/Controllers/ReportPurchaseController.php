@@ -11,6 +11,8 @@ use Modules\Report\Traits\ReportTrait;
 use App\Models\Tenant\Establishment;
 use App\Models\Tenant\Purchase;
 use App\Models\Tenant\Company;
+use App\Models\Tenant\PurchaseLicense;
+use App\Models\Tenant\PurchaseResponsible;
 use Carbon\Carbon;
 use Modules\Report\Http\Resources\PurchaseCollection;
 
@@ -26,7 +28,22 @@ class ReportPurchaseController extends Controller
 
         $persons = $this->getPersons('suppliers');
         $sellers = $this->getSellers();
-
+        $licenses = PurchaseLicense::take(20)->get()
+            ->transform(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'license' => $row->license,
+                    'active' => $row->active
+                ];
+            });
+        $responsibles = PurchaseResponsible::take(20)->get()
+            ->transform(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'name' => $row->name,
+                    'number' => $row->number,
+                ];
+            });
         $establishments = Establishment::all()->transform(function ($row) {
             return [
                 'id' => $row->id,
@@ -34,7 +51,14 @@ class ReportPurchaseController extends Controller
             ];
         });
 
-        return compact('document_types', 'establishments', 'persons', 'sellers');
+        return compact(
+            'licenses',
+            'responsibles',
+            'document_types',
+            'establishments',
+            'persons',
+            'sellers'
+        );
     }
 
 

@@ -18,6 +18,7 @@ use Modules\Item\Models\Category;
 use Hyn\Tenancy\Models\Hostname;
 use App\Models\System\Client;
 use Illuminate\Support\Facades\DB;
+use Modules\BusinessTurn\Models\BusinessTurn;
 use Modules\Inventory\Jobs\ProcessInventoryReport;
 use Modules\Inventory\Http\Resources\ReportInventoryCollection;
 
@@ -28,6 +29,7 @@ class ReportInventoryController extends Controller
     public function tables()
     {
         return [
+            'is_majolica' => BusinessTurn::isMajolica(),
             'warehouses' => Warehouse::query()->select('id', 'description')->get(),
             'categories' => Category::query()->select('id', 'name')->get(),
             'brands' => Brand::query()->select('id', 'name')->get(),
@@ -47,6 +49,7 @@ class ReportInventoryController extends Controller
 
     public function records(Request $request)
     {
+        $must_sales = $request->must_sales == "true" ? true : false;
         $warehouse_id = $request->input('warehouse_id');
         //$brand_id = (int)$request->brand_id;
         //$category_id = (int)$request->category_id;
@@ -54,7 +57,13 @@ class ReportInventoryController extends Controller
         $filter = $request->input('filter');
         //$date_end = $request->has('date_end') ? $request->date_end : null;
         //$date_start = $request->has('date_start') ? $request->date_start : null;
-        $records = $this->getRecords($warehouse_id, $filter, $request);
+        $records = $this->getRecords($warehouse_id, $filter, $request)
+    
+        ;
+
+        if ($must_sales) {
+            $records->orderBy('kardex_quantity', 'desc');
+        }
 
         return new ReportInventoryCollection($records->paginate(50), $filter);
     }
@@ -67,10 +76,18 @@ class ReportInventoryController extends Controller
     private function getRecords($warehouse_id = 0, $filter, $request)
     {
         $query = ItemWarehouse::with(['warehouse', 'item' => function ($query) {
-            $query->select('id', 'barcode', 'internal_id', 'description', 'name', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
-            $query->with(['category', 'brand']);
+            $query->select('id','barcode', 'internal_id', 'description', 'name', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
+            $query->with(['category', 'brand', 'cat_digemid','lots_group']);
             $query->without(['item_type', 'unit_type', 'currency_type', 'warehouses', 'item_unit_types', 'tags']);
-        }])
+            // $query->whereHas('cat_digemid', function ($q) {
+            //     $q->select('nom_titular as laboratory');
+            // });
+        }
+    
+        ])
+        ->select('*', \DB::raw('(SELECT SUM(quantity) FROM kardex WHERE kardex.item_id = item_warehouse.item_id AND type = "sale") as kardex_quantity')) 
+
+
             ->whereHas('item', function ($q) {
                 $q->where([
                     ['item_type_id', '01'],
@@ -95,9 +112,10 @@ class ReportInventoryController extends Controller
 
             $query = ItemWarehouse::with(['warehouse', 'item' => function ($query) {
                 $query->select('id', 'barcode', 'internal_id', 'description', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
-                $query->with(['category', 'brand']);
+                $query->with(['category', 'brand', 'cat_digemid','lots_group']);
                 $query->without(['item_type', 'unit_type', 'currency_type', 'warehouses', 'item_unit_types', 'tags']);
             }])
+            ->select('*', \DB::raw('(SELECT SUM(quantity) FROM kardex WHERE kardex.item_id = item_warehouse.item_id AND type = "sale") as kardex_quantity')) 
                 ->whereHas('item', function ($q) {
                     $q->where([
                         ['item_type_id', '01'],
@@ -113,10 +131,11 @@ class ReportInventoryController extends Controller
             //$add = ($stock > $item->stock_min);
 
             $query = ItemWarehouse::with(['warehouse', 'item' => function ($query) {
-                $query->select('id', 'barcode', 'internal_id', 'description', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
-                $query->with(['category', 'brand']);
+                $query->select('id', 'barcode','internal_id', 'description', 'category_id', 'brand_id', 'stock_min', 'sale_unit_price', 'purchase_unit_price', 'model', 'date_of_due');
+                $query->with(['category', 'brand', 'cat_digemid','lots_group']);
                 $query->without(['item_type', 'unit_type', 'currency_type', 'warehouses', 'item_unit_types', 'tags']);
             }])
+            ->select('*', \DB::raw('(SELECT SUM(quantity) FROM kardex WHERE kardex.item_id = item_warehouse.item_id AND type = "sale") as kardex_quantity')) 
                 ->whereHas('item', function ($q) {
                     $q->where([
                         ['item_type_id', '01'],

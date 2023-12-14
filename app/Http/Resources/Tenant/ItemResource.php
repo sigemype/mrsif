@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Tenant\ItemSupply;
 use Modules\Restaurant\Models\Food;
 use App\Models\Tenant\Configuration;
+use App\Models\Tenant\ItemBonus;
 use App\Models\Tenant\ItemWarehouse;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -70,8 +71,14 @@ class ItemResource extends JsonResource
 
 
         $itemSupply = $this->supplies;
+        $itemBonus =  $this->bonusses;
         if (!empty($itemSupply)) {
             $itemSupply = $itemSupply->transform(function (ItemSupply $row) {
+                return $row->getCollectionData();
+            });
+        }
+        if (!empty($itemBonus)) {
+            $itemBonus = $itemBonus->transform(function (ItemBonus $row) {
                 return $row->getCollectionData();
             });
         }
@@ -87,10 +94,12 @@ class ItemResource extends JsonResource
         }
         $foods=Food::where('item_id',$this->id)->first();
         return [
+            'frequent' =>(bool) $this->frequent,
+            'has_sizes' => (bool)$this->has_sizes,
             'info_link' => $this->info_link,
             'id' => $this->id,
-            'frequent'     => $this->frequent,
             'is_for_production' => $this->isIsForProduction(),
+            'has_bonus_item' => $this->hasBonus(),
             'description' => $this->description,
             'technical_specifications' => $this->technical_specifications,
             'colors' => $currentColors,
@@ -198,11 +207,21 @@ class ItemResource extends JsonResource
                     'description' => $row->warehouse->description,
                 ];
             }),
+            'item_customer_prices' => $this->clientTypePrices->transform(function ($row) {
+                return [
+                    'id' => $row->id,
+                    'item_id' => $row->item_id,
+                    'person_type_id' => $row->person_type_id,
+                    'price' => $row->price,
+                    'description' => $row->person_type->description,
+                ];
+            }),
             'sanitary' => $sanitary,
             'laboratory' => $laboratory,
             'name_digemid' => $name_digemid,
             'cod_digemid' => $this->cod_digemid,
             'supplies' => $itemSupply,
+            'bonus_items' => $itemBonus,
 
             'purchase_has_isc' => $this->purchase_has_isc,
             'purchase_system_isc_type_id' => $this->purchase_system_isc_type_id,

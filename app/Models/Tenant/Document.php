@@ -166,6 +166,7 @@ class Document extends ModelTenant
         'quotation'
     ];
     protected $fillable = [
+        'bill_of_exchange_id',
         'no_stock',
         'cash_id',
         'auditor_state',
@@ -1693,6 +1694,9 @@ class Document extends ModelTenant
         return $calculate_quantity_points;
     }
 
+    public function bill_of_exchange_document(){
+        return $this->hasOne(BillOfExchangeDocument::class);
+    }
     public function getQrAttribute($value)
     {
         if (!is_null($value)) {

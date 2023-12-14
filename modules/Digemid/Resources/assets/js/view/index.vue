@@ -5,7 +5,9 @@
                 <a href="/dashboard"><i class="fas fa-tachometer-alt"></i></a>
             </h2>
             <ol class="breadcrumbs">
-                <li class="active"><span>{{ titleTopBar }}</span></li>
+                <li class="active">
+                    <span>{{ titleTopBar }}</span>
+                </li>
             </ol>
             <div class="right-wrapper pull-right">
                 <template v-if="typeUser === 'admin'">
@@ -59,6 +61,13 @@
                             >
                                 DIGEMID
                             </a>
+                            <a
+                                class="dropdown-item text-1"
+                                href="#"
+                                @click.prevent="clickExportDigemidCsv()"
+                            >
+                                DIGEMID 2 (.csv)
+                            </a>
                         </div>
                     </div>
                     <div class="btn-group flex-wrap">
@@ -87,20 +96,20 @@
                                 class="dropdown-item text-1"
                                 href="#"
                                 @click.prevent="clickImport()"
-                            >Productos</a
+                                >Productos</a
                             >
 
                             <a
                                 class="dropdown-item text-1"
                                 href="#"
                                 @click.prevent="clickDigemidImport()"
-                            >DIGEMID</a
+                                >DIGEMID</a
                             >
                             <a
                                 class="dropdown-item text-1"
                                 href="#"
                                 @click.prevent="clickImportListPrice()"
-                            >L. Precios</a
+                                >L. Precios</a
                             >
                         </div>
                     </div>
@@ -122,14 +131,22 @@
             <div class="data-table-visible-columns">
                 <el-dropdown :hide-on-click="false">
                     <el-button type="primary">
-                        Mostrar/Ocultar columnas<i class="el-icon-arrow-down el-icon--right"></i>
+                        Mostrar/Ocultar columnas<i
+                            class="el-icon-arrow-down el-icon--right"
+                        ></i>
                     </el-button>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item v-for="(column, index) in columnsComputed" :key="index">
+                        <el-dropdown-item
+                            v-for="(column, index) in columnsComputed"
+                            :key="index"
+                        >
                             <el-checkbox
-                                v-if="column.title !== undefined && column.visible !== undefined"
+                                v-if="
+                                    column.title !== undefined &&
+                                    column.visible !== undefined
+                                "
                                 v-model="column.visible"
-                            >{{ column.title }}
+                                >{{ column.title }}
                             </el-checkbox>
                         </el-dropdown-item>
                     </el-dropdown-menu>
@@ -148,20 +165,31 @@
                         <th>Nombre</th>
                         <th v-if="columns.description.visible">Descripción</th>
                         <th v-if="columns.model.visible">Modelo</th>
-                        <th >Marca</th>
+                        <th>Marca</th>
                         <th v-if="columns.item_code.visible">Cód. SUNAT</th>
-                        <th >R.S.</th>
-                        <th >DIGEMID </th>
-                        <th >Nom. DIGEMID </th>
-                        <th >Laboratorio </th>
-                        <th >Exportable </th>
+                        <th>R.S.</th>
+                        <th>DIGEMID</th>
+                        <th>Nom. DIGEMID</th>
+                        <th>Laboratorio</th>
+                        <th>F. Vencimiento</th>
+                        <th>Exportable</th>
                         <th class="text-left">Stock</th>
                         <th class="text-end">P.Unitario (Venta)</th>
-                        <th v-if="typeUser != 'seller' && columns.purchase_unit_price.visible" class="text-end">
+                        <th
+                            v-if="
+                                typeUser != 'seller' &&
+                                columns.purchase_unit_price.visible
+                            "
+                            class="text-end"
+                        >
                             P.Unitario (Compra)
                         </th>
                         <th class="text-center">Tiene Igv (Venta)</th>
-                        <th v-if="columns.purchase_has_igv_description.visible" class="text-center">Tiene Igv (Compra)
+                        <th
+                            v-if="columns.purchase_has_igv_description.visible"
+                            class="text-center"
+                        >
+                            Tiene Igv (Compra)
                         </th>
                         <th class="text-end">Acciones</th>
                     </tr>
@@ -176,18 +204,27 @@
                         <td>{{ row.unit_type_id }}</td>
                         <td>{{ row.description }}</td>
                         <td v-if="columns.model.visible">{{ row.model }}</td>
-                        <td >{{ row.brand }}</td>
-                        <td v-if="columns.description.visible">{{ row.name }}</td>
-                        <td v-if="columns.item_code.visible">{{ row.item_code }}</td>
-                        <td >{{ row.sanitary }} </td>
-                        <td >{{ row.cod_digemid }} </td>
-                        <td >{{ row.name_disa }} </td>
-                        <td >{{ row.laboratory }} </td>
-                        <td >
+                        <td>{{ row.brand }}</td>
+                        <td v-if="columns.description.visible">
+                            {{ row.name }}
+                        </td>
+                        <td v-if="columns.item_code.visible">
+                            {{ row.item_code }}
+                        </td>
+                        <td>{{ row.sanitary }}</td>
+                        <td>{{ row.cod_digemid }}</td>
+                        <td>{{ row.name_disa }}</td>
+                        <td>{{ row.laboratory }}</td>
+                        <td>{{ row.date_due }}</td>
+                        <td>
                             <el-checkbox
-                                @change="updateExportable(row.id,row)"
+                                @change="updateExportable(row.id, row)"
                                 v-model="row.exportable_pharmacy"
-                            >{{ (row.exportable_pharmacy === true) ? 'Si' : 'No' }}
+                                >{{
+                                    row.exportable_pharmacy === true
+                                        ? "Si"
+                                        : "No"
+                                }}
                             </el-checkbox>
                         </td>
                         <td>
@@ -200,9 +237,8 @@
                                         typeUser == 'seller' &&
                                         row.unit_type_id != 'ZZ'
                                     "
-                                >{{ row.stock }}
-                                </template
-                                >
+                                    >{{ row.stock }}
+                                </template>
                                 <template
                                     v-else-if="
                                         typeUser != 'seller' &&
@@ -213,7 +249,10 @@
                                         class="btn waves-effect waves-light btn-sm btn-info"
                                         type="button"
                                         @click.prevent="
-                                            clickWarehouseDetail(row.warehouses, row.item_unit_types)
+                                            clickWarehouseDetail(
+                                                row.warehouses,
+                                                row.item_unit_types
+                                            )
                                         "
                                     >
                                         <i class="fa fa-search"></i>
@@ -227,13 +266,22 @@
                             <!-- <br/>Mín:{{ row.stock_min }} -->
                         </td>
                         <td class="text-end">{{ row.sale_unit_price }}</td>
-                        <td v-if="typeUser != 'seller' && columns.purchase_unit_price.visible" class="text-end">
+                        <td
+                            v-if="
+                                typeUser != 'seller' &&
+                                columns.purchase_unit_price.visible
+                            "
+                            class="text-end"
+                        >
                             {{ row.purchase_unit_price }}
                         </td>
                         <td class="text-center">
                             {{ row.has_igv_description }}
                         </td>
-                        <td v-if="columns.purchase_has_igv_description.visible" class="text-center">
+                        <td
+                            v-if="columns.purchase_has_igv_description.visible"
+                            class="text-center"
+                        >
                             {{ row.purchase_has_igv_description }}
                         </td>
                         <td class="text-end">
@@ -349,21 +397,17 @@
 import ItemsForm from "../../../../../../resources/js/views/tenant/items/form.vue";
 import WarehousesDetail from "../../../../../../resources/js/views/tenant/items/partials/warehouses.vue";
 import ItemsImport from "../../../../../../resources/js/views/tenant/items/import.vue";
-import  CatalogImport from "../../../../../../resources/js/views/tenant/items/catalog.vue";
+import CatalogImport from "../../../../../../resources/js/views/tenant/items/catalog.vue";
 import ItemsImportListPrice from "../../../../../../resources/js/views/tenant/items/partials/import_list_price.vue";
 import ItemsExport from "../../../../../../resources/js/views/tenant/items/partials/export.vue";
 import ItemsExportWp from "../../../../../../resources/js/views/tenant/items/partials/export_wp.vue";
 import ItemsExportBarcode from "../../../../../../resources/js/views/tenant/items/partials/export_barcode.vue";
 import ItemExportDigemid from "../../../../../../resources/js/views/tenant/items/partials/export_digemid.vue";
 import DataTable from "../../../../../../resources/js/views/tenant/items/../../../components/DataTable.vue";
-import {deletable} from "../../../../../../resources/js/mixins/deletable";
+import { deletable } from "../../../../../../resources/js/mixins/deletable";
 
 export default {
-    props: [
-        "configuration",
-        "typeUser",
-        "type"
-    ],
+    props: ["configuration", "typeUser", "type"],
     mixins: [deletable],
     components: {
         ItemExportDigemid,
@@ -396,63 +440,63 @@ export default {
             config: {},
             columns: {
                 description: {
-                    title: 'Descripción',
-                    visible: false
+                    title: "Descripción",
+                    visible: false,
                 },
                 item_code: {
-                    title: 'Cód. SUNAT',
-                    visible: false
+                    title: "Cód. SUNAT",
+                    visible: false,
                 },
                 purchase_unit_price: {
-                    title: 'P.Unitario (Compra)',
-                    visible: false
+                    title: "P.Unitario (Compra)",
+                    visible: false,
                 },
                 purchase_has_igv_description: {
-                    title: 'Tiene Igv (Compra)',
-                    visible: false
+                    title: "Tiene Igv (Compra)",
+                    visible: false,
                 },
                 model: {
-                    title: 'Modelo',
-                    visible: false
+                    title: "Modelo",
+                    visible: false,
                 },
                 brand: {
-                    title: 'Marca',
-                    visible: false
+                    title: "Marca",
+                    visible: false,
                 },
                 exportable_pharmacy: {
-                    title: 'Exportable',
-                    visible: true
+                    title: "Exportable",
+                    visible: true,
                 },
             },
             item_unit_types: [],
-            titleTopBar: '',
-            title: ''
+            titleTopBar: "",
+            title: "",
         };
     },
     created() {
-        if (this.type === 'ZZ') {
-            this.titleTopBar = 'Servicios';
-            this.title = 'Listado de servicios';
+        if (this.type === "ZZ") {
+            this.titleTopBar = "Servicios";
+            this.title = "Listado de servicios";
         } else {
-            this.titleTopBar = 'Productos';
-            this.title = 'Listado de productos DIGEMID';
+            this.titleTopBar = "Productos";
+            this.title = "Listado de productos DIGEMID";
         }
         this.$http.get(`/configurations/record`).then((response) => {
             this.config = response.data.data;
-            this.$setStorage('configuration',this.config)
+            this.$setStorage("configuration", this.config);
         });
         this.canCreateProduct();
     },
     computed: {
         columnsComputed: function () {
             return this.columns;
-        }
+        },
     },
     methods: {
-        updateExportable(id,row){
+        updateExportable(id, row) {
             row.exportable_pharmacy = !row.exportable_pharmacy;
             this.$http
-                .post(`digemid/update_exportable/${id}`, {id})
+                .post(`digemid/update_exportable/${id}`, { id })
                 .then((response) => {
                     this.$eventHub.$emit("reloadData");
                 })
@@ -462,18 +506,22 @@ export default {
             //
         },
         canCreateProduct() {
-            if (this.typeUser === 'admin') {
-                this.can_add_new_product = true
-            } else if (this.typeUser === 'seller') {
-                if (this.configuration !== undefined && this.configuration.seller_can_create_product !== undefined) {
-                    this.can_add_new_product = this.configuration.seller_can_create_product;
+            if (this.typeUser === "admin") {
+                this.can_add_new_product = true;
+            } else if (this.typeUser === "seller") {
+                if (
+                    this.configuration !== undefined &&
+                    this.configuration.seller_can_create_product !== undefined
+                ) {
+                    this.can_add_new_product =
+                        this.configuration.seller_can_create_product;
                 }
             }
             return this.can_add_new_product;
         },
         duplicate(id) {
             this.$http
-                .post(`${this.resource}/duplicate`, {id})
+                .post(`${this.resource}/duplicate`, { id })
                 .then((response) => {
                     if (response.data.success) {
                         this.$message.success(
@@ -484,13 +532,12 @@ export default {
                         this.$message.error("No se guardaron los cambios");
                     }
                 })
-                .catch((error) => {
-                });
+                .catch((error) => {});
             this.$eventHub.$emit("reloadData");
         },
         clickWarehouseDetail(warehouses, item_unit_types) {
             this.warehousesDetail = warehouses;
-            this.item_unit_types = item_unit_types
+            this.item_unit_types = item_unit_types;
             this.showWarehousesDetail = true;
         },
         clickCreate(recordId = null) {
@@ -514,6 +561,9 @@ export default {
         },
         clickExportDigemid() {
             this.showExportDigemid = true;
+        },
+        clickExportDigemidCsv() {
+            window.open(`/${this.resource}/export/digemid-csv`, "_blank");
         },
         clickImportListPrice() {
             this.showImportListPriceDialog = true;

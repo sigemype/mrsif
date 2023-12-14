@@ -31,6 +31,7 @@ class ClientResource extends JsonResource
         // }
 
         return [
+            'is_rus'  => (bool)$this->is_rus,
             'id' => $this->id,
             'hostname' => $this->hostname->fqdn,
             'cert_smart' => (bool)$this->cert_smart,
@@ -39,6 +40,7 @@ class ClientResource extends JsonResource
             'token' => $this->token,
             'number' => $this->number,
             'plan_id' => $this->plan_id,
+            'locked_items' => (bool)$this->locked_items,
             'active' => (bool)$this->active,
             'identity_document_type_id' => $this->identity_document_type_id,
             'locked' => (bool)$this->locked,

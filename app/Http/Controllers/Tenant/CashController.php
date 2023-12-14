@@ -25,6 +25,7 @@ use Modules\Pos\Models\CashTransaction;
 use App\Models\Tenant\CashDocumentCredit;
 use Modules\Finance\Models\Income;
 use App\CoreFacturalo\Helpers\Template\ReportHelper;
+use App\Models\Tenant\PackageHandler;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 
@@ -404,13 +405,17 @@ class CashController extends Controller
             }
         } else if ($request->quotation_id != null) {
         }
-
+        else if ($request->package_handler_id != null) {
+         
+           
+        }
         if ($payment_credit == 0) {
 
             $req = [
                 'document_id' => $request->document_id,
                 'sale_note_id' => $request->sale_note_id,
                 'quotation_id' => $request->quotation_id,
+                'package_handler_id' => $request->package_handler_id,
             ];
 
             $cash->cash_documents()->updateOrCreate($req);
@@ -594,7 +599,6 @@ class CashController extends Controller
     {
 
         $cd_sale_notes =  CashDocument::getSaleNoteIdsReport($cash);
-        // dump($cash);
 
         $sale_note_items = SaleNoteItem::with('sale_note')->whereIn('sale_note_id', $cd_sale_notes)->get();
         $sale_note_items_credit = SaleNoteItem::whereHas('sale_note', function ($query) use ($cash) {

@@ -65,6 +65,11 @@ class Purchase extends ModelTenant
     protected $with = ['user', 'soap_type', 'state_type', 'document_type', 'currency_type', 'group', 'items', 'purchase_payments'];
 
     protected $fillable = [
+        'const_detraccion',
+        'percentage_detraccion',
+        'date_detraccion',
+        'license_id',
+        'responsible_id',
         'sunat_date',
         'user_id',
         'external_id',
@@ -120,6 +125,7 @@ class Purchase extends ModelTenant
     ];
 
     protected $casts = [
+        'date_detraction' => 'date',
         'date_of_issue' => 'date',
         'date_of_due' => 'date',
         'sunat_date' => 'date',
@@ -143,7 +149,15 @@ class Purchase extends ModelTenant
     // {
     //     $this->attributes['establishment'] = (is_null($value))?null:json_encode($value);
     // }
+    public function purchase_license()
+    {
+        return $this->belongsTo(PurchaseLicense::class, 'license_id');
+    }
 
+    public function purchase_responsible()
+    {
+        return $this->belongsTo(PurchaseResponsible::class, 'responsible_id');
+    }
 
     public function getSupplierAttribute($value)
     {
@@ -389,6 +403,10 @@ class Purchase extends ModelTenant
         return ($user->type === 'seller') ? $query->where('user_id', $user->id) : null;
     }
 
+    public function is_note_credit()
+    {
+        return $this->document_type_id === '07';
+    }
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -531,6 +549,13 @@ class Purchase extends ModelTenant
 
         $guides = (array)$this->guides;
         return [
+            'const_detraccion' => $this->const_detraccion,
+            'percentage_detraccion' => $this->percentage_detraccion,
+            'date_detraccion' => $this->date_detraccion,
+            'license' => optional($this->purchase_license)->license,
+            'license_id' => $this->license_id,
+            'responsible' => optional($this->purchase_responsible)->name,
+            'responsible_id' => $this->responsible_id,
             'id'                             => $this->id,
             'sunat_date' => ($this->sunat_date) ? $this->sunat_date->format('Y-m-d') : null,
             'customer_number'                             => $customer_number,
@@ -601,7 +626,7 @@ class Purchase extends ModelTenant
                 $query->whereBetween('sunat_date', [$params->date_start, $params->date_end])
                     ->orWhere(function ($query) use ($params) {
                         $query->whereNull('sunat_date')
-                              ->whereBetween('date_of_issue', [$params->date_start, $params->date_end]);
+                            ->whereBetween('date_of_issue', [$params->date_start, $params->date_end]);
                     });
             });
 

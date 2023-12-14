@@ -2,6 +2,7 @@
 
 namespace Modules\Report\Http\Controllers;
 
+use App\CoreFacturalo\Requests\Inputs\Functions;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Tenant\DispatchItemCollection;
 use App\Models\Tenant\Company;
@@ -44,8 +45,8 @@ class ReportGuideController extends Controller
      * @return array
      */
     public function filter()
-    {
-
+    {   
+        $references = $this->getInventoryReferences();
         $document_types = [];
         $dispatch = Dispatch::where(function ($q) {
             $q->wherenotnull('customer_id');
@@ -76,7 +77,9 @@ class ReportGuideController extends Controller
         $establishments = Establishment::wherein('id', $dispatch_establishment_id)->get();
         $web_platforms = $this->getWebPlatforms();
 
-        return compact('document_types', 'establishments', 'items', 'web_platforms', 'customers', 'users');
+        return compact(
+            'references',
+            'document_types', 'establishments', 'items', 'web_platforms', 'customers', 'users');
     }
 
     /**
@@ -138,7 +141,7 @@ class ReportGuideController extends Controller
         $user_id = isset($request['user_id']) ? (int)$request['user_id'] : 0;
         $customer_id = isset($request['customer_id']) ? (int)$request['customer_id'] : 0;
         $establishment_id = isset($request['establishment_id']) ? (int)$request['establishment_id'] : 0;
-
+        $inventory_reference_id = Functions::valueKeyInArray($request, 'inventory_reference_id');
         $d_start = null;
         $d_end = null;
 
@@ -183,7 +186,9 @@ class ReportGuideController extends Controller
             $dispatch->where('dispatch_items.item_id', $item_id);
         }
 
-
+        if($inventory_reference_id) {
+            $dispatch->where('dispatches.inventory_reference_id', $inventory_reference_id);
+        }
         if (isset($request['min']) && isset($request['max'])) {
             $min = (int)$request['min'];
             $max = (int)$request['max'];

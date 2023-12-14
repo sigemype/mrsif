@@ -102,6 +102,13 @@
                                 @click.prevent="clickImportListPrice()"
                                 >L. Precios</a
                             >
+                            <a
+                                v-if="isClotheShoes"
+                                class="dropdown-item text-1"
+                                href="#"
+                                @click.prevent="clickImportListSize()"
+                                >Productos Tallas</a
+                            >
                             <template v-if="config.show_extra_info_to_item">
                                 <a
                                     class="dropdown-item text-1"
@@ -119,6 +126,23 @@
                                 @click.prevent="clickImportUpdatePrice()"
                                 >Actualizar precios</a
                             >
+
+                            <a
+                                class="dropdown-item text-1"
+                                href="#"
+                                @click.prevent="
+                                    clickImportUpdatePricePersonType()
+                                "
+                                >Actualizar precios por tipo de cliente</a
+                            >
+                            <a
+                                class="dropdown-item text-1"
+                                href="#"
+                                @click.prevent="
+                                    clickImportUpdatePriceWarehouse()
+                                "
+                                >Actualizar precios por almacen</a
+                            >
                         </div>
                     </div>
                 </template>
@@ -132,10 +156,10 @@
                 </button>
             </div>
         </div>
-            <div class="card mb-0">
-                <div class="card-header">
-                    <h3 class="my-0">{{ title }}</h3>
-                </div>
+        <div class="card mb-0">
+            <div class="card-header">
+                <h3 class="my-0">{{ title }}</h3>
+            </div>
             <div class="data-table-visible-columns">
                 <el-dropdown :hide-on-click="false">
                     <el-button type="primary">
@@ -151,7 +175,7 @@
                             <el-checkbox
                                 v-if="
                                     column.title !== undefined &&
-                                        column.visible !== undefined
+                                    column.visible !== undefined
                                 "
                                 v-model="column.visible"
                                 >{{ column.title }}
@@ -175,7 +199,7 @@
                         <th
                             v-if="
                                 columns.sanitary !== undefined &&
-                                    columns.sanitary.visible === true
+                                columns.sanitary.visible === true
                             "
                         >
                             R.S.
@@ -183,7 +207,7 @@
                         <th
                             v-if="
                                 columns.cod_digemid !== undefined &&
-                                    columns.cod_digemid.visible === true
+                                columns.cod_digemid.visible === true
                             "
                         >
                             DIGEMID
@@ -192,20 +216,32 @@
                             <th class="text-center">Historial</th>
                         </template>
                         <th class="text-left">Stock</th>
+                        <th class="text-left" v-if="isMajolica">Metraje</th>
                         <th
                             v-if="
                                 columns.extra_data !== undefined &&
-                                    columns.extra_data.visible === true
+                                columns.extra_data.visible === true
                             "
                             class="text-center"
                         >
                             Stock por datos extra
                         </th>
-                        <th class="text-end">P.Unitario (Venta)</th>
+                        <th
+                            v-if="columns.sale_unit_price.visible"
+                            class="text-end"
+                        >
+                            P.Unitario (Venta)
+                        </th>
+                        <th
+                            v-if="columns.warehouses_price.visible"
+                            class="text-end"
+                        >
+                            P.Unitario x Almacén (Venta)
+                        </th>
                         <th
                             v-if="
                                 typeUser != 'seller' &&
-                                    columns.purchase_unit_price.visible
+                                columns.purchase_unit_price.visible
                             "
                             class="text-end"
                         >
@@ -229,24 +265,53 @@
 
                     <tr></tr>
                     <tr
-                        slot-scope="{ index, row }" :class="{ 'bg-color': row.active === false }">
-                        <td :class="{'text-danger': (row.active === false)}">{{ index }}</td>
-                        <td :class="{'text-danger': (row.active === false)}">{{ row.id }}</td>
-                        <td :class="{'text-danger': (row.active === false)}">{{ row.internal_id }}</td>
-                        <td :class="{'text-danger': (row.active === false)}">{{ row.unit_type_id }}</td>
-                        <td :class="{'text-danger': (row.active === false)}">{{ row.description }}</td>
-                        <td :class="{'text-danger': (row.active === false)}"  v-if="columns.model.visible">{{ row.model }}</td>
-                        <td  :class="{'text-danger': (row.active === false)}" v-if="columns.brand.visible">{{ row.brand }}</td>
-                        <td  :class="{'text-danger': (row.active === false)}" v-if="columns.description.visible">
+                        slot-scope="{ index, row }"
+                        :class="{ 'bg-color': row.active === false }"
+                    >
+                        <td :class="{ 'text-danger': row.active === false }">
+                            {{ index }}
+                        </td>
+                        <td :class="{ 'text-danger': row.active === false }">
+                            {{ row.id }}
+                        </td>
+                        <td :class="{ 'text-danger': row.active === false }">
+                            {{ row.internal_id }}
+                        </td>
+                        <td :class="{ 'text-danger': row.active === false }">
+                            {{ row.unit_type_id }}
+                        </td>
+                        <td :class="{ 'text-danger': row.active === false }">
+                            {{ row.description }}
+                        </td>
+                        <td
+                            :class="{ 'text-danger': row.active === false }"
+                            v-if="columns.model.visible"
+                        >
+                            {{ row.model }}
+                        </td>
+                        <td
+                            :class="{ 'text-danger': row.active === false }"
+                            v-if="columns.brand.visible"
+                        >
+                            {{ row.brand }}
+                        </td>
+                        <td
+                            :class="{ 'text-danger': row.active === false }"
+                            v-if="columns.description.visible"
+                        >
                             {{ row.name }}
                         </td>
-                        <td  :class="{'text-danger': (row.active === false)}" v-if="columns.item_code.visible">
+                        <td
+                            :class="{ 'text-danger': row.active === false }"
+                            v-if="columns.item_code.visible"
+                        >
                             {{ row.item_code }}
                         </td>
-                        <td  :class="{'text-danger': (row.active === false)}"
+                        <td
+                            :class="{ 'text-danger': row.active === false }"
                             v-if="
                                 columns.sanitary !== undefined &&
-                                    columns.sanitary.visible === true
+                                columns.sanitary.visible === true
                             "
                         >
                             {{ row.sanitary }}
@@ -254,14 +319,17 @@
                         <td
                             v-if="
                                 columns.cod_digemid !== undefined &&
-                                    columns.cod_digemid.visible === true
+                                columns.cod_digemid.visible === true
                             "
                         >
                             {{ row.cod_digemid }}
                         </td>
 
                         <template v-if="typeUser == 'admin'">
-                            <td class="text-center" :class="{'text-danger': (row.active === false)}">
+                            <td
+                                class="text-center"
+                                :class="{ 'text-danger': row.active === false }"
+                            >
                                 <button
                                     class="btn waves-effect waves-light btn-sm btn-primary"
                                     type="button"
@@ -272,7 +340,7 @@
                             </td>
                         </template>
 
-                        <td  :class="{'text-danger': (row.active === false)}">
+                        <td :class="{ 'text-danger': row.active === false }">
                             <div v-if="config.product_only_location == true">
                                 {{ row.stock }}
                             </div>
@@ -280,14 +348,14 @@
                                 <template
                                     v-if="
                                         typeUser == 'seller' &&
-                                            row.unit_type_id != 'ZZ'
+                                        row.unit_type_id != 'ZZ'
                                     "
                                     >{{ row.stock }}
                                 </template>
                                 <template
                                     v-else-if="
                                         typeUser != 'seller' &&
-                                            row.unit_type_id != 'ZZ'
+                                        row.unit_type_id != 'ZZ'
                                     "
                                 >
                                     <button
@@ -310,36 +378,39 @@
 
                             <!-- <br/>Mín:{{ row.stock_min }} -->
                         </td>
-                        <td v-if="
+                        <td  v-if="isMajolica">
+                            {{row.meter}}
+                        </td>
+                        <td
+                            v-if="
                                 columns.extra_data !== undefined &&
-                                    columns.extra_data.visible === true
+                                columns.extra_data.visible === true
                             "
-                            class="text-center"  :class="{'text-danger': (row.active === false)}"
+                            class="text-center"
+                            :class="{ 'text-danger': row.active === false }"
                         >
                             <template
                                 v-if="
                                     config.show_extra_info_to_item &&
-                                        (row.stock_by_extra.total !== null ||
-                                            row.stock_by_extra.colors !==
-                                                null ||
-                                            row.stock_by_extra.CatItemSize !==
-                                                null ||
-                                            row.stock_by_extra.CatItemStatus !==
-                                                null ||
-                                            row.stock_by_extra
-                                                .CatItemUnitBusiness !== null ||
-                                            row.stock_by_extra
-                                                .CatItemMoldCavity !== null ||
-                                            row.stock_by_extra
-                                                .CatItemPackageMeasurement !==
-                                                null ||
-                                            row.stock_by_extra
-                                                .CatItemUnitsPerPackage !==
-                                                null ||
-                                            row.stock_by_extra
-                                                .CatItemMoldProperty !== null ||
-                                            row.stock_by_extra
-                                                .CatItemProductFamily !== null)
+                                    (row.stock_by_extra.total !== null ||
+                                        row.stock_by_extra.colors !== null ||
+                                        row.stock_by_extra.CatItemSize !==
+                                            null ||
+                                        row.stock_by_extra.CatItemStatus !==
+                                            null ||
+                                        row.stock_by_extra
+                                            .CatItemUnitBusiness !== null ||
+                                        row.stock_by_extra.CatItemMoldCavity !==
+                                            null ||
+                                        row.stock_by_extra
+                                            .CatItemPackageMeasurement !==
+                                            null ||
+                                        row.stock_by_extra
+                                            .CatItemUnitsPerPackage !== null ||
+                                        row.stock_by_extra
+                                            .CatItemMoldProperty !== null ||
+                                        row.stock_by_extra
+                                            .CatItemProductFamily !== null)
                                 "
                             >
                                 <button
@@ -351,11 +422,36 @@
                                 </button>
                             </template>
                         </td>
-                        <td class="text-end"  :class="{'text-danger': (row.active === false)}">{{ row.sale_unit_price }}</td>
+                        <td
+                            v-if="columns.sale_unit_price.visible"
+                            class="text-end"
+                            :class="{ 'text-danger': row.active === false }"
+                        >
+                            {{ row.sale_unit_price }}
+                        </td>
+                        <td
+                            v-if="columns.warehouses_price.visible"
+                            class="text-end"
+                        >
+                            <div
+                                class="d-flex flex-wrap justify-content-center"
+                            >
+                                <el-tooltip
+                                    class="m-1"
+                                    v-for="(w, idx) in row.warehouses"
+                                    :key="idx"
+                                    :content="w.warehouse_description"
+                                >
+                                    <el-tag>
+                                        {{ Number(w.price).toFixed(2) }}
+                                    </el-tag>
+                                </el-tooltip>
+                            </div>
+                        </td>
                         <td
                             v-if="
                                 typeUser != 'seller' &&
-                                    columns.purchase_unit_price.visible
+                                columns.purchase_unit_price.visible
                             "
                             class="text-end"
                         >
@@ -363,13 +459,21 @@
                         </td>
                         <td
                             v-if="columns.real_unit_price.visible"
-                            class="text-center"  :class="{'text-danger': (row.active === false)}">
+                            class="text-center"
+                            :class="{ 'text-danger': row.active === false }"
+                        >
                             {{ row.sale_unit_price_with_igv }}
                         </td>
-                        <td class="text-center"  :class="{'text-danger': (row.active === false)}">
+                        <td
+                            class="text-center"
+                            :class="{ 'text-danger': row.active === false }"
+                        >
                             {{ row.has_igv_description }}
                         </td>
-                        <td v-if="columns.purchase_has_igv_description.visible" class="text-center"  :class="{'text-danger': (row.active === false)}"   
+                        <td
+                            v-if="columns.purchase_has_igv_description.visible"
+                            class="text-center"
+                            :class="{ 'text-danger': row.active === false }"
                         >
                             {{ row.purchase_has_igv_description }}
                         </td>
@@ -421,10 +525,9 @@
                                         >
                                             Habilitar
                                         </button>
-                                              <button
-                                              v-if="config.erase_item_indivual"
+                                        <button
+                                            v-if="config.erase_item_indivual"
                                             class="dropdown-item text-danger"
-
                                             @click.prevent="clickErase(row.id)"
                                         >
                                             Eliminar definitivamente
@@ -451,6 +554,22 @@
                                             "
                                         >
                                             Etiquetas 1x1
+                                        </button>
+                                        <button
+                                            class="dropdown-item"
+                                            @click.prevent="
+                                                clickPrintBarcodeX(row, 4)
+                                            "
+                                        >
+                                            Etiquetas 1x1 b
+                                        </button>
+                                        <button
+                                            class="dropdown-item"
+                                            @click.prevent="
+                                                clickPrintBarcodeX(row, 5)
+                                            "
+                                        >
+                                            Etiquetas 1x1 c
                                         </button>
                                         <button
                                             class="dropdown-item"
@@ -509,6 +628,12 @@
                 :showDialog.sync="showImportListPriceDialog"
             ></items-import-list-price>
 
+            <items-import-update-price-person-type
+                :showDialog.sync="showImporUpdatePricePersonType"
+            ></items-import-update-price-person-type>
+            <items-import-list-size
+                :showDialog.sync="showImportListSizeDialog"
+            ></items-import-list-size>
             <items-import-extra-info
                 :showDialog.sync="showImportExtraWithExtraInfo"
             ></items-import-extra-info>
@@ -516,6 +641,9 @@
             <items-import-update-price
                 :showDialog.sync="showImporUpdatePrice"
             ></items-import-update-price>
+            <items-import-update-price-warehouses
+                :showDialog.sync="showImporUpdatePriceWarehouse"
+            ></items-import-update-price-warehouses>
 
             <!--
             : false,
@@ -538,6 +666,7 @@ import ItemsForm from "./form.vue";
 import WarehousesDetail from "./partials/warehouses.vue";
 import ItemsImport from "./import.vue";
 import ItemsImportListPrice from "./partials/import_list_price.vue";
+import ItemsImportListSize from "./partials/import_list_size.vue";
 import ItemsImportExtraInfo from "./partials/import_list_extra_info.vue";
 // resources/js/views/tenant/items/partials/import_list_extra_info.vue
 import ItemsExport from "./partials/export.vue";
@@ -550,11 +679,14 @@ import { deletable } from "../../../mixins/deletable";
 import ItemsHistory from "@viewsModuleItem/items/history.vue";
 import { mapActions, mapState } from "vuex";
 import ItemsImportUpdatePrice from "./partials/update_prices.vue";
+import ItemsImportUpdatePriceWarehouses from "./partials/update_prices_warehouses.vue";
+import ItemsImportUpdatePricePersonType from "./partials/update_prices_person_type.vue";
 
 export default {
     props: ["configuration", "typeUser", "type"],
     mixins: [deletable],
     components: {
+        ItemsImportListSize,
         ItemsForm,
         ItemsImport,
         ItemsExport,
@@ -567,10 +699,17 @@ export default {
         ItemsImportExtraInfo,
         ItemsHistory,
         ItemsImportUpdatePrice,
-        ItemsExportMigration
+        ItemsExportMigration,
+        ItemsImportUpdatePriceWarehouses,
+        ItemsImportUpdatePricePersonType,
     },
     data() {
         return {
+            isMajolica:false,
+            showImporUpdatePricePersonType: false,
+            showImportListSizeDialog: false,
+            isClotheShoes: false,
+            showImporUpdatePriceWarehouse: false,
             showExportMigrationDialog: false,
             can_add_new_product: false,
             showDialog: false,
@@ -590,51 +729,59 @@ export default {
             columns: {
                 description: {
                     title: "Descripción",
-                    visible: false
+                    visible: false,
                 },
                 item_code: {
                     title: "Cód. SUNAT",
-                    visible: false
+                    visible: false,
                 },
                 purchase_unit_price: {
                     title: "P.Unitario (Compra)",
-                    visible: false
+                    visible: false,
                 },
                 purchase_has_igv_description: {
                     title: "Tiene Igv (Compra)",
-                    visible: false
+                    visible: false,
                 },
                 model: {
                     title: "Modelo",
-                    visible: false
+                    visible: false,
                 },
                 brand: {
                     title: "Marca",
-                    visible: false
+                    visible: false,
                 },
                 sanitary: {
                     title: "N° Sanitario",
-                    visible: false
+                    visible: false,
+                },
+                warehouses_price: {
+                    title: "P.Unitario x Almacén (Venta)",
+                    visible: false,
+                },
+                sale_unit_price: {
+                    title: "P.Unitario (Venta)",
+                    visible: true,
                 },
                 cod_digemid: {
                     title: "DIGEMID",
-                    visible: false
+                    visible: false,
                 },
                 real_unit_price: {
-                    title:
-                        "Mostrar el precio de venta total (con el cálculo IGV)",
-                    visible: false
+                    title: "Mostrar el precio de venta total (con el cálculo IGV)",
+                    visible: false,
                 },
                 extra_data: {
                     title: "Stock Por datos extra",
-                    visible: false
-                }
+                    visible: false,
+                },
+         
             },
             item_unit_types: [],
             titleTopBar: "",
             title: "",
             showDialogHistory: false,
-            showDialogItemStock: false
+            showDialogItemStock: false,
         };
     },
     created() {
@@ -655,7 +802,7 @@ export default {
             this.titleTopBar = "Productos";
             this.title = "Listado de productos";
         }
-        this.$http.get(`/configurations/record`).then(response => {
+        this.$http.get(`/configurations/record`).then((response) => {
             this.$store.commit("setConfiguration", response.data.data);
             //this.config = response.data.data;
         });
@@ -673,14 +820,14 @@ export default {
             "CatItemStatus",
             "CatItemPackageMeasurement",
             "CatItemProductFamily",
-            "CatItemUnitsPerPackage"
+            "CatItemUnitsPerPackage",
         ]),
-        columnsComputed: function() {
+        columnsComputed: function () {
             return this.columns;
-        }
+        },
     },
     methods: {
-        clickErase(id){
+        clickErase(id) {
             this.$confirm(
                 "Se eliminará productos que hayan sido usados en algunas operaciones previas",
                 "Advertencia",
@@ -697,7 +844,7 @@ export default {
                         .then((response) => {
                             if (response.data.success) {
                                 this.$message.success(response.data.message);
-                                     this.$eventHub.$emit("reloadData");
+                                this.$eventHub.$emit("reloadData");
                             } else {
                                 this.$message.error(response.data.message);
                             }
@@ -732,7 +879,8 @@ export default {
                     this.config !== undefined &&
                     this.config.seller_can_create_product !== undefined
                 ) {
-                    this.can_add_new_product = this.config.seller_can_create_product;
+                    this.can_add_new_product =
+                        this.config.seller_can_create_product;
                 }
             }
             return this.can_add_new_product;
@@ -740,7 +888,7 @@ export default {
         duplicate(id) {
             this.$http
                 .post(`${this.resource}/duplicate`, { id })
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(
                             "Se guardaron los cambios correctamente."
@@ -750,7 +898,7 @@ export default {
                         this.$message.error("No se guardaron los cambios");
                     }
                 })
-                .catch(error => {});
+                .catch((error) => {});
             this.$eventHub.$emit("reloadData");
         },
         clickWarehouseDetail(warehouses, item_unit_types) {
@@ -783,11 +931,20 @@ export default {
         clickImportListPrice() {
             this.showImportListPriceDialog = true;
         },
+        clickImportListSize() {
+            this.showImportListSizeDialog = true;
+        },
         clickImportExtraWithExtraInfo() {
             this.showImportExtraWithExtraInfo = true;
         },
         clickImportUpdatePrice() {
             this.showImporUpdatePrice = true;
+        },
+        clickImportUpdatePriceWarehouse() {
+            this.showImporUpdatePriceWarehouse = true;
+        },
+        clickImportUpdatePricePersonType() {
+            this.showImporUpdatePricePersonType = true;
         },
         clickDelete(id) {
             this.destroy(`/${this.resource}/${id}`).then(() =>
@@ -830,14 +987,14 @@ export default {
             }
 
             window.open(
-                `/${this.resource}/export/barcode/print_x?format=${x}&id=${
-                    row.id
-                }`
+                `/${this.resource}/export/barcode/print_x?format=${x}&id=${row.id}`
             );
         },
         getItems() {
-            this.$http.get(`/${this.resource}/item/tables`).then(response => {
+            this.$http.get(`/${this.resource}/item/tables`).then((response) => {
                 let data = response.data;
+                this.isClotheShoes = data.clothesShoes;
+                this.isMajolica = data.is_majolica;
                 if (this.config.show_extra_info_to_item) {
                     this.$store.commit("setColors", data.colors);
                     this.$store.commit("setCatItemSize", data.CatItemSize);
@@ -868,7 +1025,7 @@ export default {
                     );
                 }
             });
-        }
-    }
+        },
+    },
 };
 </script>

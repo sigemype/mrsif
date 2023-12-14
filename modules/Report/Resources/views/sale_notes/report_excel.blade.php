@@ -38,7 +38,7 @@
                     <td align="center">{{$company->number}}</td>
 
                     @inject('reportService', 'Modules\Report\Services\ReportService')
-                    @if($filters['seller_id'])
+                    @if(isset($filters['seller_id']) && !empty($filters['seller_id']))
                     <td>
                         <p><strong>Usuario: </strong></p>
                     </td>

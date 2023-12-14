@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Tenant;
 
 use App\Models\Tenant\StateType;
+use App\Models\Tenant\VoidedDocument;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class VoidedCollection extends ResourceCollection
@@ -30,8 +31,14 @@ class VoidedCollection extends ResourceCollection
             $download_external_xml = route('tenant.download.external_id', ['model' => str_singular($row->type), 'type' => 'xml', 'external_id' => $row->external_id]);
             $download_external_pdf = route('tenant.download.external_id', ['model' => str_singular($row->type), 'type' => 'pdf', 'external_id' => $row->external_id]);
             $download_external_cdr = route('tenant.download.external_id', ['model' => str_singular($row->type), 'type' => 'cdr', 'external_id' => $row->external_id]);
+            $voided_document = VoidedDocument::where('voided_id', $row->id)->first();
+            $document_id = null;
+            if($voided_document){
 
+                $document_id = $voided_document->document_id;
+            }
             return [
+                'document_id' => $document_id,
                 'type' => $row->type,
                 'id' => $row->id,
                 'ticket' => $row->ticket,

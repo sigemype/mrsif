@@ -78,6 +78,7 @@
                     'total_canceled'               => (bool)$row->total_canceled,
                     'license_plate'                => $row->license_plate,
                     'total_paid'                   => $total_paid,
+                    'observation'                   => $row->observation,
                     'total_pending_paid'           => $total_pending_paid,
                     'user_name'                    => ($row->user) ? $row->user->name : '',
                     'quotation_number_full'        => ($row->quotation) ? $row->quotation->number_full : '',

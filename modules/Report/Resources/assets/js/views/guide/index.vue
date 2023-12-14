@@ -15,8 +15,11 @@
                         <th>Estado</th>
                         <th class="text-center">Fecha Envío</th>
                         <th class="text-center">Orden de pedido</th>
+                        <th class="text-center">Referencia</th>
                         <th class="text-center">Producto</th>
                         <th class="text-center">Cantidad</th>
+                        <th class="text-center">Precio Venta</th>
+                        <th class="text-center">Total</th>
                     <tr>
                     <tr slot-scope="{ index, row }">
                         <td>{{ index }}</td>
@@ -36,12 +39,19 @@
                         <td class="text-center">{{ row.dispatches.date_of_shipping }}</td>
 
                         <td class="text-center">{{ row.dispatches.order_form_description }}</td>
+                        <td class="text-center">{{ row.reference }}</td>
 
                         <td class="text-center">
                             {{ row.item.description }}
                         </td>
                         <td class="text-center">
                             {{ row.quantity }}
+                        </td>
+                        <td class="text-center">
+                            {{ row.sale_price }}
+                        </td>
+                        <td class="text-center">
+                            {{ row.total_sale_price }}
                         </td>
                     </tr>
                 </data-table>

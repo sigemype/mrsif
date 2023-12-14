@@ -149,20 +149,20 @@ $prepayment = $document->technical_service_payments->sum('payment');
         <thead class="">
         <tr class="bg-grey">
             <th class="border-top-bottom text-center py-2"
-                width="8%">CANT.
+                width="8%">Cant.
             </th>
             <th class="border-top-bottom text-center py-2"
-                width="8%">UNIDAD
+                width="8%">Unidad
             </th>
-            <th class="border-top-bottom text-left py-2">DESCRIPCIÓN</th>
+            <th class="border-top-bottom text-left py-2">Descripción</th>
             <th class="border-top-bottom text-right py-2"
-                width="12%">P.UNIT
-            </th>
-            <th class="border-top-bottom text-right py-2"
-                width="8%">DTO.
+                width="12%">P.Unit
             </th>
             <th class="border-top-bottom text-right py-2"
-                width="12%">TOTAL
+                width="8%">Dto.
+            </th>
+            <th class="border-top-bottom text-right py-2"
+                width="12%">total
             </th>
         </tr>
         </thead>
@@ -239,15 +239,15 @@ $prepayment = $document->technical_service_payments->sum('payment');
             @foreach($document->prepayments as $p)
                 <?php
                 $total = $p->total;
-                $text = 'BOLETA';
+                $text = 'Boleta';
                 if(($p->document_type_id == '02')){
-                    $text = 'FACTURA';
+                    $text = 'Factura';
                 }
-                $text .= " NRO. ".$p->number;
+                $text .= " Nro. ".$p->number;
                 if (get_class($p) == TechnicalServicePayment::class) {
-                    $total = $p->getTotal();
+                    $total = $p->gettotal();
                     $text = '';
-                    $text .= " NRO. ".$p->reference;
+                    $text .= " Nro. ".$p->reference;
 
                 }
                 ?>
@@ -257,7 +257,7 @@ $prepayment = $document->technical_service_payments->sum('payment');
                     </td>
                     <td class="text-center align-top">NIU</td>
                     <td class="text-left align-top">
-                        ANTICIPO: {{ $text }}
+                        Anticipo: {{ $text }}
                     </td>
                     <td class="text-right align-top">-{{ number_format($total, 2) }}</td>
                     <td class="text-right align-top">
@@ -278,23 +278,23 @@ $prepayment = $document->technical_service_payments->sum('payment');
 
                     <tr>
                         <td colspan="5"
-                            class="text-right font-bold"> IMPORTE TOTAL: {{ $document->currency_type->symbol }}</td>
+                            class="text-right font-bold"> Importe total: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
                     </tr>
                     <tr>
                         <td colspan="5"
-                            class="text-right font-bold">PERCEPCIÓN: {{ $document->currency_type->symbol }}</td>
+                            class="text-right font-bold">Percepción: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-bold">{{ number_format($document->perception->amount, 2) }}</td>
                     </tr>
                     <tr>
                         <td colspan="5"
-                            class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+                            class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
                         <td class="text-right font-bold">{{ number_format(($document->total + $document->perception->amount), 2) }}</td>
                     </tr>
         @else
             <tr>
                 <td colspan="5"
-                    class="text-right font-bold">TOTAL A PAGAR: {{ $document->currency_type->symbol }}</td>
+                    class="text-right font-bold">Total a pagar: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format($document->total, 2) }}</td>
             </tr>
         @endif
@@ -307,7 +307,7 @@ $prepayment = $document->technical_service_payments->sum('payment');
             {{--
             <tr>
                 <td colspan="5"
-                    class="text-right font-bold">VUELTO: {{ $document->currency_type->symbol }}</td>
+                    class="text-right font-bold">Vuelto: {{ $document->currency_type->symbol }}</td>
                 <td class="text-right font-bold">{{ number_format(abs($balance),2, ".", "") }}</td>
             </tr>
             --}}
@@ -332,7 +332,7 @@ $prepayment = $document->technical_service_payments->sum('payment');
     @if($total_items != 0)
         <tr>
             <td colspan="4"
-                class="text-right font-bold mb-3">Total de prodcutos
+                class="text-right font-bold mb-3">total de prodcutos
             </td>
             <td class="text-right font-bold">{{ number_format($total_items, 2) }}</td>
         </tr>

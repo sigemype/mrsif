@@ -3,6 +3,7 @@
 namespace Modules\Finance\Http\Resources;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Modules\Expense\Models\ExpensePayment;
 
 class GlobalPaymentCollection extends ResourceCollection
 {
@@ -43,8 +44,20 @@ class GlobalPaymentCollection extends ResourceCollection
                     $personName = $personName->description;
                 }
             }
-
+            $reason = null;
+            if($row->instance_type == 'expense'){
+                $payment_id = $row->payment_id;
+                if($payment_id){
+                    $payment = ExpensePayment::find($payment_id);
+                    if($payment){
+                        $expense = $payment->expense;
+                        $reason = $expense->expense_reason->description;
+                    }
+                }
+                // $reason = optional($row->associated_record_payment)->expense_type->description;
+            }
             return [
+                'reason' => $reason,
                 'id' => $row->id,
                 'destination_description' => $row->getDestinationDescriptionPayment(),
                 // 'destination_description' => $row->destination_description,

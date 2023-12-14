@@ -81,7 +81,8 @@ function getPathName($path)
                 @endisset
             </div>
             <!-- Logo Start -->
-            <div class="logo position-relative">
+            {{-- <div class="logo position-relative"> --}}
+            <div >
                 <a href="dashboard">
                     {{-- <div class="img"></div> --}}
                     <img src="{{ asset($logotipo) }}" height="40" width="auto">
@@ -412,7 +413,12 @@ function getPathName($path)
     <!-- Page Specific Scripts End -->
     <script src="{{ asset('qz/dependencies/rsvp-3.1.0.min.js') }}"></script>
     <script src="{{ asset('qz/dependencies/sha-256.min.js') }}"></script>
-    <script src="{{ asset('qz/qz-tray.js') }}"></script>
+    <script src="{{ asset('js/sha-256.min.js') }}"></script>
+    <script src="{{ asset('js/qz-tray.js') }}"></script>
+    <script src="{{ asset('js/rsvp-3.1.0.min.js') }}"></script>
+    <script src="{{ asset('js/jsrsasign-all-min.js') }}"></script>
+    <script src="{{ asset('js/sign-message.js') }}"></script>
+    <script src="{{ asset('js/function-qztray.js') }}"></script>
 
 </body>
 

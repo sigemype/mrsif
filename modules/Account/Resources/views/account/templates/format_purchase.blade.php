@@ -41,7 +41,7 @@ $col_span = 25;
             Nro. DEL COMPROBANTE DE PAGO O DOCUMENTO
         </td>
         <td colspan="3">
-            INFORMACON DE PROVEEDOR
+            INFORMACION DE PROVEEDOR
         </td>
         <td colspan="2">
             ADQUISICIONES GRAVADAS DESTINADAS A OPERACIONES GRAVADAS Y/O EXPORTACION

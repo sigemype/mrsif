@@ -4,7 +4,7 @@
 	use App\Models\Tenant\Company;
     use App\Models\Tenant\SaleNote;
     if ($document != null) {
-        $establishment = $document->establishment;
+    $establishment = $document->establishment;
         $customer = $document->customer;
         $invoice = $document->invoice;
         $company = Company::first();
@@ -56,11 +56,7 @@
 <body>
 @if($document != null)
     <table class="full-width border-box my-2">
-        <tr>
-            <td>
-                {{$document->getNumberFullAttribute()}}
-            </td>
-        </tr>
+
         <tr>
             <td class="text-upp p-2">SON:
                 @foreach(array_reverse( (array) $document->legends) as $row)
@@ -107,18 +103,18 @@
     </table>
     <table class="full-width mt-10 mb-10 border-bottom">
         <tr>
-            <th class="border-box text-center py-1 desc">IMPORTE BRUTO</th>
-            <th class="border-box text-center py-1 desc">DESCUENTOS</th>
-            <th class="border-box text-center py-1 desc">TOTAL VALOR VENTA</th>
+            <th class="border-box text-center py-1 desc">Importe bruto</th>
+            <th class="border-box text-center py-1 desc">Descuentos</th>
+            <th class="border-box text-center py-1 desc">Total valor venta</th>
             <th class="border-box text-center py-1 desc">I.G.V. 18%</th>
-            <th class="border-box text-center py-1 desc">TOTAL PRECIO VENTA</th>
-            <th class="border-box text-center py-1 desc">PAGO A CUENTA</th>
+            <th class="border-box text-center py-1 desc">Total precio venta</th>
+            <th class="border-box text-center py-1 desc">Pago a cuenta</th>
             @if($document->retention)
             <th class="border-box text-center py-1 desc">
                 RETENCIÓN {{ $document->retention->percentage * 100 }}%
             </th>
             @endif
-            <th class="border-box text-center py-1 desc">NETO A PAGAR</th>
+            <th class="border-box text-center py-1 desc">Neto a pagar</th>
         </tr>
         <tr>
             <td class="border-box text-center py-1 desc">
@@ -194,8 +190,17 @@
     </table>
 @endif
 <table class="full-width">
-    <tr>
-        <td class="text-center desc">Representación Impresa de {{ isset($document->document_type) ? $document->document_type->description : 'Comprobante Electrónico'  }} {{ isset($document->hash) ? 'Código Hash: '.$document->hash : '' }} <br>Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
-    </tr>
+<tr>
+            @php
+                $document_description = null;
+            @endphp
+            @if ($document_description)
+                <td class="text-center desc">Representación impresa de la {{ $document_description }} <br />Esta puede
+                    ser consultada en {!! url('/buscar') !!}</td>
+            @else
+                <td class="text-center desc">Representación impresa del Comprobante de Pago Electrónico. <br />Esta
+                    puede ser consultada en {!! url('/buscar') !!}</td>
+            @endif
+        </tr>
 </table>
 </body>

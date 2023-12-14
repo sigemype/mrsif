@@ -52,7 +52,9 @@
             'number',
             'contingency',
         ];
-
+        protected $casts = [
+          'establishment_id' => 'integer',
+        ];
         /**
          * @return BelongsTo
          */

@@ -1,9 +1,18 @@
 @php
 use App\CoreFacturalo\Helpers\Template\TemplateHelper;$establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 $customer = $document->customer;
 $invoice = $document->invoice;
 $document_base = ($document->note) ? $document->note : null;
@@ -34,10 +43,19 @@ $quantity_items = $document->items()->count();
 $cycle_items = $allowed_items - ($quantity_items * 3);
 $total_weight = 0;
 
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 
 
 @endphp
@@ -75,7 +93,6 @@ $logo = "{$establishment->logo}";
             <td width="40%" class="pl-3">
                 <div class="text-left">
                     <h4 class="">{{ $company->name }}</h4>
-                    <h5>{{ 'RUC '.$company->number }}</h5>
                     <h6 style="text-transform: uppercase;">
                         {{ ($establishment->address !== '-')? $establishment->address : '' }}
                         {{ ($establishment->district_id !== '-')? ', '.$establishment->district->description : '' }}
@@ -211,7 +228,7 @@ $logo = "{$establishment->logo}";
                     <tr>
                         @if($document->purchase_order)
                         <td class="font-sm" width="90px">
-                            <strong>Orden de Compra</strong>
+                            <strong>Orden de compra</strong>
                         </td>
                         <td class="font-sm" width="8px">:</td>
                         <td class="font-sm">
@@ -268,13 +285,13 @@ $logo = "{$establishment->logo}";
     <table class="full-width mt-0 mb-0">
         <thead>
             <tr class="">
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">CÓDIGO</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">CANT.</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">Código</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">Cant.</th>
                 <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">U.M.</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="40%">DESCRIPCIÓN</th>
-                <th class="border-top-bottom text-right py-1 desc" class="cell-solid" width="12%">P.UNIT</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">DCTO.</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">TOTAL</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="40%">Descripción</th>
+                <th class="border-top-bottom text-right py-1 desc" class="cell-solid" width="12%">P.Unit</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">Dcto.</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">Total</th>
             </tr>
         </thead>
         <tbody class="">
@@ -288,7 +305,7 @@ $logo = "{$establishment->logo}";
                     {{ number_format($row->quantity, 0) }}
                     @endif
                 </td>
-                <td class="p-1 text-center align-top desc cell-solid-rl">{{ $row->item->unit_type_id }}</td>
+                <td class="p-1 text-center align-top desc cell-solid-rl">{{ symbol_or_code($row->item->unit_type_id) }}</td>
                 <td class="p-1 text-left align-top desc text-upp cell-solid-rl">
                     @if($row->name_product_pdf)
                     {!!$row->name_product_pdf!!}
@@ -450,13 +467,13 @@ $logo = "{$establishment->logo}";
     @if($document != null)
 
     <table class="full-width border-box my-2">
-        @foreach($accounts as $account)
         <tr>
-            <th class="p-1">Banco</th>
+            <th class="p-1" width="25%">Banco</th>
             <th class="p-1">Moneda</th>
-            <th class="p-1">Código de Cuenta Interbancaria</th>
-            <th class="p-1">Código de Cuenta</th>
+            <th class="p-1" width="30%">Código de Cuenta Interbancaria</th>
+            <th class="p-1" width="25%">Código de Cuenta</th>
         </tr>
+        @foreach($accounts as $account)
         <tr>
             <td class="text-center">{{$account->bank->description}}</td>
             <td class="text-center text-upp">{{$account->currency_type->description}}</td>
@@ -539,6 +556,91 @@ $logo = "{$establishment->logo}";
         </body>
     </table>
     @endif
+    <table class="full-width">
+        @php
+            $configuration = \App\Models\Tenant\Configuration::first();
+            $establishment_data = \App\Models\Tenant\Establishment::find($document->establishment_id);
+        @endphp
+        <tbody>
+            <tr>
+                @if ($configuration->yape_qr_documents && $establishment_data->yape_logo)
+                    @php
+                        $yape_logo = $establishment_data->yape_logo;
+                    @endphp
+                    <td class="text-center">
+                        <table>
+                            <tr>
+                                <td>
+                                    <strong>
+                                        Qr yape
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="data:{{ mime_content_type(public_path("{$yape_logo}")) }};base64, {{ base64_encode(file_get_contents(public_path("{$yape_logo}"))) }}"
+                                        alt="{{ $company->name }}" class="company_logo" style="max-width: 150px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @if($establishment_data->yape_owner)
+                                        <strong>
+                                            Nombre: {{ $establishment_data->yape_owner }}
+                                        </strong>
+                                    @endif
+                                    @if($establishment_data->yape_number)
+                                        <br>
+                                        <strong>
+                                            Número: {{ $establishment_data->yape_number }}
+                                        </strong>
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                @endif
+                @if ($configuration->plin_qr_documents && $establishment_data->plin_logo)
+                    @php
+                        $plin_logo = $establishment_data->plin_logo;
+                    @endphp
+                    <td class="text-center">
+                        <table>
+                            <tr>
+                                <td>
+                                    <strong>
+                                        Qr plin
+                                    </strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="data:{{ mime_content_type(public_path("{$plin_logo}")) }};base64, {{ base64_encode(file_get_contents(public_path("{$plin_logo}"))) }}"
+                                        alt="{{ $company->name }}" class="company_logo" style="max-width: 150px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @if($establishment_data->plin_owner)
+                                        <strong>
+                                            Nombre: {{ $establishment_data->plin_owner }}
+                                        </strong>
+                                    @endif
+                                    @if($establishment_data->plin_number)
+                                        <br>
+                                        <strong>
+                                            Número: {{ $establishment_data->plin_number }}
+                                        </strong>
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                @endif
+            </tr>
+        </tbody>
+    </table>
+
     @if ($document->terms_condition)
     <br>
     <table class="full-width">

@@ -47,6 +47,7 @@ if ($hostname) {
             Route::get('items/barcode/{item}', 'ItemController@generateBarcode');
 
             Route::post('items/import/item-price-lists', 'ItemController@importItemPriceLists');
+            Route::post('items/import/item-size-lists', 'ItemController@importItemSizeLists');
             Route::post('items/import/item-with-extra-data', 'ItemController@importItemWithExtraData');
 
             //history
@@ -84,6 +85,8 @@ if ($hostname) {
             });
 
             Route::post('items/import/items-update-prices', 'ItemController@importItemUpdatePrices');
+            Route::post('items/import/items-update-prices-warehouses', 'ItemController@importItemUpdatePricesWarehouses');
+            Route::post('items/import/items-update-prices-person-type', 'ItemController@importItemUpdatePricesPersonType');
 
 
             Route::prefix('item-lots-group')->group(function () {
@@ -95,6 +98,18 @@ if ($hostname) {
                 Route::get('/columns', 'ItemLotsGroupController@columns');
                 Route::get('/record/{record}', 'ItemLotsGroupController@record');
                 Route::get('available-data/{item_id}', 'ItemLotsGroupController@getAvailableItemLotsGroup');
+            });
+
+            Route::prefix('item-sizes')->group(function () {
+                Route::get('', 'ItemSizeStockController@index')->name('tenant.item-sizes.index');
+                // Route::post('/', 'ItemSizeStockController@store');
+                Route::get('/records', 'ItemSizeStockController@records');
+                // Route::get('/tables', 'ItemSizeStockController@tables');
+                // Route::get('/update_state', 'ItemSizeStockController@update_state');
+                Route::get('/columns', 'ItemSizeStockController@columns');
+                Route::get('/export', 'ItemSizeStockController@export');
+                // Route::get('/record/{record}', 'ItemSizeStockController@record');
+                // Route::get('available-data/{item_id}', 'ItemSizeStockController@getAvailableItemLotsGroup');
             });
         });
     });

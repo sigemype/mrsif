@@ -5,6 +5,7 @@ namespace Modules\Report\Http\Resources;
 use App\Models\Tenant\DocumentItem;
 use App\Models\Tenant\Purchase;
 use App\Models\Tenant\PurchaseItem;
+use App\Models\Tenant\QuotationItem;
 use App\Models\Tenant\SaleNoteItem;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
@@ -14,7 +15,8 @@ class GeneralItemTotalCollection extends ResourceCollection
     public function toArray($request)
     {
 
-        $apply_conversion_to_pen = $request->apply_conversion_to_pen == 'true';
+        // $apply_conversion_to_pen = $request->apply_conversion_to_pen == 'true';
+        $apply_conversion_to_pen = true;
 
         return $this->collection->transform(function ($row, $key) use ($apply_conversion_to_pen) {
 
@@ -23,9 +25,11 @@ class GeneralItemTotalCollection extends ResourceCollection
             $purchase_item = null;
             $total_item_purchase = self::getPurchaseUnitPrice($row, $resource, $purchase_item);
             $quantity_unit = 0;
-            if (property_exists($row, 'item') && property_exists($row->item, 'presentation')) {
-                $quantity_unit = $row->item->presentation->quantity_unit;
-                $total_item_purchase *= $quantity_unit;
+            if (isset($row->item->presentation)) {
+                if (is_object($row->item->presentation)) {
+                    $quantity_unit = $row->item->presentation->quantity_unit;
+                    $total_item_purchase *= $quantity_unit * $row->quantity;
+                }
             }
 
 
@@ -36,7 +40,6 @@ class GeneralItemTotalCollection extends ResourceCollection
                 
                 $row_total = $row->getConvertTotalToPen();
             }
-
             $utility_item = $row_total - $total_item_purchase;
             // $utility_item = $row->total - $total_item_purchase;
 
@@ -111,7 +114,11 @@ class GeneralItemTotalCollection extends ResourceCollection
             } else {
                 // Si la venta es en dolares, y la compra del producto es en soles, se hace la transformcaion
                 if ($purchase->currency_type_id !== $currency_type_id && $exchange_rate_sale !== 0) {
-                    $purchase_unit_price = $purchase_unit_price / $exchange_rate_sale;
+                    try{
+                        $purchase_unit_price = $purchase_unit_price / $exchange_rate_sale;
+                    }catch(\Exception $e){
+                        $purchase_unit_price = 0;
+                    }
                 }
             }
         }
@@ -194,6 +201,21 @@ class GeneralItemTotalCollection extends ResourceCollection
             $data['alone_number'] = $document->number;
             $data['document_type_description'] = 'NOTA DE VENTA';
             $data['document_type_id'] = 80;
+            $data['currency_type_id'] = $document->currency_type_id;
+            $data['purchase_order'] = $document->purchase_order;
+            $data['observation'] = $document->observation;
+        } else if ($row->quotation && $row->quotation->date_of_issue) {
+            
+            /** @var \App\Models\Tenant\Quotation $document */
+            $row = QuotationItem::find($row->id);
+            $document = $row->quotation;
+            $data['date_of_issue'] = $document->date_of_issue->format('Y-m-d');
+            $data['customer_name'] = $document->customer->name;
+            $data['customer_number'] = $document->customer->number;
+            $data['series'] = $document->prefix;
+            $data['alone_number'] = $document->id;
+            $data['document_type_description'] = 'COTIZACIÓN';
+            $data['document_type_id'] = 'COT';
             $data['currency_type_id'] = $document->currency_type_id;
             $data['purchase_order'] = $document->purchase_order;
             $data['observation'] = $document->observation;

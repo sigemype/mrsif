@@ -5,8 +5,10 @@ namespace Modules\Report\Http\Resources;
 use App\Models\Tenant\DocumentItem;
 use App\Models\Tenant\Purchase;
 use App\Models\Tenant\PurchaseItem;
+use App\Models\Tenant\QuotationItem;
 use App\Models\Tenant\SaleNoteItem;
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use stdClass;
 
 class GeneralItemCollection extends ResourceCollection
 {
@@ -14,26 +16,37 @@ class GeneralItemCollection extends ResourceCollection
     public function toArray($request)
     {
 
+
         $apply_conversion_to_pen = $request->apply_conversion_to_pen == 'true';
 
-        return $this->collection->transform(function ($row, $key) use($apply_conversion_to_pen){
-
-            /** @var \App\Models\Tenant\DocumentItem|\App\Models\Tenant\PurchaseItem|mixed|\App\Models\Tenant\SaleNoteItem|mixed $row */
+        return $this->collection->transform(function ($row, $key) use ($apply_conversion_to_pen) {
+            /** @var \App\Models\Tenant\DocumentItem|\App\Models\Tenant\PurchaseItem|mixed|\App\Models\Tenant\SaleNoteItem|mixed|\App\Models\Tenant\QuotationItem|mixed $row */
             $resource = self::getDocument($row);
             $purchase_item = null;
-            $total_item_purchase = self::getPurchaseUnitPrice($row,$resource,$purchase_item);
-            $quantity_unit = 0;
-            if (property_exists($row, 'item') && property_exists($row->item, 'presentation')) {
-                $quantity_unit= $row->item->presentation->quantity_unit;
-                $total_item_purchase *= $quantity_unit;
+            $total_item_purchase = self::getPurchaseUnitPrice($row, $resource, $purchase_item);
+            if (!$apply_conversion_to_pen && $row->isCurrencyTypeUsd()) {
+
+                $total_item_purchase /= $row->getExchangeRateSale();
             }
+            $quantity_unit = 0;
+
+            if (isset($row->item->presentation)) {
+                if (is_object($row->item->presentation)) {
+                    $quantity_unit = $row->item->presentation->quantity_unit;
+                    $total_item_purchase *= $quantity_unit * $row->quantity;
+                }
+            }
+            // if (isset($row->item->presentation) && $row->item->presentation->id) {
+            //     $quantity_unit= $row->item->presentation->quantity_unit;
+
+            //     $total_item_purchase *= $quantity_unit * $row->quantity;
+            // }
 
 
             $row_total = $row->total;
             $row_unit_value = $row->unit_value;
             $description_apply_conversion_to_pen = null;
-            if($apply_conversion_to_pen && $row->isCurrencyTypeUsd())
-            {
+            if ($apply_conversion_to_pen && $row->isCurrencyTypeUsd()) {
                 $row_total = $row->getConvertTotalToPen();
                 $row_unit_value = $row->getConvertUnitValueToPen();
                 $description_apply_conversion_to_pen = 'Se aplicó conversión a soles';
@@ -41,25 +54,25 @@ class GeneralItemCollection extends ResourceCollection
 
             $utility_item = $row_total - $total_item_purchase;
             // $utility_item = $row->total - $total_item_purchase;
-            
+
             $item = $row->getModelItem();
             $model = $item->model;
             $platform = $item->getWebPlatformModel();
-            if($platform !== null){
+            if ($platform !== null) {
                 $platform = $platform->name;
             }
-            $observation=null;
-            $additional_information=null;
-            if(get_class($row)== \App\Models\Tenant\PurchaseItem::class){
+            $observation = null;
+            $additional_information = null;
+            if (get_class($row) == \App\Models\Tenant\PurchaseItem::class) {
                 /** @var \App\Models\Tenant\PurchaseItem $row */
                 $purchase = $row->purchase;
-                $observation=$purchase->observation;
+                $observation = $purchase->observation;
             }
-            if($resource['document_type_id']===80){
-                $observation = $resource['observation']? $resource['observation'] : '';
+            if ($resource['document_type_id'] === 80) {
+                $observation = $resource['observation'] ? $resource['observation'] : '';
             }
-            if(get_class($row)== \App\Models\Tenant\Document::class){
-                $additional_information=$resource['additional_information']?$resource['additional_information'][0] : '';
+            if (get_class($row) == \App\Models\Tenant\Document::class) {
+                $additional_information = $resource['additional_information'] ? $resource['additional_information'][0] : '';
             }
             return [
                 'id' => $row->id,
@@ -85,34 +98,36 @@ class GeneralItemCollection extends ResourceCollection
                 'total_item_purchase' => number_format($total_item_purchase, 2),
                 'is_set' => (bool) $row->relation_item->is_set,
                 'utility_item' => number_format($utility_item, 2),
-                'factor' => ($quantity_unit!=0) ? number_format($quantity_unit, 2) : 0,
+                'factor' => ($quantity_unit != 0) ? number_format($quantity_unit, 2) : 0,
                 'document_type_description' => $resource['document_type_description'],
                 'document_type_id' => $resource['document_type_id'],
                 'web_platform_name' => optional($row->relation_item->web_platform)->name,
                 'model' => $model,
                 'platform' => $platform,
                 // 'resource'=>$resource,
-                'purchase_item'=>$purchase_item,
-                'observation'=>$observation,
+                'purchase_item' => $purchase_item,
+                'observation' => $observation,
                 'additional_information' => $additional_information,
                 'description_apply_conversion_to_pen' => $description_apply_conversion_to_pen,
             ];
         });
     }
 
-    public static function getPurchaseUnitPrice($record, $resource = null,&$purchase_item = null)
+    public static function getPurchaseUnitPrice($record, $resource = null, &$purchase_item = null)
     {
-        if($resource === null){
+        if ($resource === null) {
             $resource = self::getDocument($record);
         }
-        $purchase_unit_price = self::getIndividualPurchaseUnitPrice($record,$resource,$purchase_item) * $record->quantity;
+        $purchase_unit_price = self::getIndividualPurchaseUnitPrice($record, $resource, $purchase_item) * $record->quantity;
         if ($record->relation_item->is_set) {
             $purchase_unit_price = 0;
             foreach ($record->relation_item->sets as $item_set) {
-                $purchase_unit_price += (self::getIndividualPurchaseUnitPrice($item_set,$resource,$purchase_item) * $item_set->quantity) * $record->quantity;
+                $purchase_unit_price += (self::getIndividualPurchaseUnitPrice($item_set, $resource, $purchase_item) * $item_set->quantity) * $record->quantity;
             }
         } /*elseif() {
         }*/
+
+
 
         return $purchase_unit_price;
     }
@@ -128,14 +143,14 @@ class GeneralItemCollection extends ResourceCollection
         $purchase_item = PurchaseItem::where('item_id', $record->item_id)
             ->latest('id')->get()->pluck('purchase_id');
         // para ello se busca las compras
-        $purchase = Purchase::wherein('id',$purchase_item)
+        $purchase = Purchase::wherein('id', $purchase_item)
             ->where('date_of_issue', '<=', $resource['date_of_issue'])
-        ->latest('id')->first();
+            ->latest('id')->first();
 
         if ($purchase) {
             $purchase_item = PurchaseItem::where([
-                'purchase_id'=> $purchase->id,
-                'item_id'=> $record->item_id
+                'purchase_id' => $purchase->id,
+                'item_id' => $record->item_id
             ])
                 ->latest('id')
                 ->first();
@@ -151,7 +166,11 @@ class GeneralItemCollection extends ResourceCollection
             } else {
                 // Si la venta es en dolares, y la compra del producto es en soles, se hace la transformcaion
                 if ($purchase->currency_type_id !== $currency_type_id && $exchange_rate_sale !== 0) {
-                    $purchase_unit_price = $purchase_unit_price / $exchange_rate_sale;
+                    try {
+                        $purchase_unit_price = $purchase_unit_price / $exchange_rate_sale;
+                    } catch (\Exception $e) {
+                        $purchase_unit_price = 0;
+                    }
                 }
             }
         }
@@ -177,7 +196,7 @@ class GeneralItemCollection extends ResourceCollection
     {
         if (isset($row->item->lots)) {
             $class = get_class($row);
-            if($class == 'App\Models\Tenant\PurchaseItem'){
+            if ($class == 'App\Models\Tenant\PurchaseItem') {
                 // para compras
                 return collect($row->item->lots);
             }
@@ -212,7 +231,6 @@ class GeneralItemCollection extends ResourceCollection
             $data['currency_type_id'] = $document->currency_type_id;
             $data['purchase_order'] = $document->purchase_order;
             $data['additional_information'] = $document->additional_information;
-
         } else if ($row->purchase && $row->purchase->date_of_issue) {
             /** @var \App\Models\Tenant\Purchase $document */
             $document = $row->purchase;
@@ -224,9 +242,8 @@ class GeneralItemCollection extends ResourceCollection
             $data['document_type_description'] = $document->document_type->description;
             $data['document_type_id'] = $document->document_type->id;
             $data['currency_type_id'] = $document->currency_type_id;
-
         } else if ($row->sale_note && $row->sale_note->date_of_issue) {
-            
+
             /** @var \App\Models\Tenant\SaleNote $document */
             $row = SaleNoteItem::find($row->id);
             $document = $row->sale_note;
@@ -240,9 +257,23 @@ class GeneralItemCollection extends ResourceCollection
             $data['currency_type_id'] = $document->currency_type_id;
             $data['purchase_order'] = $document->purchase_order;
             $data['observation'] = $document->observation;
+        } else if ($row->quotation && $row->quotation->date_of_issue) {
+
+            /** @var \App\Models\Tenant\Quotation $document */
+            $row = QuotationItem::find($row->id);
+            $document = $row->quotation;
+            $data['date_of_issue'] = $document->date_of_issue->format('Y-m-d');
+            $data['customer_name'] = $document->customer->name;
+            $data['customer_number'] = $document->customer->number;
+            $data['series'] = $document->prefix;
+            $data['alone_number'] = $document->number ?? $document->id;
+            $data['document_type_description'] = 'COTIZACIÓN';
+            $data['document_type_id'] = 'COT';
+            $data['currency_type_id'] = $document->currency_type_id;
+            $data['purchase_order'] = $document->purchase_order;
+            $data['observation'] = $document->observation;
         }
 
         return $data;
     }
-
 }

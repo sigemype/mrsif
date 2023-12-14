@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
-
+    <?php
+    use App\Models\Tenant\Item;
+    use App\Models\Tenant\ItemUnitType;
+    ?>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,8 +74,10 @@
                     <tbody>
                         @foreach ($records as $row)
                             @php
+                                $items = Item::find($row->item_id); 
                                 $quantity = $row->quantity;
-                                $unit_price = $row->unit_price;
+                                $purchase_unit_price = $items->purchase_unit_price * $quantity;
+                                $unit_price = $row->unit_price * $quantity;
                                 $type_document = '';
                                 $presentation_name = null;
                                 $relation = $row->document_id ? $row->document : $row->sale_note;
@@ -82,32 +87,40 @@
                                     if (isset($row->item->presentation->id)) {
                                         $presentation = $row->item->presentation;
                                         $presentation_name = $presentation->description;
-                                        // switch ($presentation->price_default) {
-                                        //     case 1:
-                                        //         $total_price = $presentation->price1;
-                                        //         break;
-                                        //     case 2:
-                                        //         $total_price = $presentation->price2;
-                                        //         break;
-                                        //     default:
-                                        //         $total_price = $presentation->price3;
-                                        //         break;
-                                        // }
+                                        $data_items = ItemUnitType::find($row->item->presentation->id);
+
+                                        $purchase_unit_price = $items->purchase_unit_price*$data_items->quantity_unit;
                                 
-                                        $quantity = $presentation->quantity_unit;
-                                        $unit_price = number_format(floatval($unit_price) / floatval($quantity), 2, '.', '');
+                                        // $quantity = $presentation->quantity_unit;
+                                        $unit_price = number_format($unit_price, 2, '.', '');
                                         // $unit_price =
                                     }
                                 } elseif ($row->sale_note_id) {
                                     $type_document = 'NOTA DE VENTA';
+                                    if (isset($row->item->presentation->id)) {
+                                       // dd($row->item->unit_type_id);
+                                        $presentation = $row->item->presentation;
+                                        $presentation_name = $presentation->description;
+                                        $data_items = ItemUnitType::find($row->item->presentation->id);
+                                        $purchase_unit_price = $items->purchase_unit_price*$data_items->quantity_unit;
+                                
+                                        // $quantity = $presentation->quantity_unit;
+                                        $unit_price = number_format($unit_price, 2, '.', '');
+                                        // $unit_price =
+                                    }
                                 }
                                 
-                                $purchase_unit_price = 0;
-                                if (isset($row->item->purchase_unit_price)) {
-                                    $purchase_unit_price = $row->item->purchase_unit_price;
-                                }
-                                $unit_gain = (float) $unit_price - (float) $purchase_unit_price;
-                                $overall_profit = (float) $unit_price * $quantity - (float) $purchase_unit_price * $quantity;
+                        
+                                // if (isset($row->item->purchase_unit_price)) {
+                                //     $purchase_unit_price = $row->item->purchase_unit_price;
+                                //     if($purchase_unit_price == 0){
+                                //         $item = \App\Models\Tenant\Item::find($row->item_id);
+                                //         $purchase_unit_price = $item->purchase_unit_price;
+                                //     }
+                                // }
+                                
+                                $unit_gain = ((float) $unit_price - (float) $purchase_unit_price)/  $quantity;
+                                $overall_profit = (float) $unit_price  - (float) $purchase_unit_price ;
                                 
                                 $acum_unit_gain += (float) $unit_gain;
                                 $acum_overall_profit += (float) $overall_profit;
@@ -136,7 +149,7 @@
                                 <td class="celda">{{ $purchase_unit_price }}</td>
                                 <td class="celda">{{ $unit_price }}</td>
 
-                                <td class="celda">{{ $unit_gain }}</td>
+                                <td class="celda">{{ number_format($unit_gain,2) }}</td>
                                 <td class="celda">{{ $overall_profit }}</td>
                             </tr>
                         @endforeach

@@ -495,6 +495,8 @@ export default {
             showDialogLots: false,
             showDialogSelectLots: false,
             lots: [],
+            isUpdateItem:false,
+            focusTotalItem:false,
             editors: {
                 classic: ClassicEditor
             },

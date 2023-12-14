@@ -9535,7 +9535,7 @@ var FullCalendar = (function (exports) {
 
   var DayTableModel = /** @class */ (function () {
     function DayTableModel(daySeries, breakOnWeeks) {
-      var dates = daySeries.dates;
+      var dates = dayseries.dates;
       var daysPerRow;
       var firstDay;
       var rowCnt;
@@ -9570,7 +9570,7 @@ var FullCalendar = (function (exports) {
       return rows;
     };
     DayTableModel.prototype.buildCell = function (row, col) {
-      var date = this.daySeries.dates[row * this.colCnt + col];
+      var date = this.dayseries.dates[row * this.colCnt + col];
       return {
         key: date.toISOString(),
         date: date,
@@ -9585,7 +9585,7 @@ var FullCalendar = (function (exports) {
     };
     DayTableModel.prototype.sliceRange = function (range) {
       var colCnt = this.colCnt;
-      var seriesSeg = this.daySeries.sliceRange(range);
+      var seriesSeg = this.dayseries.sliceRange(range);
       var segs = [];
       if (seriesSeg) {
         var firstIndex = seriesSeg.firstIndex,

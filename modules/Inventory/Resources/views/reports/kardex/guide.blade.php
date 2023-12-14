@@ -59,8 +59,13 @@
     <tr>
         <td>MOTIVO:</td>
         <td>{{ $transaction_name }}</td>
+        @if ($reference)
+            <td>REFERENCIA:</td>
+            <td>{{ $reference }}</td>
+            @else
+            <td></td>
         <td></td>
-        <td></td>
+        @endif
     </tr>
 </table>
 <table style="border: 1px solid black;">

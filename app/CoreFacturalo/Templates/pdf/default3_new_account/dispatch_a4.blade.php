@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     $customer = $document->customer;
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
 
@@ -141,7 +150,7 @@ $logo = "{$establishment->logo}";
         <td width="45%" class="border-box pl-3">
             <table class="full-width">
                 <tr>
-                    <td style="text-decoration: underline;" colspan="2"><strong>UNIDAD DE TRANSPORTE - CONDUCTOR</td>
+                    <td style="text-decoration: underline;" colspan="2"><strong>Unidad DE TRANSPORTE - CONDUCTOR</td>
                 </tr>
 
     @if($document->transport_mode_type_id === '02')
@@ -236,10 +245,10 @@ $logo = "{$establishment->logo}";
     <thead >
         <tr class="">
             <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">ITEM</th>
-            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="12%">CÓDIGO</th>
+            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="12%">Código</th>
             <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">CANTIDAD</th>
             <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="8%">U.M.</th>
-            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="40%">DESCRIPCIÓN</th>
+            <th class="border-top-bottom text-center py-1 desc" class="cell-solid"  width="40%">Descripción</th>
             <th class="border-top-bottom text-right py-1 desc" class="cell-solid"  width="12%">PESO</th>
         </tr>
     </thead>
@@ -259,7 +268,7 @@ $logo = "{$establishment->logo}";
                     @endif
                     
                 </td>
-                <td class="p-1 text-center align-top desc cell-solid-rl">{{ $row->item->unit_type_id }}</td>
+                <td class="p-1 text-center align-top desc cell-solid-rl">{{ symbol_or_code($row->item->unit_type_id) }}</td>
                 <td class="p-1 text-left align-top desc text-upp cell-solid-rl">
                     {!!$row->item->description!!}
                     @if($row->relation_item->attributes)
@@ -276,7 +285,7 @@ $logo = "{$establishment->logo}";
                     @endif
                 </td> 
                 <td class="p-1 text-center align-top desc cell-solid-rl">
-                    {{ $total_weight_line }}
+                    {{ $row->item->weight }}
                 </td>
             </tr>
 
@@ -339,7 +348,7 @@ $logo = "{$establishment->logo}";
         <td width="50%" class="border-box pl-3">
             <table class="full-width">
                 <tr>
-                    <td colspan="2"><strong>OBSERVACIONES:</td>
+                    <td colspan="2"><strong>Observaciones:</td>
                 </tr>
                 <tr>
                     <td>{{ $document->observations }}</td>

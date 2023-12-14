@@ -1,9 +1,18 @@
 @php
-    $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment = $document->establishment;
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
     //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
     $tittle = $document->prefix.'-'.str_pad($document->id, 8, '0', STR_PAD_LEFT);
 @endphp
@@ -54,7 +63,7 @@ $logo = "{$establishment->logo}";
             </div>
         </td>
         <td width="30%" class="border-box py-4 px-2 text-center">
-            <h5 class="text-center">{{ get_document_name('quotation', 'COTIZACIÓN') }}</h5>
+            <h5 class="text-center">{{ get_document_name('quotation', 'Cotización') }}</h5>
             <h3 class="text-center">{{ $tittle }}</h3>
         </td>
     </tr>
@@ -72,9 +81,9 @@ $logo = "{$establishment->logo}";
 <table class="full-width mt-10 mb-10">
     <thead class="">
     <tr class="bg-grey">
-        <th class="border-top-bottom text-center py-2" width="10%">CANT.</th>
-        <th class="border-top-bottom text-center py-2" width="10%">UNIDAD</th>
-        <th class="border-top-bottom text-left py-2" width="80%">DESCRIPCIÓN</th>
+        <th class="border-top-bottom text-center py-2" width="10%">Cant.</th>
+        <th class="border-top-bottom text-center py-2" width="10%">Unidad</th>
+        <th class="border-top-bottom text-left py-2" width="80%">Descripción</th>
     </tr>
     </thead>
     <tbody>

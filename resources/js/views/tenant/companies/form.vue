@@ -340,6 +340,27 @@
                                     <div class="sub-title text-danger"></div>
                                 </div>
                             </div>
+                              <!-- <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label"
+                                        >Es RUS
+                                        <el-tooltip
+                                            class="item"
+                                            content="¿Es Régimen Único Simplificado?, se inhabilitan las facturas"
+                                            effect="dark"
+                                            placement="top-start"
+                                        >
+                                        <i class="fa fa-info-circle"></i>
+                                        </el-tooltip>
+                                        </label
+                                    >
+                                <el-switch
+                                    v-model="form.is_rus"
+                                    active-color="#13ce66"
+                                    inactive-color="#ff4949"
+                                ></el-switch>
+                                </div>
+                            </div> -->
                             <div
                                 v-if="form.soap_type_id == '02'"
                                 class="col-md-6"
@@ -787,17 +808,20 @@
             </div>
         </div>
         <TokenRucDni></TokenRucDni>
+        <SireConfiguration></SireConfiguration>
     </div>
 </template>
 
 <script>
 import { mapActions, mapState } from "vuex";
 import TokenRucDni from "./token_ruc_dni.vue";
+import SireConfiguration from '../sire/partials/configuration.vue'
 
 export default {
     props: ["configuration"],
     components: {
         TokenRucDni,
+        SireConfiguration,
     },
     computed: {
         ...mapState(["config"])

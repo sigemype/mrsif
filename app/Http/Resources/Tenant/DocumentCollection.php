@@ -24,6 +24,7 @@ class DocumentCollection extends ResourceCollection
             $btn_guide = true; // Boton para generar guia
             $btn_resend = false;
             $btn_voided = false;
+            $btn_pdf_voided = false;
             $btn_consult_cdr = false;
             $btn_delete_doc_type_03 = false;
             $btn_constancy_detraction = false;
@@ -43,6 +44,9 @@ class DocumentCollection extends ResourceCollection
                     $btn_resend = false;
                     $btn_voided = true;
                     $btn_consult_cdr = true;
+                }
+                if ($row->state_type_id === '11') {
+                    $btn_pdf_voided = true;
                 }
 
                 if (in_array($row->document_type_id, ['07', '08'])) {
@@ -103,6 +107,9 @@ class DocumentCollection extends ResourceCollection
             }
 
             $total_payment = $row->payments->sum('payment');
+            if($row->bill_of_exchange_id){
+                $total_payment += $row->bill_of_exchange_document->total;
+            }
 
             $balance = number_format($row->total - $total_payment, 2, ".", "");
 
@@ -170,6 +177,8 @@ class DocumentCollection extends ResourceCollection
                 $btn_check_voided_pse = true;
             }
             return [
+                'btn_pdf_voided' => $btn_pdf_voided,
+                'bill_of_exchange_id' => $row->bill_of_exchange_id,
                 'btn_check_voided_pse' => $btn_check_voided_pse, 
                 'btn_voided_pse' => $btn_voided_pse,
                 'btn_send_pse' => $btn_send_pse,

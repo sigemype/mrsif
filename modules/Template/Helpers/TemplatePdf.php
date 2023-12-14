@@ -63,7 +63,7 @@ class TemplatePdf
             }
             $footer_text_1 = $document->print_footer_text;
             $footer_text_2 = 'Representación impresa de la ' . $document->document_type_name;
-            $footer_text_3 = 'Para consultar el comprobante ingresar a ' . url('comprobantes');
+            $footer_text_3 = 'Representación impresa del Comprobante de Pago Electrónico. <br/>Esta puede ser consultada en ' . url('comprobantes');
         }
 
         $template = Template::query()->where('is_default', true)->first();

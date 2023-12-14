@@ -2,6 +2,7 @@
 
 namespace Modules\Finance\Http\Resources;
 
+use App\Models\Tenant\BillOfExchange;
 use App\Models\Tenant\Document;
 use App\Models\Tenant\SaleNote;
 use Illuminate\Http\Resources\Json\ResourceCollection;
@@ -76,7 +77,18 @@ class UnpaidCollection extends ResourceCollection
                 $document = SaleNote::find($row->id);
                 $web_platforms = $document->getPlatformThroughItems();
                 $purchase_order = $document->purchase_order;
-            } else {
+            } 
+            elseif ($row->type == 'bill_of_exchange'){
+                $document = BillOfExchange::find($row->id);
+                $web_platforms = [];
+                $purchase_order = null;
+                $due = Carbon::parse($document->date_of_due); 
+                $now = Carbon::now();
+                $date_of_due = $due->format('Y/m/d');
+                $delay_payment = $now->diffInDays($due);
+            }
+            
+            else {
                 $web_platforms = new \Illuminate\Database\Eloquent\Collection();
             }
             return [

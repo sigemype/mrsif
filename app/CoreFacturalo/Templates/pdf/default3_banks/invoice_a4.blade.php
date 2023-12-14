@@ -1,10 +1,19 @@
 @php
 use App\CoreFacturalo\Helpers\Template\TemplateHelper;
 $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 $customer = $document->customer;
 $invoice = $document->invoice;
 $document_base = ($document->note) ? $document->note : null;
@@ -40,10 +49,19 @@ $condition = TemplateHelper::getDocumentPaymentCondition($document);
 // Pago/Coutas detalladas
 $paymentDetailed = TemplateHelper::getDetailedPayment($document);
 
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 
 @endphp
 <html>
@@ -216,7 +234,7 @@ $logo = "{$establishment->logo}";
                     <tr>
                         @if($document->purchase_order)
                         <td class="font-sm" width="90px">
-                            <strong>Orden de Compra</strong>
+                            <strong>Orden de compra</strong>
                         </td>
                         <td class="font-sm" width="8px">:</td>
                         <td class="font-sm">
@@ -275,13 +293,13 @@ $logo = "{$establishment->logo}";
     <table class="full-width mt-0 mb-0">
         <thead>
             <tr class="">
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">CÓDIGO</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">CANT.</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">Código</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">Cant.</th>
                 <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">U.M.</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="40%">DESCRIPCIÓN</th>
-                <th class="border-top-bottom text-right py-1 desc" class="cell-solid" width="12%">P.UNIT</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">DCTO.</th>
-                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">TOTAL</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="40%">Descripción</th>
+                <th class="border-top-bottom text-right py-1 desc" class="cell-solid" width="12%">P.Unit</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="8%">Dcto.</th>
+                <th class="border-top-bottom text-center py-1 desc" class="cell-solid" width="12%">Total</th>
             </tr>
         </thead>
         <tbody class="">
@@ -295,13 +313,26 @@ $logo = "{$establishment->logo}";
                     {{ number_format($row->quantity, 0) }}
                     @endif
                 </td>
-                <td class="p-1 text-center align-top desc cell-solid-rl">{{ $row->item->unit_type_id }}</td>
+                <td class="p-1 text-center align-top desc cell-solid-rl">{{ symbol_or_code($row->item->unit_type_id) }}</td>
                 <td class="p-1 text-left align-top desc text-upp cell-solid-rl">
                     @if($row->name_product_pdf)
                     {!!$row->name_product_pdf!!}
                     @else
                     {!!$row->item->description!!}
                     @endif
+                    
+                    @isset($row->item->lots)
+                    @foreach ($row->item->lots as $lot)
+                        @if (isset($lot->has_sale) && $lot->has_sale)
+                            <span style="font-size: 9px">
+                                {{ $lot->series }}
+                                @if (!$loop->last)
+                                    -
+                                @endif
+                            </span>
+                        @endif
+                    @endforeach
+                    @endisset
 
                     @if (!empty($row->item->presentation)) {!!$row->item->presentation->description!!} @endif
 
@@ -315,17 +346,13 @@ $logo = "{$establishment->logo}";
                     <br /><span style="font-size: 9px">{!! $attr->description !!} : {{ $attr->value }}</span>
                     @endforeach
                     @endif
-                    {{-- @if($row->discounts)
-                    @foreach($row->discounts as $dtos)
-                        <br/><span style="font-size: 9px">{{ $dtos->factor * 100 }}% {{$dtos->description }}</span>
-                    @endforeach
-                    @endif --}}
-
                     @if($row->item->is_set == 1)
                     <br>
                     @inject('itemSet', 'App\Services\ItemSetService')
                     {{join( "-", $itemSet->getItemsSet($row->item_id) )}}
                     @endif
+
+                    
                 </td>
                 <td class="p-1 text-right align-top desc cell-solid-rl">{{ number_format($row->unit_price, 2) }}</td>
                 <td class="p-1 text-right align-top desc cell-solid-rl">
@@ -357,10 +384,16 @@ $logo = "{$establishment->logo}";
                 <td class="p-1 text-right align-top desc cell-solid-rl"></td>
                 </tr>
                 @endfor
-
+ 
                 <tr>
                     <td class="p-1 text-left align-top desc cell-solid" colspan="3"><strong>
-                            VENDEDOR:</strong> {{ $document->user->name }}</td>
+                            VENDEDOR:</strong> 
+                            @if ($document->seller)
+                                {{ $document->seller->name }}
+                            @else
+                                {{ $document->user->name }}
+                            @endif
+                    </td>
                     <td class="p-1 text-left align-top desc cell-solid font-bold">
                         SON:
                         @foreach(array_reverse( (array) $document->legends) as $row)

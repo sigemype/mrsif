@@ -10,4 +10,9 @@ class OperationType extends ModelCatalog
 
     protected $table = "cat_operation_types";
     public $incrementing = false;
+
+    protected $casts = [
+        'exportation' => 'integer',
+        'free' => 'integer',
+    ];
 }

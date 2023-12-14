@@ -36,6 +36,7 @@ class ItemLotsGroupImport implements ToCollection
         foreach ($rows as $row) 
         {
             $internal_id = $row[0];
+    
             $lot_code = $row[1];
             $stock = $row[2];
             $date_of_due = Date::excelToDateTimeObject($row[3])->format('Y-m-d');
@@ -64,7 +65,6 @@ class ItemLotsGroupImport implements ToCollection
                     ];
         
                     $request = new InventoryRequest($params);
-                    // dd($params, $request);
         
                     $res = app(InventoryController::class)->store_transaction($request);
 

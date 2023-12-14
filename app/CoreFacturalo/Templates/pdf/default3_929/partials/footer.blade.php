@@ -11,10 +11,19 @@ if($document){
 $debug = [];
 $company = isset($company) ? $company : new Company();
 $establishment = $document->establishment;
-$logo = "storage/uploads/logos/{$company->logo}";
-if($establishment->logo) {
-$logo = "{$establishment->logo}";
+$establishment__ = \App\Models\Tenant\Establishment::find($document->establishment_id);
+$logo = $establishment__->logo ?? $company->logo;
+
+if ($logo === null && !file_exists(public_path("$logo}"))) {
+    $logo = "{$company->logo}";
 }
+
+if ($logo) {
+    $logo = "storage/uploads/logos/{$logo}";
+    $logo = str_replace("storage/uploads/logos/storage/uploads/logos/", "storage/uploads/logos/", $logo);
+}
+
+
 
 $establishment_address = ($establishment->address !== '-') ? $establishment->address : null;
 $establishment_district = ($establishment->district_id !== '-') ? $establishment->district->description : null;
@@ -35,15 +44,18 @@ $invoice = $document->invoice;
 $document_base = ($document->note) ? $document->note : null;
 
 //$path_style = app_path('CoreFacturalo'.DIRECTORY_SEPARATOR.'Templates'.DIRECTORY_SEPARATOR.'pdf'.DIRECTORY_SEPARATOR.'style.css');
-$document_number = $document->series . '-' . str_pad($document->number, 8, '0', STR_PAD_LEFT);
+$document_number = $document->series. '-' . str_pad($document->number, 8, '0', STR_PAD_LEFT);
 $accounts = \App\Models\Tenant\BankAccount::all();
 if ($document_base) {
-    $affected_document_number = ($document_base->affected_document) ? $document_base->affected_document->series . '-' . str_pad($document_base->affected_document->number, 8, '0', STR_PAD_LEFT) : $document_base->data_affected_document->series . '-' . str_pad($document_base->data_affected_document->number, 8, '0', STR_PAD_LEFT);
+    $affected_document_number = ($document_base->affected_document) ? $document_base->affected_document->series. '-' . str_pad($document_base->affected_document->number, 8, '0', STR_PAD_LEFT) : $document_base->data_affected_document->series. '-' . str_pad($document_base->data_affected_document->number, 8, '0', STR_PAD_LEFT);
 } else {
     $affected_document_number = null;
 }
 $payments = $document->payments;
-$document->load('reference_guides');
+if ($document->reference_guides) {
+    $document->load('reference_guides');
+}
+
 $total_payment = $document->payments->sum('payment');
 $balance = ($document->total - $total_payment) - $document->payments->sum('change');
 //calculate items
@@ -84,10 +96,10 @@ $customer_address = str_pad($customer_address, $max_address_length, ' ');
 $date = $document->date_of_issue->format('d/m/Y');
 $currency = $document->currency_type->description;
 $gudie = "";
-if ($document->guides) {
+if (!isset($document->guides)) {
     foreach ($document->guides as $item) {
         $gudie .= $item->document_type_description . " : " . $item->number . "<br>";
-    }
+   }
 
 }
 
@@ -161,7 +173,7 @@ $total_gravado = $currency_symbol . " " . TemplateHelper::setNumber($document->t
 $total_inefacta = $currency_symbol . " " . TemplateHelper::setNumber($document->total_unaffected);
 $total_exonerada = $currency_symbol . " " . TemplateHelper::setNumber($document->total_exonerated);
 $total_gratuita = $currency_symbol . " " . TemplateHelper::setNumber($document->total_free);
-$total_descuento = $currency_symbol . " " . TemplateHelper::setNumber($document->total_discount);
+$total_Descuento = $currency_symbol . " " . TemplateHelper::setNumber($document->total_discount);
 $total_igv = $currency_symbol . " " . TemplateHelper::setNumber($document->total_igv);
 $total_importe = $currency_symbol . " " . TemplateHelper::setNumber($document->total);
 
@@ -173,9 +185,11 @@ foreach (array_reverse((array)$document->legends) as $row) {
     $total_word .= "<br>";
 }
 
-foreach ($document->additional_information as $information) {
-    if ($information) {
-        $extra_info .= $information . "<br>";
+if ($document->additional_information) {
+    foreach ($document->additional_information as $information) {
+        if ($information) {
+            $extra_info .= $information . "<br>";
+        }
     }
 }
 
@@ -215,7 +229,7 @@ if ($company->logo) {
                     <td style="{{ $four_borders }}" valign="top" width="48%">
                         {{ $extra_info }}
                         <br>
-                        <strong>Condición de pago: </strong>{{ $condition }}
+                        <strong>Condición de Pago: </strong>{{ $condition }}
                         <br>
                         @if(!empty($paymentDetailed))
                             @foreach($paymentDetailed as $detailed)
@@ -285,9 +299,18 @@ if ($company->logo) {
 </table>
 
 <table class="full-width">
-    <tr>
-        <td class="text-center desc font-bold"><br> Para consultar el comprobante ingresar a {!! url('/buscar') !!}</td>
-    </tr>
+<tr>
+            @php
+                $document_description = null;
+            @endphp
+            @if ($document_description)
+                <td class="text-center desc">Representación impresa de la {{ $document_description }} <br />Esta puede
+                    ser consultada en {!! url('/buscar') !!}</td>
+            @else
+                <td class="text-center desc">Representación impresa del Comprobante de Pago Electrónico. <br />Esta
+                    puede ser consultada en {!! url('/buscar') !!}</td>
+            @endif
+        </tr>
 </table>
 </body>
 @endif

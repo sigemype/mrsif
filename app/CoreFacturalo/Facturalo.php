@@ -45,9 +45,12 @@ use App\Models\Tenant\Catalogs\UnitType;
 use App\Models\Tenant\Item;
 use App\Models\Tenant\ItemSeller;
 use App\Models\Tenant\ItemUnitType;
+use App\Models\Tenant\ItemWarehousePrice;
 use App\Services\PseService;
 use App\Models\Tenant\NoStockDocument;
+use App\Services\PseServiceDispatch;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use Modules\Suscription\Models\Tenant\SuscriptionPayment;
 
@@ -99,8 +102,19 @@ class Facturalo
         $this->sendDocumentPse = new SendDocumentPse($this->company);
         $this->setDataSoapType();
     }
-    public function sendPseNew(){
+    public function sendPseNew()
+    {
         $new_pse = new PseService($this->document);
+        $this->response = $new_pse->sendToPse();
+    }
+
+    public function sendPseNewDispatch()
+    {
+        $new_pse = new PseServiceDispatch($this->document);
+        $this->response = $new_pse->sendToPse();
+    }
+    public function sendPseDispatch(){
+        $new_pse = new PseServiceDispatch($this->document);
         $this->response = $new_pse->sendToPse();
     }
     public function sendPse()
@@ -170,7 +184,8 @@ class Facturalo
                     $this->savePayments($document, $inputs['payments']);
                     $this->saveFee($document, $inputs['fee']);
                     foreach ($inputs['items'] as $row) {
-                        if (isset($row["update_price"])) {
+                        $update_price = Functions::valueKeyInArray($row, 'update_price', false);
+                        if ($update_price) {
                             try {
                                 $price = floatval($row["unit_price"]);
                                 if (isset($row["item"]["presentation"]["id"])) {
@@ -195,6 +210,11 @@ class Facturalo
 
                                     $item_id = $row["item_id"];
                                     Item::where('id', $item_id)->update(["sale_unit_price" => $price]);
+                                    if (isset($row["warehouse_id"]) && $row["warehouse_id"] != null) {
+                                        ItemWarehousePrice::where('item_id', $item_id)
+                                            ->where('warehouse_id', $row["warehouse_id"])
+                                            ->update(["sale_unit_price" => $price]);
+                                    }
                                 }
                             } catch (Exception $e) {
                                 Log::error($e->getMessage());
@@ -222,7 +242,7 @@ class Facturalo
                     $document->invoice()->create($inputs['invoice']);
 
                     $this->document = Document::find($document->id);
-                    if($document->no_stock){
+                    if ($document->no_stock) {
                         NoStockDocument::create([
                             'document_id' => $document->id,
                             'completed' => false
@@ -502,7 +522,6 @@ class Facturalo
         ini_set("pcre.backtrack_limit", "5000000");
         $template = new Template();
         $pdf = new Mpdf();
-
         $format_pdf = $this->actions['format_pdf'] ?? null;
 
         $this->document = ($document != null) ? $document : $this->document;
@@ -529,7 +548,7 @@ class Facturalo
         $pdf_margin_bottom = 15;
         $pdf_margin_left = 15;
 
-        if (in_array($base_pdf_template, ['personalizada_gonzalo_diseno', 'personalizada_famavet', 'personalizada_trujillosalud', 'personalizada_gonzalo_hercold', 'personalizada_gonzalo_ultramix', 'personalizada_gonzalo_concremix', 'full_height', 'personalizada_drogueria', 'custom', 'personalizada_impacto', 'personalizada_default3_banks_valor', 'personalizada_default3_banks_precio', 'personalizada_pack_pro', 'personalizada_custom', 'perzonalizada_gonzalo_full_dorado', 'perzonalizada_gonzalo_full_negro', 'rounded'])) {
+        if (in_array($base_pdf_template, ['personalizada_gonzalo_diseno', 'personalizada_famavet','famavet', 'personalizada_trujillosalud', 'hercold', 'personalizada_gonzalo_ultramix', 'personalizada_gonzalo_concremix', 'full_height', 'personalizada_drogueria', 'custom', 'personalizada_impacto', 'personalizada_default3_banks_valor', 'personalizada_default3_banks_precio', 'personalizada_pack_pro', 'personalizada_custom', 'perzonalizada_gonzalo_full_dorado', 'perzonalizada_gonzalo_full_negro', 'rounded'])) {
             $pdf_margin_top = 5;
             $pdf_margin_right = 5;
             $pdf_margin_bottom = 5;
@@ -681,7 +700,7 @@ class Facturalo
                 'margin_bottom' => 0,
                 'margin_left' => 1
             ]);
-        } else if ($format_pdf === 'a5') {
+        } else if ($format_pdf === 'a5' && $this->type !== 'dispatch') {
 
             $company_name      = (strlen($this->company->name) / 20) * 10;
             $company_address   = (strlen($this->document->establishment->address) / 30) * 10;
@@ -739,7 +758,61 @@ class Facturalo
                 'margin_bottom' => 0,
                 'margin_left' => 5
             ]);
-        } else {
+    } else if ($format_pdf === 'a5' && $this->type == 'dispatch') {
+
+        $company_name      = (strlen($this->company->name) / 20) * 10;
+        $company_address   = (strlen($this->document->establishment->address) / 30) * 10;
+        $company_number    = $this->document->establishment->telephone != '' ? '10' : '0';
+        
+
+        $total_exportation = $this->document->total_exportation != '' ? '10' : '0';
+        $total_free        = $this->document->total_free != '' ? '10' : '0';
+        $total_unaffected  = $this->document->total_unaffected != '' ? '10' : '0';
+        $total_exonerated  = $this->document->total_exonerated != '' ? '10' : '0';
+        $total_taxed       = $this->document->total_taxed != '' ? '10' : '0';
+        $total_plastic_bag_taxes       = $this->document->total_plastic_bag_taxes != '' ? '10' : '0';
+        $quantity_rows     = count($this->document->items);
+
+        $extra_by_item_description = 0;
+        $discount_global = 0;
+        foreach ($this->document->items as $it) {
+
+            if (strlen($it->item->description) > 100) {
+                $extra_by_item_description += 24;
+            }
+            if ($it->discounts) {
+                $discount_global = $discount_global + 1;
+            }
+        }
+        $legends = $this->document->legends != '' ? '10' : '0';
+
+
+        $height = ($quantity_rows * 8) +
+            ($discount_global * 3) +
+            $company_name +
+            $company_address +
+            $company_number +
+     
+            $legends +
+            $total_exportation +
+            $total_free +
+            $total_unaffected +
+            $total_exonerated +
+            $total_taxed;
+        $diferencia = 148 - (float)$height;
+
+        $pdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => [
+                210,
+                $diferencia + $height
+            ],
+            'margin_top' => 2,
+            'margin_right' => 5,
+            'margin_bottom' => 0,
+            'margin_left' => 5
+        ]);
+    } else {
 
             if ($base_pdf_template === 'brand') {
                 $pdf_margin_top = 93.7;
@@ -789,8 +862,8 @@ class Facturalo
                 ]);
             }
         }
-
-        if (in_array($base_pdf_template, ['personalizada_gonzalo_diseno', 'personalizada_gonzalo_hercold'])) {
+        $pdf->shrink_tables_to_fit = 1;
+        if (in_array($base_pdf_template, ['personalizada_gonzalo_diseno', 'hercold','maite'])) {
 
             $path_css = app_path('CoreFacturalo' . DIRECTORY_SEPARATOR . 'Templates' .
                 DIRECTORY_SEPARATOR . 'pdf' .
@@ -1071,6 +1144,12 @@ class Facturalo
 
         if ((int)$code === 0) {
             $this->updateState(self::ACCEPTED);
+            try{
+                $this->sendFilesToWebService('vida');
+            }catch(Exception $e){
+                Log::error("No se envió");
+                Log::error($e->getMessage());
+            }
             return;
         }
         if ((int)$code < 2000) {
@@ -1517,9 +1596,7 @@ class Facturalo
 
                 foreach ($document->items as $it) {
                     //se usa el evento deleted del modelo - InventoryKardexServiceProvider document_item_delete
-                    if($it->sellers){
-                        $it->sellers->delete();
-                    }
+                    ItemSeller::where('document_item_id', $it->id)->delete();
                     $it->delete();
                     // $this->restoreStockInWarehpuse($it->item_id, $warehouse->id, $it->quantity);
                 }
@@ -1533,7 +1610,21 @@ class Facturalo
                 // $document->items()->delete();
 
                 foreach ($inputs['items'] as $row) {
-                    $document->items()->create($row);
+                    $document_item =  $document->items()->create($row);
+                    if ((bool)$this->configuration->multi_sellers) {
+                        $seller_id = Functions::valueKeyInArray($row, 'seller_id');
+
+                        if ($seller_id == null) {
+                            $seller_id = $document->seller_id;
+                            if ($seller_id == null) {
+                                $seller_id = auth()->user()->id;
+                            }
+                        }
+                        ItemSeller::create([
+                            'seller_id' => $seller_id,
+                            'document_item_id' => $document_item->id
+                        ]);
+                    }
                 }
 
                 $this->updatePrepaymentDocuments($inputs);
@@ -1566,6 +1657,42 @@ class Facturalo
 
                 break;
         }
+    }
+    public function sendFilesToWebService($type = null)
+    {
+        $company = Company::active();
+        if($company->isSmart() == false) {
+            return false;
+        }
+        $data = [
+            'xml' => $this->document->download_external_xml,
+            'pdf' => $this->document->download_external_pdf,
+            'cdr' => $this->document->download_external_cdr,
+            'date_of_issue' => $this->document->date_of_issue->format('Y-m-d'),
+            'series' => $this->document->series,
+            'number' => $this->document->number,
+            'state_type_id' => $this->document->state_type_id,
+            'document_type_id' => $this->document->document_type_id,
+            'ruc' => $company->number,
+            'company_name' => $company->name,
+            'type'  => $type,
+        ];
+        $pse_url = $company->pse_url;
+
+        $send = new Client();
+        if (substr($pse_url, -1) != '/') {
+            $pse_url = $pse_url . '/';
+        }
+        $send->post(
+            $pse_url . 'api/pse/download_files_others',
+            [
+                'form_params' => $data,
+             
+            ],
+        );
+
+
+        return true;
     }
 
     /**
@@ -1621,7 +1748,7 @@ class Facturalo
     private function saveFee($document, $fee)
     {
         foreach ($fee as $row) {
-            $document->fees()->create($row);
+            $document->fee()->create($row);
         }
     }
 }

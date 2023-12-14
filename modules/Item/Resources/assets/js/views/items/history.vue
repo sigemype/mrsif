@@ -12,7 +12,7 @@
                                         <tr>
                                             <th>Ubicación</th>
                                             <th class="text-end">Stock</th>
-                                            <th class="text-end">Series</th>
+                                            <th class="text-end">series</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -30,6 +30,27 @@
                                         </tr>
                                     </tbody>
                                 </table>
+
+                                <template
+                                v-if="data.sizes && data.sizes.length > 0"
+                                >
+                                <table class="table table-hover mt-2">
+                                        <thead>
+                                            <tr>
+                                                <th>Talla</th>
+                                                <th class="text-end">Stock</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(row, index) in data.sizes" :key="index">
+                                                <td>{{ row.size }}</td>
+                                                <td class="text-end">{{ row.stock }}</td>
+                                                <td></td>
+                                            </tr>
+                                        </tbody>
+                                </table>
+                                </template>
                             </el-tab-pane>
 
                             <el-tab-pane label="Últimas ventas" name="second">

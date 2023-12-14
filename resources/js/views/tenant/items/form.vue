@@ -37,7 +37,7 @@
                             <div v-show="form.unit_type_id != 'ZZ'" class="">
                                 <div
                                     :class="{
-                                        'has-danger': errors.calculate_quantity
+                                        'has-danger': errors.calculate_quantity,
                                     }"
                                     class="form-group"
                                 >
@@ -59,7 +59,7 @@
                                 <div
                                     :class="{
                                         'has-danger':
-                                            errors.has_plastic_bag_taxes
+                                            errors.has_plastic_bag_taxes,
                                     }"
                                     class="form-group"
                                 >
@@ -174,10 +174,29 @@
                                 ></small>
                             </div>
                         </div>
+                             <div class="col-md-3" v-if="isMajolica">
+                            <div
+                                :class="{ 'has-danger': errors.meter }"
+                                class="form-group"
+                            >
+                                <label class="control-label">Metraje</label>
+                                <el-input
+                                    type="number"
+                                    step="any"
+                                    v-model="form.meter"
+                                    dusk="meter"
+                                ></el-input>
+                                <small
+                                    v-if="errors.meter"
+                                    class="text-danger"
+                                    v-text="errors.meter[0]"
+                                ></small>
+                            </div>
+                        </div>
                         <div class="col-md-3">
                             <div
                                 :class="{
-                                    'has-danger': errors.currency_type_id
+                                    'has-danger': errors.currency_type_id,
                                 }"
                                 class="form-group"
                             >
@@ -203,7 +222,7 @@
                         <div class="col-md-3">
                             <div
                                 :class="{
-                                    'has-danger': errors.sale_unit_price
+                                    'has-danger': errors.sale_unit_price,
                                 }"
                                 class="form-group"
                             >
@@ -227,7 +246,7 @@
                             <div
                                 :class="{
                                     'has-danger':
-                                        errors.sale_affectation_igv_type_id
+                                        errors.sale_affectation_igv_type_id,
                                 }"
                                 class="form-group"
                             >
@@ -240,8 +259,9 @@
                                     @change="changeAffectationIgvType"
                                 >
                                     <el-option
-                                        v-for="(option,
-                                        idx) in affectation_igv_types"
+                                        v-for="(
+                                            option, idx
+                                        ) in affectation_igv_types"
                                         :key="idx"
                                         :label="option.description"
                                         :value="option.id"
@@ -649,7 +669,7 @@
                                                 <div
                                                     v-show="
                                                         form.unit_type_id !=
-                                                            'ZZ'
+                                                        'ZZ'
                                                     "
                                                 >
                                                     <el-checkbox
@@ -667,7 +687,7 @@
                                                 <div
                                                     v-show="
                                                         form.unit_type_id !=
-                                                            'ZZ'
+                                                        'ZZ'
                                                     "
                                                 >
                                                     <el-checkbox
@@ -686,7 +706,7 @@
                                                     v-show="
                                                         form.unit_type_id !=
                                                             'ZZ' &&
-                                                            canSeeProduction
+                                                        canSeeProduction
                                                     "
                                                 >
                                                     <el-checkbox
@@ -724,13 +744,13 @@
                                                     v-show="
                                                         form.unit_type_id !=
                                                             'ZZ' &&
-                                                            form.lots_enabled
+                                                        form.lots_enabled
                                                     "
                                                 >
                                                     <div
                                                         :class="{
                                                             'has-danger':
-                                                                errors.lot_code
+                                                                errors.lot_code,
                                                         }"
                                                         class="form-group"
                                                     >
@@ -758,14 +778,14 @@
                                                     v-show="
                                                         form.unit_type_id !=
                                                             'ZZ' &&
-                                                            form.series_enabled &&
-                                                            !recordId
+                                                        form.series_enabled &&
+                                                        !recordId
                                                     "
                                                 >
                                                     <div
                                                         :class="{
                                                             'has-danger':
-                                                                errors.lot_code
+                                                                errors.lot_code,
                                                         }"
                                                         class="form-group"
                                                     >
@@ -820,7 +840,7 @@
                             <div class="col-md-3">
                                 <div
                                     :class="{
-                                        'has-danger': errors.system_isc_type_id
+                                        'has-danger': errors.system_isc_type_id,
                                     }"
                                     class="form-group"
                                 >
@@ -832,8 +852,9 @@
                                         filterable
                                     >
                                         <el-option
-                                            v-for="(option,
-                                            idx) in system_isc_types"
+                                            v-for="(
+                                                option, idx
+                                            ) in system_isc_types"
                                             :key="idx"
                                             :label="option.description"
                                             :value="option.id"
@@ -850,7 +871,7 @@
                             <div class="col-md-3">
                                 <div
                                     :class="{
-                                        'has-danger': errors.percentage_isc
+                                        'has-danger': errors.percentage_isc,
                                     }"
                                     class="form-group"
                                 >
@@ -871,7 +892,7 @@
                         <div class="col-md-3">
                             <div
                                 :class="{
-                                    'has-danger': errors.subject_to_detraction
+                                    'has-danger': errors.subject_to_detraction,
                                 }"
                                 class="form-group"
                             >
@@ -888,19 +909,51 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div :class="{ 'has-danger': errors.frequent }" class="form-group">
-                                <el-checkbox v-model="form.frequent">Producto Favorito</el-checkbox>
+                            <div
+                                :class="{ 'has-danger': errors.frequent }"
+                                class="form-group"
+                            >
+                                <el-checkbox v-model="form.frequent"
+                                    >Producto Favorito</el-checkbox
+                                >
                                 <br />
-                                <small v-if="errors.frequent"
+                                <small
+                                    v-if="errors.frequent"
                                     class="text-danger"
-                                    v-text="errors.frequent[0]">
+                                    v-text="errors.frequent[0]"
+                                >
                                 </small>
+                            </div>
+                        </div>
+                         <div class="col-md-3">
+                            <div>
+                                <el-checkbox v-model="form.has_bonus_item"
+                              
+                                    >Producto con bonificación</el-checkbox
+                                >
+                              
+                            </div>
+                        </div>
+                        <div v-if="isClothesShoes" class="col-md-3">
+                            <div>
+                                <el-checkbox v-model="form.has_sizes"
+                                    >¿Maneja tallas?</el-checkbox
+                                >
+                                <br />
+                                <el-button
+                                    v-if="form.has_sizes"
+                                    icon="el-icon-edit-outline"
+                                    size="small"
+                                    type="primary"
+                                    @click.prevent="clickSizes"
+                                    >Ingresar tallas
+                                </el-button>
                             </div>
                         </div>
                         <div class="col-md-3" v-if="showRestrictSaleItemsCpe">
                             <div
                                 :class="{
-                                    'has-danger': errors.restrict_sale_cpe
+                                    'has-danger': errors.restrict_sale_cpe,
                                 }"
                                 class="form-group"
                             >
@@ -920,7 +973,7 @@
                             <div class="col-md-3">
                                 <div
                                     :class="{
-                                        'has-danger': errors.exchange_points
+                                        'has-danger': errors.exchange_points,
                                     }"
                                     class="form-group"
                                 >
@@ -954,7 +1007,7 @@
                                 </label>
                                 <div
                                     :class="{
-                                        'has-danger': errors.quantity_of_points
+                                        'has-danger': errors.quantity_of_points,
                                     }"
                                     class="form-group"
                                 >
@@ -1013,6 +1066,7 @@
                         </div>
                     </div>
                 </el-tab-pane>
+              
                 <el-tab-pane class v-if="!isService" name="third">
                     <span slot="label">Presentaciones</span>
                     <div class="row">
@@ -1041,9 +1095,7 @@
                                 <table class="table table-sm mb-0">
                                     <thead class="bg-light">
                                         <tr>
-                                            <th>
-                                                Default
-                                            </th>
+                                            <th>Default</th>
                                             <th class="text-center">
                                                 Código de <br />
                                                 barra
@@ -1082,8 +1134,9 @@
                                     </thead>
                                     <tbody>
                                         <tr
-                                            v-for="(row,
-                                            index) in form.item_unit_types"
+                                            v-for="(
+                                                row, index
+                                            ) in form.item_unit_types"
                                             :key="index"
                                         >
                                             <template v-if="row.id">
@@ -1173,8 +1226,9 @@
                                                             dusk="item_unit_type.unit_type_id"
                                                         >
                                                             <el-option
-                                                                v-for="(option,
-                                                                idx) in unit_types"
+                                                                v-for="(
+                                                                    option, idx
+                                                                ) in unit_types"
                                                                 :key="idx"
                                                                 :label="
                                                                     option.description
@@ -1322,7 +1376,7 @@
                                 <div class="col-md-6">
                                     <div
                                         :class="{
-                                            'has-danger': errors.category_id
+                                            'has-danger': errors.category_id,
                                         }"
                                         class="form-group"
                                     >
@@ -1358,7 +1412,7 @@
                                             v-if="form_category.add == true"
                                             v-model="form_category.name"
                                             dusk="item_code"
-                                            style="margin-bottom:1.5%;"
+                                            style="margin-bottom: 1.5%"
                                         ></el-input>
 
                                         <el-select
@@ -1368,8 +1422,9 @@
                                             filterable
                                         >
                                             <el-option
-                                                v-for="(option,
-                                                idx) in categories"
+                                                v-for="(
+                                                    option, idx
+                                                ) in categories"
                                                 :key="idx"
                                                 :label="option.name"
                                                 :value="option.id"
@@ -1385,7 +1440,7 @@
                                 <div class="col-md-6">
                                     <div
                                         :class="{
-                                            'has-danger': errors.brand_id
+                                            'has-danger': errors.brand_id,
                                         }"
                                         class="form-group"
                                     >
@@ -1421,7 +1476,7 @@
                                             v-if="form_brand.add == true"
                                             v-model="form_brand.name"
                                             dusk="item_code"
-                                            style="margin-bottom:1.5%;"
+                                            style="margin-bottom: 1.5%"
                                         ></el-input>
 
                                         <el-select
@@ -1447,84 +1502,125 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <template  v-if="form_category.add">
-                                            Imagen categoria
-                                    <div>
-                                        <input
-                                            type="file"
-                                            ref="fileInput"
-                                            style="display: none"
-                                            @change="handleFileChange"
-                                            accept="image/*"
-                                        />
-                                        <el-button
-                                            type="primary"
-                                            @click="openFileInput"
-                                            >Seleccionar imagen</el-button
-                                        >
-                                        <div v-if="selectedImage">
-                                            <img
-                                                :style="imageStyle"
-                                                :src="selectedImage"
-                                                alt="Imagen seleccionada"
+                                    <template v-if="form_category.add">
+                                        Imagen categoria
+                                        <div>
+                                            <input
+                                                type="file"
+                                                ref="fileInput"
+                                                style="display: none"
+                                                @change="handleFileChange"
+                                                accept="image/*"
                                             />
+                                            <el-button
+                                                type="primary"
+                                                @click="openFileInput"
+                                                >Seleccionar imagen</el-button
+                                            >
+                                            <div v-if="selectedImage">
+                                                <img
+                                                    :style="imageStyle"
+                                                    :src="selectedImage"
+                                                    alt="Imagen seleccionada"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
                                     </template>
                                     <template
-                                    v-if="form_category.add == false && form.category_id"
+                                        v-if="
+                                            form_category.add == false &&
+                                            form.category_id
+                                        "
                                     >
-                                    <div v-if="categories.find(cat =>cat.id == form.category_id)">
-                                        <img
-                                        v-if="categories.find(cat =>cat.id == form.category_id).image"
-                                            :style="imageStyle"
-                                            :src="categories.find(cat =>cat.id == form.category_id).image"
-                                            alt="Imagen categoria"
-                                        />
-                                    </div>
-
+                                        <div
+                                            v-if="
+                                                categories.find(
+                                                    (cat) =>
+                                                        cat.id ==
+                                                        form.category_id
+                                                )
+                                            "
+                                        >
+                                            <img
+                                                v-if="
+                                                    categories.find(
+                                                        (cat) =>
+                                                            cat.id ==
+                                                            form.category_id
+                                                    ).image
+                                                "
+                                                :style="imageStyle"
+                                                :src="
+                                                    categories.find(
+                                                        (cat) =>
+                                                            cat.id ==
+                                                            form.category_id
+                                                    ).image
+                                                "
+                                                alt="Imagen categoria"
+                                            />
+                                        </div>
                                     </template>
-                                
                                 </div>
                                 <div class="col-md-6">
                                     <template v-if="form_brand.add">
-                                             Imagen marca
-                                    <div>
-                                        <input
-                                            type="file"
-                                            ref="fileInputBrand"
-                                            style="display: none"
-                                            @change="handleFileChangeBrand"
-                                            accept="image/*"
-                                        />
-                                        <el-button
-                                            type="primary"
-                                            @click="openFileInputBrand"
-                                            >Seleccionar imagen</el-button
-                                        >
-                                        <div v-if="selectedImageBrand">
-                                            <img
-                                                :style="imageStyle"
-                                                :src="selectedImageBrand"
-                                                alt="Imagen seleccionada"
+                                        Imagen marca
+                                        <div>
+                                            <input
+                                                type="file"
+                                                ref="fileInputBrand"
+                                                style="display: none"
+                                                @change="handleFileChangeBrand"
+                                                accept="image/*"
                                             />
+                                            <el-button
+                                                type="primary"
+                                                @click="openFileInputBrand"
+                                                >Seleccionar imagen</el-button
+                                            >
+                                            <div v-if="selectedImageBrand">
+                                                <img
+                                                    :style="imageStyle"
+                                                    :src="selectedImageBrand"
+                                                    alt="Imagen seleccionada"
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
                                     </template>
                                     <template
-                                    v-if="form_brand.add == false && form.brand_id"
+                                        v-if="
+                                            form_brand.add == false &&
+                                            form.brand_id
+                                        "
                                     >
-                                    <div v-if="brands.find(cat =>cat.id == form.brand_id)">
-                                        <img
-                                        v-if="brands.find(cat =>cat.id == form.brand_id).image"
-                                            :style="imageStyle"
-                                            :src="brands.find(cat =>cat.id == form.brand_id).image"
-                                            alt="Imagen marca"
-                                        />
-                                    </div>
-
+                                        <div
+                                            v-if="
+                                                brands.find(
+                                                    (cat) =>
+                                                        cat.id == form.brand_id
+                                                )
+                                            "
+                                        >
+                                            <img
+                                                v-if="
+                                                    brands.find(
+                                                        (cat) =>
+                                                            cat.id ==
+                                                            form.brand_id
+                                                    ).image
+                                                "
+                                                :style="imageStyle"
+                                                :src="
+                                                    brands.find(
+                                                        (cat) =>
+                                                            cat.id ==
+                                                            form.brand_id
+                                                    ).image
+                                                "
+                                                alt="Imagen marca"
+                                            />
+                                        </div>
                                     </template>
-                               
                                 </div>
                             </div>
                             <div v-if="attribute_types.length > 0">
@@ -1556,8 +1652,9 @@
                                         </thead>
                                         <tbody>
                                             <tr
-                                                v-for="(row,
-                                                index) in form.attributes"
+                                                v-for="(
+                                                    row, index
+                                                ) in form.attributes"
                                                 :key="index"
                                             >
                                                 <td>
@@ -1573,8 +1670,9 @@
                                                         "
                                                     >
                                                         <el-option
-                                                            v-for="(option,
-                                                            idx) in attribute_types"
+                                                            v-for="(
+                                                                option, idx
+                                                            ) in attribute_types"
                                                             :key="idx"
                                                             :label="
                                                                 option.description
@@ -1622,7 +1720,7 @@
                             <div
                                 :class="{
                                     'has-danger':
-                                        errors.purchase_affectation_igv_type_id
+                                        errors.purchase_affectation_igv_type_id,
                                 }"
                                 class="form-group"
                             >
@@ -1636,8 +1734,9 @@
                                     @change="changePurchaseAffectationIgvType"
                                 >
                                     <el-option
-                                        v-for="(option,
-                                        idx) in affectation_igv_types"
+                                        v-for="(
+                                            option, idx
+                                        ) in affectation_igv_types"
                                         :key="idx"
                                         :label="option.description"
                                         :value="option.id"
@@ -1658,7 +1757,7 @@
                         <div class="col-md-4">
                             <div
                                 :class="{
-                                    'has-danger': errors.purchase_unit_price
+                                    'has-danger': errors.purchase_unit_price,
                                 }"
                                 class="form-group"
                             >
@@ -1685,7 +1784,7 @@
                         >
                             <div
                                 :class="{
-                                    'has-danger': errors.purchase_has_igv
+                                    'has-danger': errors.purchase_has_igv,
                                 }"
                                 class="form-group"
                             >
@@ -1713,7 +1812,7 @@
                         <div class="col-md-4 pt-2">
                             <div
                                 :class="{
-                                    'has-danger': errors.percentage_of_profit
+                                    'has-danger': errors.percentage_of_profit,
                                 }"
                                 class="form-group"
                             >
@@ -1739,7 +1838,7 @@
                         <div class="col-md-4">
                             <div
                                 :class="{
-                                    'has-danger': errors.purchase_has_isc
+                                    'has-danger': errors.purchase_has_isc,
                                 }"
                                 class="form-group"
                             >
@@ -1762,7 +1861,7 @@
                                 <div
                                     :class="{
                                         'has-danger':
-                                            errors.purchase_system_isc_type_id
+                                            errors.purchase_system_isc_type_id,
                                     }"
                                     class="form-group"
                                 >
@@ -1776,8 +1875,9 @@
                                         filterable
                                     >
                                         <el-option
-                                            v-for="(option,
-                                            idx) in system_isc_types"
+                                            v-for="(
+                                                option, idx
+                                            ) in system_isc_types"
                                             :key="idx"
                                             :label="option.description"
                                             :value="option.id"
@@ -1800,7 +1900,7 @@
                                 <div
                                     :class="{
                                         'has-danger':
-                                            errors.purchase_percentage_isc
+                                            errors.purchase_percentage_isc,
                                     }"
                                     class="form-group"
                                 >
@@ -1823,7 +1923,38 @@
                         <!-- isc compras -->
                     </div>
                 </el-tab-pane>
-
+   <el-tab-pane class  name="seven">
+                    <span slot="label">Tipo de clientes</span>
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="separator-title mt-0">
+                                Precios por clientes
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr
+                                            v-for="item in form.item_customer_prices"
+                                            :key="item.id"
+                                        >
+                                            <td>{{ item.description }}</td>
+                                            <td width="150">
+                                                <el-input
+                                                    v-model="item.price"
+                                                    min="0"
+                                                    placeholder="Precio"
+                                                    step="0.01"
+                                                    type="number"
+                                                ></el-input>
+                                            </td>
+                                        </tr>
+                                 
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </el-tab-pane>
                 <el-tab-pane v-if="canShowExtraData" class name="last">
                     <span slot="label">Informacion Adicional</span>
                     <extra-info :form.sync="form"></extra-info>
@@ -1842,48 +1973,42 @@
                                 :class="{ 'has-danger': errors.item_id }"
                                 class="form-group"
                             >
-                                <label class="control-label">
-                                    Insumo
-                                </label>
+                                <label class="control-label"> Insumo </label>
 
-                                        <el-select
-                                        class="w-100"
-                                            id="select-width"
-                                            ref="selectSearchNormal"
-                                            slot="prepend"
-                                            v-model="item_suplly"
-                                            :loading="loading_search"
-                                            :remote-method="searchRemoteItems"
-                                            filterable
-                                            placeholder="Buscar"
-                                            popper-class="el-select-items"
-                                            remote
-                                            @change="changeItem"
-                                            @focus="focusSelectItem"
-                                        >
-                                            <el-tooltip
-                                                v-for="(option, idx) in items"
-                                                :key="idx"
-                                                placement="left"
-                                            >
-                                                <div
-                                                    slot="content"
-                                                    v-html="
-                                                        ItemSlotTooltipView(
-                                                            option
-                                                        )
-                                                    "
-                                                ></div>
-                                                <el-option
-                                                    :label="
-                                                        ItemOptionDescriptionView(
-                                                            option
-                                                        )
-                                                    "
-                                                    :value="option.id"
-                                                ></el-option>
-                                            </el-tooltip>
-                                        </el-select>
+                                <el-select
+                                    class="w-100"
+                                    id="select-width"
+                                    ref="selectSearchNormal"
+                                    slot="prepend"
+                                    v-model="item_suplly"
+                                    :loading="loading_search"
+                                    :remote-method="searchRemoteItems"
+                                    filterable
+                                    placeholder="Buscar"
+                                    popper-class="el-select-items"
+                                    remote
+                                    @change="changeItem"
+                                    @focus="focusSelectItem"
+                                >
+                                    <el-tooltip
+                                        v-for="(option, idx) in items"
+                                        :key="idx"
+                                        placement="left"
+                                    >
+                                        <div
+                                            slot="content"
+                                            v-html="ItemSlotTooltipView(option)"
+                                        ></div>
+                                        <el-option
+                                            :label="
+                                                ItemOptionDescriptionView(
+                                                    option
+                                                )
+                                            "
+                                            :value="option.id"
+                                        ></el-option>
+                                    </el-tooltip>
+                                </el-select>
                                 <small
                                     v-if="errors.item_id"
                                     class="text-danger"
@@ -1892,10 +2017,10 @@
                             </div>
                         </div>
                         <div
-                            class="col-md-7 col-lg-7 col-xl-7 col-sm-7 "
-                            style="    margin-top: 1rem !important;"
+                            class="col-md-7 col-lg-7 col-xl-7 col-sm-7"
+                            style="margin-top: 1rem !important"
                         >
-                            <div class="form-group ">
+                            <div class="form-group">
                                 <button
                                     class="btn waves-effect waves-light btn-primary"
                                     type="button"
@@ -1922,8 +2047,9 @@
                                     </thead>
                                     <tbody>
                                         <tr
-                                            v-for="(row,
-                                            index) in form.supplies"
+                                            v-for="(
+                                                row, index
+                                            ) in form.supplies"
                                             :key="index"
                                         >
                                             <td>{{ index + 1 }}</td>
@@ -2003,6 +2129,135 @@
                         -->
                     </div>
                 </el-tab-pane>
+
+                         <el-tab-pane
+                    class
+                    v-if="form.has_bonus_item"
+                    name="eight"
+                >
+                    <span slot="label">Bonificación</span>
+                    <div class="row">
+                        <div class="col-md-7 col-lg-7 col-xl-7 col-sm-7">
+                            <div
+                                id="custom-select"
+                                :class="{ 'has-danger': errors.item_id }"
+                                class="form-group"
+                            >
+                                <label class="control-label"> Bonificación </label>
+
+                                <el-select
+                                    class="w-100"
+                                    id="select-width"
+                                    ref="selectSearchNormal"
+                                    slot="prepend"
+                                    v-model="item_bonus"
+                                    :loading="loading_search"
+                                    :remote-method="searchRemoteItems"
+                                    filterable
+                                    placeholder="Buscar"
+                                    popper-class="el-select-items"
+                                    remote
+                                    @change="changeItem"
+                                    @focus="focusSelectItem"
+                                >
+                                    <el-tooltip
+                                        v-for="(option, idx) in items"
+                                        :key="idx"
+                                        placement="left"
+                                    >
+                                        <div
+                                            slot="content"
+                                            v-html="ItemSlotTooltipView(option)"
+                                        ></div>
+                                        <el-option
+                                            :label="
+                                                ItemOptionDescriptionView(
+                                                    option
+                                                )
+                                            "
+                                            :value="option.id"
+                                        ></el-option>
+                                    </el-tooltip>
+                                </el-select>
+                                <small
+                                    v-if="errors.item_id"
+                                    class="text-danger"
+                                    v-text="errors.item_id[0]"
+                                ></small>
+                            </div>
+                        </div>
+                        <div
+                            class="col-md-7 col-lg-7 col-xl-7 col-sm-7"
+                            style="margin-top: 1rem !important"
+                        >
+                            <div class="form-group">
+                                <button
+                                    class="btn waves-effect waves-light btn-primary"
+                                    type="button"
+                                    @click.prevent="clickAddBonusItem"
+                                >
+                                    + Agregar Producto
+                                </button>
+                            </div>
+                        </div>
+                        <div
+                            class="col-12 table-responsive"
+                            v-if="form.bonus_items && form.bonus_items.length > 0"
+                        >
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <!--                                        <th>item_id</th>-->
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th></th>
+                                            <!--                                        <th class="text-end">Acciones</th>-->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr
+                                            v-for="(
+                                                row, index
+                                            ) in form.bonus_items"
+                                            :key="index"
+                                        >
+                                            <td>{{ index + 1 }}</td>
+                                            <!--                                        <td>{{ row.item_id }}</td>-->
+                                            <td>
+                                                {{
+                                                    row.item_bonus
+                                                        ? row.item_bonus
+                                                              .description
+                                                        : row.item_bonus
+                                                }}
+                                            </td>
+                                            <td>
+                                                <el-input-number
+                                                    v-model="row.quantity"
+                                                ></el-input-number>
+                                            </td>
+                                            <td>
+                                                
+                                                <button
+                                                    type="button"
+                                                    class="btn waves-effect waves-light btn-sm btn-danger"
+                                                    @click.prevent="clickDeleteBonusItem(index)"
+                                                >
+                                                <i class="fa fa-trash"></i>
+                                                </button>
+                                            </td>
+
+                                      </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                      
+                    </div>
+                </el-tab-pane>
             </el-tabs>
             <div class="form-actions text-end pt-2 mt-2">
                 <el-button @click.prevent="close()">Cancelar</el-button>
@@ -2023,23 +2278,33 @@
             @addRowLot="addRowLot"
         >
         </lots-form>
+        <sizes-form
+            :sizes="form.sizes"
+            :recordId="recordId"
+            :showDialog.sync="showDialogSizes"
+            :stock="form.stock"
+            @addRowSize="addRowSize"
+        >
+        </sizes-form>
     </el-dialog>
 </template>
 
 <script>
 import LotsForm from "./partials/lots.vue";
+import SizesForm from "./partials/sizes.vue";
 import ExtraInfo from "./partials/extra_info";
 import { mapActions, mapState } from "vuex";
 import {
     ItemOptionDescription,
-    ItemSlotTooltip
+    ItemSlotTooltip,
 } from "../../../helpers/modal_item";
 
 export default {
     props: ["showDialog", "recordId", "external", "type", "pharmacy"],
     components: {
         LotsForm,
-        ExtraInfo
+        ExtraInfo,
+        SizesForm,
     },
     computed: {
         ...mapState([
@@ -2052,9 +2317,9 @@ export default {
             "CatItemPackageMeasurement",
             "CatItemMoldCavity",
             "CatItemProductFamily",
-            "config"
+            "config",
         ]),
-        isService: function() {
+        isService: function () {
             // Tener en cuenta que solo oculta las pestañas para tipo servicio.
             if (this.form !== undefined) {
                 // Es servicio por selección
@@ -2074,19 +2339,19 @@ export default {
             }
             return false;
         },
-        canSeeProduction: function() {
+        canSeeProduction: function () {
             if (this.config && this.config.production_app)
                 return this.config.production_app;
             return false;
         },
-        requireSupply: function() {
+        requireSupply: function () {
             if (this.form.is_for_production) {
                 if (this.form.is_for_production == true) return true;
             }
             return false;
         },
 
-        canShowExtraData: function() {
+        canShowExtraData: function () {
             if (
                 this.config &&
                 this.config.show_extra_info_to_item !== undefined
@@ -2109,34 +2374,36 @@ export default {
             if (this.config) return this.config.restrict_sale_items_cpe;
 
             return false;
-        }
+        },
     },
 
     data() {
         return {
+            customerTypes:[],
             imageStyle: {
                 objectFit: "cover",
                 width: "200px",
-                height: "200px"
+                height: "200px",
             },
             selectedImage: null,
             selectedImageBrand: null,
             loading_digemid: false,
             loading_search: false,
             showDialogLots: false,
+            showDialogSizes: false,
             form_category: {
                 image: null,
                 file: null,
                 add: false,
                 name: null,
-                id: null
+                id: null,
             },
             form_brand: {
                 image: null,
                 file: null,
                 add: false,
                 name: null,
-                id: null
+                id: null,
             },
             warehouses: [],
             items: [],
@@ -2149,10 +2416,12 @@ export default {
             resource: "items",
             errors: {},
             item_suplly: {},
+            item_bonus:{},
             headers: headers_token,
             form: {
                 item_supplies: [],
-                is_for_production: false
+                is_for_production: false,
+                has_bonus_item:false,
             },
             // configuration: {},
             unit_types: [],
@@ -2172,13 +2441,15 @@ export default {
                 price1: 0,
                 price2: 0,
                 price3: 0,
-                price_default: 2
+                price_default: 2,
             },
             attribute_types: [],
             activeName: "first",
             fromPharmacy: false,
             inventory_configuration: null,
-            digemidCodes: []
+            digemidCodes: [],
+            isClothesShoes: false,
+            isMajolica: false,
         };
     },
     async created() {
@@ -2188,8 +2459,9 @@ export default {
         }
         await this.initForm();
 
-        await this.$http.get(`/${this.resource}/tables`).then(response => {
+        await this.$http.get(`/${this.resource}/tables`).then((response) => {
             let data = response.data;
+            this.isClothesShoes = data.clothesShoes;
             this.digemidCodes = data.digemid_codes;
             this.unit_types = data.unit_types;
             this.accounts = data.accounts;
@@ -2197,9 +2469,11 @@ export default {
             this.system_isc_types = data.system_isc_types;
             this.affectation_igv_types = data.affectation_igv_types;
             this.warehouses = data.warehouses;
+            this.customerTypes = data.customer_types;
             this.categories = data.categories;
             this.brands = data.brands;
             this.attribute_types = data.attribute_types;
+            this.isMajolica = data.is_majolica;
             // this.config = data.configuration
             if (this.canShowExtraData) {
                 this.$store.commit("setColors", data.colors);
@@ -2244,7 +2518,7 @@ export default {
             this.inventory_configuration = data.inventory_configuration;
         });
 
-        this.$eventHub.$on("submitPercentagePerception", data => {
+        this.$eventHub.$on("submitPercentagePerception", (data) => {
             this.form.percentage_perception = data;
             if (!this.form.percentage_perception)
                 this.has_percentage_perception = false;
@@ -2258,6 +2532,18 @@ export default {
     },
 
     methods: {
+        clickDeleteBonusItem(idx){
+            this.form.bonus_items.splice(idx, 1);
+        },
+        changeBonusItem(){
+
+        },
+        addRowSize(sizes) {
+            this.form.sizes = sizes;
+        },
+        clickSizes() {
+            this.showDialogSizes = true;
+        },
         openFileInputBrand() {
             this.$refs.fileInputBrand.click();
         },
@@ -2300,7 +2586,7 @@ export default {
             }
         },
         setDigemidData(data) {
-            let info = this.digemidCodes.find(d => d.cod_prod == data);
+            let info = this.digemidCodes.find((d) => d.cod_prod == data);
             if (info) {
                 let { nom_titular, num_regsan, nom_prod } = info;
                 this.form.laboratory = nom_titular;
@@ -2331,7 +2617,7 @@ export default {
             if (input.length > 2) {
                 this.loading_digemid = true;
                 const params = {
-                    input: input
+                    input: input,
                 };
                 try {
                     const response = await this.$http.get(
@@ -2358,8 +2644,14 @@ export default {
             this.form.sale_affectation_igv_type_id = this.config
                 ? this.config.affectation_igv_type_id
                 : "10";
-
-            this.$http.get(`/configurations/record`).then(response => {
+             this.form.purchase_affectation_igv_type_id = this.config
+                ? this.config.purchase_affectation_igv_type_id
+                : "10";
+            if(this.form.purchase_affectation_igv_type_id == null){
+                this.form.purchase_affectation_igv_type_id = "10";
+            }
+                console.log("🚀 ~ file: form.vue:2628 ~ setDefaultConfiguration ~ config.purchase_affectation_igv_type_id:", this.config.purchase_affectation_igv_type_id)
+            this.$http.get(`/configurations/record`).then((response) => {
                 this.form.has_igv = response.data.data.include_igv;
                 this.form.purchase_has_igv = response.data.data.include_igv;
                 // this.$setStorage('configuration',response.data.data)
@@ -2386,30 +2678,32 @@ export default {
                 value: null,
                 start_date: null,
                 end_date: null,
-                duration: null
+                duration: null,
             });
         },
         async reloadTables() {
-            await this.$http.get(`/${this.resource}/tables`).then(response => {
-                this.unit_types = response.data.unit_types;
-                this.accounts = response.data.accounts;
-                this.currency_types = response.data.currency_types;
-                this.system_isc_types = response.data.system_isc_types;
-                this.affectation_igv_types =
-                    response.data.affectation_igv_types;
-                this.warehouses = response.data.warehouses;
-                this.categories = response.data.categories;
-                this.brands = response.data.brands;
+            await this.$http
+                .get(`/${this.resource}/tables`)
+                .then((response) => {
+                    this.unit_types = response.data.unit_types;
+                    this.accounts = response.data.accounts;
+                    this.currency_types = response.data.currency_types;
+                    this.system_isc_types = response.data.system_isc_types;
+                    this.affectation_igv_types =
+                        response.data.affectation_igv_types;
+                    this.warehouses = response.data.warehouses;
+                    this.categories = response.data.categories;
+                    this.brands = response.data.brands;
 
-                this.form.sale_affectation_igv_type_id =
-                    this.affectation_igv_types.length > 0
-                        ? this.affectation_igv_types[0].id
-                        : null;
-                this.form.purchase_affectation_igv_type_id =
-                    this.affectation_igv_types.length > 0
-                        ? this.affectation_igv_types[0].id
-                        : null;
-            });
+                    this.form.sale_affectation_igv_type_id =
+                        this.affectation_igv_types.length > 0
+                            ? this.affectation_igv_types[0].id
+                            : null;
+                    this.form.purchase_affectation_igv_type_id =
+                        this.affectation_igv_types.length > 0
+                            ? this.affectation_igv_types[0].id
+                            : null;
+                });
         },
         changeLotsEnabled() {
             // if(!this.form.lots_enabled){
@@ -2433,7 +2727,7 @@ export default {
         clickDelete(id) {
             this.$http
                 .delete(`/${this.resource}/item-unit-type/${id}`)
-                .then(res => {
+                .then((res) => {
                     if (res.data.success) {
                         this.loadRecord();
                         this.$message.success(
@@ -2441,7 +2735,7 @@ export default {
                         );
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 500) {
                         this.$message.error("Error al intentar eliminar");
                     } else {
@@ -2465,7 +2759,7 @@ export default {
                 price3: 0,
                 price_default: 2,
                 barcode: null,
-                factor_default: this.form.item_unit_types.length == 0
+                factor_default: this.form.item_unit_types.length == 0,
             });
         },
         clickCancel(index) {
@@ -2475,7 +2769,10 @@ export default {
             (this.loading_submit = false), (this.errors = {});
 
             this.form = {
-                frequent:null,
+                sizes: [],
+                has_bonus_item:false,
+                has_sizes: false,
+                frequent: null,
                 id: null,
                 info_link: null,
                 colors: [],
@@ -2522,6 +2819,7 @@ export default {
                 web_platform_id: null,
                 has_plastic_bag_taxes: false,
                 item_warehouse_prices: [],
+                item_customer_prices: [],
                 item_supplies: [],
 
                 purchase_has_isc: false,
@@ -2533,7 +2831,7 @@ export default {
                 quantity_of_points: 0,
                 factory_code: null,
                 restrict_sale_cpe: false,
-                shared: false
+                shared: false,
             };
 
             this.show_has_igv = true;
@@ -2551,16 +2849,7 @@ export default {
         },
         changeAffectationIgvType() {
             let affectation_igv_type_exonerated = [
-                20,
-                21,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37
+                20, 21, 30, 31, 32, 33, 34, 35, 36, 37,
             ];
             let is_exonerated = affectation_igv_type_exonerated.includes(
                 parseInt(this.form.sale_affectation_igv_type_id)
@@ -2575,16 +2864,7 @@ export default {
         },
         changePurchaseAffectationIgvType() {
             let affectation_igv_type_exonerated = [
-                20,
-                21,
-                30,
-                31,
-                32,
-                33,
-                34,
-                35,
-                36,
-                37
+                20, 21, 30, 31, 32, 33, 34, 35, 36, 37,
             ];
             let is_exonerated = affectation_igv_type_exonerated.includes(
                 parseInt(this.form.purchase_affectation_igv_type_id)
@@ -2628,14 +2908,13 @@ export default {
             if (this.recordId) {
                 await this.$http
                     .get(`/${this.resource}/record/${this.recordId}`)
-                    .then(response => {
+                    .then((response) => {
                         this.form = response.data.data;
-                        this.form.item_unit_types = this.form.item_unit_types.map(
-                            i => ({
+                        this.form.item_unit_types =
+                            this.form.item_unit_types.map((i) => ({
                                 ...i,
-                                factor_default: !!i.factor_default
-                            })
-                        );
+                                factor_default: !!i.factor_default,
+                            }));
                         this.has_percentage_perception = this.form
                             .percentage_perception
                             ? true
@@ -2663,9 +2942,33 @@ export default {
             }
 
             this.setDataToItemWarehousePrices();
+            this.setDataToItemCustomerPrices();
+        },
+        setDataToItemCustomerPrices() {
+            this.customerTypes.forEach((clientType) => {
+                let item_customer_price = _.find(
+                    this.form.item_customer_prices,
+                    { person_type_id: clientType.id }
+                );
+
+                if (!item_customer_price) {
+                    this.form.item_customer_prices.push({
+                        id: null,
+                        item_id: null,
+                        person_type_id: clientType.id,
+                        price: null,
+                        description: clientType.description,
+                    });
+                }
+            });
+
+            this.form.item_customer_prices = _.orderBy(
+                this.form.item_customer_prices,
+                ["person_type_id"]
+            );
         },
         setDataToItemWarehousePrices() {
-            this.warehouses.forEach(warehouse => {
+            this.warehouses.forEach((warehouse) => {
                 let item_warehouse_price = _.find(
                     this.form.item_warehouse_prices,
                     { warehouse_id: warehouse.id }
@@ -2677,7 +2980,7 @@ export default {
                         item_id: null,
                         warehouse_id: warehouse.id,
                         price: null,
-                        description: warehouse.description
+                        description: warehouse.description,
                     });
                 }
             });
@@ -2691,7 +2994,7 @@ export default {
             if (this.recordId) {
                 this.$http
                     .get(`/${this.resource}/record/${this.recordId}`)
-                    .then(response => {
+                    .then((response) => {
                         this.form = response.data.data;
                         console.error(this.form.is_for_production);
                         this.changeAffectationIgvType();
@@ -2740,7 +3043,7 @@ export default {
             let error_by_item = 0;
 
             if (this.form.item_unit_types.length > 0) {
-                this.form.item_unit_types.forEach(item => {
+                this.form.item_unit_types.forEach((item) => {
                     if (parseFloat(item.quantity_unit) < 0.0001) {
                         error_by_item++;
                     }
@@ -2810,12 +3113,13 @@ export default {
                         "El porcentaje isc debe ser mayor a 0 (Compras)"
                     );
             }
+            console.log("🚀 ~ file: form.vue:2943 ~ submit ~ this.form:", this.form)
 
             this.loading_submit = true;
 
             await this.$http
                 .post(`/${this.resource}`, this.form)
-                .then(response => {
+                .then((response) => {
                     console.log(response.data);
                     if (response.data.success) {
                         this.$message.success(response.data.message);
@@ -2832,7 +3136,7 @@ export default {
                         this.$message.error(response.data.message);
                     }
                 })
-                .catch(error => {
+                .catch((error) => {
                     if (error.response.status === 422) {
                         this.errors = error.response.data;
                     } else {
@@ -2861,17 +3165,17 @@ export default {
         saveCategory() {
             this.form_category.add = false;
             this.form_category.image = this.selectedImage;
-               const formData = new FormData();
+            const formData = new FormData();
             formData.append("image", this.form_category.file);
             formData.append("name", this.form_category.name);
 
             this.$http
                 .post(`/categories`, formData, {
                     headers: {
-                        "Content-Type": "multipart/form-data"
-                    }
+                        "Content-Type": "multipart/form-data",
+                    },
                 })
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.categories.push(response.data.data);
@@ -2881,7 +3185,7 @@ export default {
                         this.$message.error("No se guardaron los cambios");
                     }
                 })
-                .catch(error => {});
+                .catch((error) => {});
         },
         saveBrand() {
             this.form_brand.add = false;
@@ -2892,10 +3196,10 @@ export default {
             this.$http
                 .post(`/brands`, formData, {
                     headers: {
-                        "Content-Type": "multipart/form-data"
-                    }
+                        "Content-Type": "multipart/form-data",
+                    },
                 })
-                .then(response => {
+                .then((response) => {
                     if (response.data.success) {
                         this.$message.success(response.data.message);
                         this.brands.push(response.data.data);
@@ -2905,13 +3209,13 @@ export default {
                         this.$message.error("No se guardaron los cambios");
                     }
                 })
-                .catch(error => {});
+                .catch((error) => {});
         },
         changeAttributeType(index) {
-            let attribute_type_id = this.form.attributes[index]
-                .attribute_type_id;
+            let attribute_type_id =
+                this.form.attributes[index].attribute_type_id;
             let attribute_type = _.find(this.attribute_types, {
-                id: attribute_type_id
+                id: attribute_type_id,
             });
             this.form.attributes[index].description =
                 attribute_type.description;
@@ -2925,11 +3229,11 @@ export default {
                 const params = {
                     input: input,
                     search_by_barcode: this.search_item_by_barcode ? 1 : 0,
-                    production: 1
+                    production: 1,
                 };
                 await this.$http
                     .get(`/${this.resource}/search-items/`, { params })
-                    .then(response => {
+                    .then((response) => {
                         this.items = response.data.items;
                         this.loading_search = false;
                         // this.enabledSearchItemsBarcode()
@@ -2943,13 +3247,14 @@ export default {
             }
         },
         getItems() {
-            this.$http.get(`/${this.resource}/item/tables`).then(response => {
+            this.$http.get(`/${this.resource}/item/tables`).then((response) => {
                 this.items = response.data.items;
             });
         },
         changeItem() {
             this.getItems();
             this.item_suplly = _.find(this.items, { id: this.item_suplly });
+            this.item_bonus = _.find(this.items, { id: this.item_bonus });
             /*
             this.form.unit_price = this.item_suplly.sale_unit_price;
 
@@ -2976,6 +3281,28 @@ export default {
         ItemOptionDescriptionView(item) {
             return ItemOptionDescription(item);
         },
+         clickAddBonusItem() {
+            // item_supplies
+            if (this.form.bonus_items === undefined) this.form.bonus_items = [];
+            let item = this.item_bonus;
+            if (item === null) return false;
+            if (item === undefined) return false;
+            if (item.id === undefined) return false;
+            this.items = [];
+            this.item_bonus = {};
+
+            item.item_id = this.form.id;
+            //item.individual_item_id = item.id
+            item.item_bonus_id = item.id;
+            item.item_bonus = {
+                description: item.description,
+            };
+            //item.individual_item = item
+            item.quantity = 1
+            //if(isNaN(item.quantity)) item.quantity = 0 ;
+            this.form.bonus_items.push(item);
+            this.changeItem();
+        },
         clickAddSupply() {
             // item_supplies
             if (this.form.supplies === undefined) this.form.supplies = [];
@@ -2990,14 +3317,14 @@ export default {
             //item.individual_item_id = item.id
             item.individual_item_id = item.id;
             item.individual_item = {
-                description: item.description
+                description: item.description,
             };
             //item.individual_item = item
             // item.quantity = 0
             //if(isNaN(item.quantity)) item.quantity = 0 ;
             this.form.supplies.push(item);
             this.changeItem();
-        }
-    }
+        },
+    },
 };
 </script>

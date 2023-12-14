@@ -1,13 +1,11 @@
 <template>
     <div v-loading="loading_submit">
-        <div class="row ">
-            <div class="col-md-12 col-lg-12 col-xl-12 ">
+        <div class="row">
+            <div class="col-md-12 col-lg-12 col-xl-12">
                 <div class="row" v-if="applyFilter">
                     <div class="col-lg-4 col-md-4 col-sm-12 pb-2">
                         <div class="d-flex">
-                            <div style="width:100px">
-                                Filtrar por:
-                            </div>
+                            <div style="width: 100px">Filtrar por:</div>
                             <el-select
                                 v-model="search.column"
                                 placeholder="Select"
@@ -26,15 +24,15 @@
                         <template
                             v-if="
                                 search.column === 'date_of_issue' ||
-                                    search.column === 'date_of_due' ||
-                                    search.column === 'date_of_payment' ||
-                                    search.column === 'delivery_date'
+                                search.column === 'date_of_due' ||
+                                search.column === 'date_of_payment' ||
+                                search.column === 'delivery_date'
                             "
                         >
                             <el-date-picker
                                 v-model="search.value"
                                 type="date"
-                                style="width: 100%;"
+                                style="width: 100%"
                                 placeholder="Buscar"
                                 value-format="yyyy-MM-dd"
                                 @change="getRecords"
@@ -73,7 +71,7 @@
                             <el-input
                                 placeholder="Buscar"
                                 v-model="search.value"
-                                style="width: 100%;"
+                                style="width: 100%"
                                 prefix-icon="el-icon-search"
                                 @input="getRecords"
                             >
@@ -85,7 +83,7 @@
                         v-if="
                             (resource == 'persons/customers' &&
                                 search.column == 'name') ||
-                                search.column == 'internal_code'
+                            search.column == 'internal_code'
                         "
                     >
                         <div class="d-flex align-items-center">
@@ -105,7 +103,6 @@
                                 <i class="el-icon-arrow-down"></i> Ordenar
                                 Descendente
                             </el-button>
-                       
                         </div>
                     </div>
                     <div
@@ -116,7 +113,6 @@
                             <el-button
                                 type="text"
                                 :disabled="!order"
-
                                 @click="ordenar('desc')"
                                 v-if="search.order_price == 'asc'"
                             >
@@ -132,14 +128,28 @@
                                 <i class="el-icon-arrow-down"></i> Ordenar
                                 Descendente S/.
                             </el-button>
-                            <el-checkbox style="margin-left:5px;" v-model="order" @change="orderPrice">
-                                    Ordenar por Precio
+                            <el-checkbox
+                                style="margin-left: 5px"
+                                v-model="order"
+                                @change="orderPrice"
+                            >
+                                Ordenar por Precio
                             </el-checkbox>
                         </div>
                     </div>
                 </div>
             </div>
-
+            <div class="row" v-if="records.length > 0 && isDriver">
+                <div class="col-md-3">
+                    <el-button
+                        class="submit"
+                        type="success"
+                        @click.prevent="clickDownload('excel')"
+                        ><i class="fa fa-file-excel"></i> Exportar
+                        Excel</el-button
+                    >
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="table-responsive">
                     <table class="table">
@@ -176,25 +186,26 @@ import queryString from "query-string";
 export default {
     props: {
         type: String,
+        isDriver: Boolean,
         configuration: {
             type: Object,
             required: false,
             default: () => {
                 return {};
-            }
+            },
         },
         productType: {
             type: String,
             required: false,
-            default: ""
+            default: "",
         },
         resource: String,
         applyFilter: {
             type: Boolean,
             default: true,
-            required: false
+            required: false,
         },
-        pharmacy: Boolean
+        pharmacy: Boolean,
     },
     data() {
         return {
@@ -203,7 +214,7 @@ export default {
                 column: null,
                 value: null,
                 order: "asc",
-                order_price:null,
+                order_price: null,
             },
             columns: [],
             records: [],
@@ -211,11 +222,10 @@ export default {
             pagination: {},
             loading_submit: false,
             fromPharmacy: false,
-            unitTypes: []
+            unitTypes: [],
         };
     },
     created() {
-     
         if (this.pharmacy !== undefined && this.pharmacy === true) {
             this.fromPharmacy = true;
         }
@@ -227,12 +237,13 @@ export default {
         if (this.type === "customers") {
             this.getPersonTypes();
         }
+      
     },
     async mounted() {
         let column_resource = _.split(this.resource, "/");
         await this.$http
             .get(`/${_.head(column_resource)}/columns`)
-            .then(response => {
+            .then((response) => {
                 this.columns = response.data;
                 this.search.column = _.head(Object.keys(this.columns));
             });
@@ -242,10 +253,16 @@ export default {
         }
     },
     methods: {
-        orderPrice(){
-            if(!this.order){
+        clickDownload(type) {
+            window.open(
+                `/package-handler/export_packages/${type}?${this.getQueryParameters()}`,
+                "_blank"
+            );
+        },
+        orderPrice() {
+            if (!this.order) {
                 this.search.order_price = null;
-            }else{
+            } else {
                 this.search.order_price = "asc";
             }
             this.getRecords();
@@ -259,11 +276,9 @@ export default {
             this.loading_submit = false;
         },
         ordenar(value) {
-            if(this.resource == "items"){
+            if (this.resource == "items") {
                 this.search.order_price = value;
-            }
-            else{
-
+            } else {
                 this.search.order = value;
             }
             this.getRecords();
@@ -279,20 +294,21 @@ export default {
             const response = await this.$http.get(
                 `/person-types/records?column=description&isPharmacy=false&page=1&value`
             );
+            console.log(response);
             this.personTypes = response.data.data;
         },
         getRecords() {
             this.loading_submit = true;
             return this.$http
                 .get(`/${this.resource}/records?${this.getQueryParameters()}`)
-                .then(response => {
+                .then((response) => {
                     this.records = response.data.data;
                     this.pagination = response.data.meta;
                     this.pagination.per_page = parseInt(
                         response.data.meta.per_page
                     );
                 })
-                .catch(error => {})
+                .catch((error) => {})
                 .then(() => {
                     this.loading_submit = false;
                 });
@@ -308,8 +324,9 @@ export default {
             return queryString.stringify({
                 page: this.pagination.current_page,
                 limit: this.limit,
+                driver: this.isDriver,
                 isPharmacy: this.fromPharmacy,
-                ...this.search
+                ...this.search,
             });
         },
         changeClearInput() {
@@ -318,7 +335,7 @@ export default {
         },
         getSearch() {
             return this.search;
-        }
-    }
+        },
+    },
 };
 </script>

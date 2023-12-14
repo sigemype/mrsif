@@ -8,7 +8,6 @@
         <div class="card-body"> 
             <form autocomplete="off" @submit.prevent="submit">
                 <div class="row pt-1">
-                    
                     <div class="col-md-12 mt-3">
                         <div class="form-group" :class="{'has-danger': errors.ws_api_phone_number_id}">
                             <label class="control-label">Número de teléfono <span class="text-danger">*</span></label>

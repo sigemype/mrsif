@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\SeriesRequest;
 use App\Http\Resources\Tenant\SeriesCollection;
 use App\Models\Tenant\Catalogs\DocumentType;
+use App\Models\Tenant\Company;
 use App\Models\Tenant\Series;
 
 class SeriesController extends Controller
@@ -17,11 +19,15 @@ class SeriesController extends Controller
     public function records($establishmentId, $document_type = null)
     {
         $records = Series::FilterEstablishment($establishmentId);
-        if(!empty($document_type)){
+        if (!empty($document_type)) {
             $records->FilterDocumentType($document_type);
         }
+        $company = Company::active();
+        if ($company->is_rus) {
+            $records = $records
+                ->where('document_type_id', '<>', '01');
+        }
         $records = $records->get();
-
         return new SeriesCollection($records);
     }
 
@@ -36,7 +42,7 @@ class SeriesController extends Controller
     {
 
         $validate_series = $this->validateSeries($request);
-        if(!$validate_series['success']) return $validate_series;
+        if (!$validate_series['success']) return $validate_series;
 
         $id = $request->input('id');
         $series = Series::firstOrNew(['id' => $id]);
@@ -45,11 +51,11 @@ class SeriesController extends Controller
 
         return [
             'success' => true,
-            'message' => ($id)?'Serie editada con éxito':'Serie registrada con éxito'
+            'message' => ($id) ? 'Serie editada con éxito' : 'Serie registrada con éxito'
         ];
     }
 
-    
+
     /**
      * 
      * Validar datos
@@ -60,17 +66,16 @@ class SeriesController extends Controller
     public function validateSeries(SeriesRequest $request)
     {
 
-        $record = Series::where([['document_type_id',$request->document_type_id],['number', $request->number]])->first();
+        $record = Series::where([['document_type_id', $request->document_type_id], ['number', $request->number]])->first();
 
-        if($record)
-        {
+        if ($record) {
             return [
                 'success' => false,
                 'message' => 'La serie ya ha sido registrada'
             ];
         }
 
-        
+
         return [
             'success' => true,
             'message' => null

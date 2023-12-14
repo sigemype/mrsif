@@ -67,6 +67,7 @@
             </div>
             <div class="card-body">
                 <data-table
+                    :isDriver="driver"
                     :type="type"
                     :configuration="configuration"
                     :resource="resource + `/${this.type}`"
@@ -75,7 +76,10 @@
                         <th>#</th>
                         <th>Nombre</th>
                         <th v-if="configuration.college">Tipo</th>
-                        <th>Cód interno</th>
+                        <th v-if="driver">Vehiculo</th>
+                        <th v-if="!driver">
+                            <template >Cód interno</template>
+                        </th>
                         <th class="text-end">Tipo de documento</th>
                         <th class="text-end">Número</th>
                         <th
@@ -173,8 +177,12 @@
                                 getOpcionalName("children", "Hijo")
                             }}</template>
                         </td>
+                              <td v-if="driver">
+                                {{row.barcode}}
+                        </td>
 
-                        <td>{{ row.internal_code }}</td>
+
+                        <td v-if="!driver">{{ row.internal_code }}</td>
                         <td class="text-end">{{ row.document_type }}</td>
                         <td class="text-end">{{ row.number }}</td>
                         <td
@@ -344,6 +352,7 @@
                 :recordId="recordId"
                 :showDialog.sync="showDialog"
                 :type="type"
+                :isDriver="driver"
             ></persons-form>
 
             <persons-import
@@ -374,6 +383,7 @@ import { deletable } from "../../../mixins/deletable";
 export default {
     mixins: [deletable],
     props: [
+        "driver",
         "type",
         "typeUser",
         "api_service_token",
@@ -449,7 +459,11 @@ export default {
         };
     },
     created() {
+        console.log(this.driver, " driver");
         this.title = this.type === "customers" ? "Clientes" : "Proveedores";
+        if(this.driver){
+            this.title = "Conductores";
+        }
         this.getColumnsToShow();
     },
     computed: {

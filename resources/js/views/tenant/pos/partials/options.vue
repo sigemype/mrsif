@@ -357,8 +357,8 @@ export default {
             let form = {
                 id: this.recordId,
                 customer_telephone: this.form.customer_telephone,
-                type_id : (this.type_id=="01" || this.type_id=="03") ? "FACT" : "NV",
-                mensaje:"Su comprobante de Pago  N° " + this.form.identifier +
+                type_id : this.resource == 'sale-notes' ? "NV" : "FACT",
+                mensaje:"Su comprobante de Pago  N° " + this.form.identifier||this.form.number +
                     " ha sido generado correctamente"
             };
             this.$http.post(`/whatsapp`, form).then(response => {

@@ -1,18 +1,29 @@
 <?php
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
-
 use Illuminate\Support\Facades\Route;
 use Modules\Sire\Http\Controllers\SireController;
+
+$current_hostname = app(Hyn\Tenancy\Contracts\CurrentHostname::class);
+
+if($current_hostname) {
+    Route::domain($current_hostname->fqdn)->group(function () {
+        Route::middleware(['auth'])->group(function () {
+            Route::prefix('sire')->group(function() {
+                Route::get('/configuration', 'SireController@getConfig')->name('tenant.sire.configuration');
+                Route::post('/configuration/update', 'SireController@updateConfig');
+                Route::get('/sale', 'SireController@index')->name('tenant.sire.sale');
+                Route::get('/purchase', 'SireController@index')->name('tenant.sire.purchase');
+
+                Route::get('/{type}/tables', 'SireController@tables');
+                Route::get('/{type}/{period}/ticket', 'SireController@getTicket');
+                Route::post('/{type}/query', 'SireController@queryTicket');
+                Route::get('/{type}/{period}/accept', 'SireController@accept');
+
+
+            });
+        });
+    });
+};
 
 Route::prefix('sire')->group(function() {
     Route::get('/', [SireController::class,'index']);

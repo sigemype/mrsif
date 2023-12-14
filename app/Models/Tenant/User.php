@@ -156,7 +156,7 @@ class User extends Authenticatable
 {
     use Notifiable;
     use UsesTenantConnection;
-    
+
     protected $with = [
         'establishment', 'area', 'worker_type'
     ];
@@ -986,6 +986,11 @@ class User extends Authenticatable
      */
     public static function  getSellersToNvCpe($establishment_id = 0, $userId = 0)
     {
+        $configuration = Configuration::select('all_sellers')->first();
+        if ($configuration->all_sellers) {
+            return  self::whereIn('type', ['seller', 'admin'])->orWhere('id', $userId)
+                ->get();
+        }
         return  self::where('establishment_id', $establishment_id)
             ->whereIn('type', ['seller', 'admin'])->orWhere('id', $userId)
             ->get();

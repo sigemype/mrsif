@@ -9,6 +9,7 @@
 
         <div v-if="loading_form">
             <form
+                v-loading="loading"
                 autocomplete="off"
                 class="row no-gutters"
                 @submit.prevent="submit"
@@ -55,15 +56,6 @@
                                             >{{ establishment.address }}
                                         </span>
                                         <br />
-                                        <span v-if="establishment.email != '-'"
-                                            >{{ establishment.email }} </span
-                                        ><span
-                                            v-if="
-                                                establishment.telephone != '-'
-                                            "
-                                            >-
-                                            {{ establishment.telephone }}</span
-                                        >
                                     </address>
                                 </div>
                                 <div
@@ -91,7 +83,7 @@
                                     class="col-xl-4 col-md-4 col-12 align-self-end"
                                 >
                                     <div class="row">
-                                        <div class="col-lg-6 align-self-end">
+                                        <div class="col-6 align-self-end">
                                             <div
                                                 :class="{
                                                     'has-danger':
@@ -100,7 +92,7 @@
                                                 class="form-group"
                                             >
                                                 <label class="control-label"
-                                                    >Fec. Emisión</label
+                                                    >Fec. emisión</label
                                                 >
                                                 <el-date-picker
                                                     v-model="form.date_of_issue"
@@ -122,7 +114,7 @@
                                                 ></small>
                                             </div>
                                         </div>
-                                        <div class="col-lg-6 align-self-end">
+                                        <div class="col-6 align-self-end">
                                             <div
                                                 :class="{
                                                     'has-danger':
@@ -131,7 +123,7 @@
                                                 class="form-group"
                                             >
                                                 <label class="control-label"
-                                                    >Fec. Vencimiento</label
+                                                    >Fec. vencimiento</label
                                                 >
                                                 <el-date-picker
                                                     v-model="form.date_of_due"
@@ -157,9 +149,7 @@
                                     class="col-xl-2 col-md-2 col-12 align-self-end"
                                 >
                                     <div class="form-group">
-                                        <label
-                                            class="control-label font-weight-bold text-info"
-                                        >
+                                        <label class="control-label">
                                             {{ form.quotations_optional }}
                                         </label>
                                         <el-input
@@ -172,7 +162,9 @@
                             </div>
                             <div class="card-body no-gutters">
                                 <div class="row">
-                                    <div class="col-lg-4 align-self-end">
+                                    <div
+                                        class="col-6 col-md-6 col-lg-4 align-self-end"
+                                    >
                                         <div
                                             :class="{
                                                 'has-danger':
@@ -180,8 +172,7 @@
                                             }"
                                             class="form-group"
                                         >
-                                            <label
-                                                class="control-label font-weight-bold text-info"
+                                            <label class="control-label"
                                                 >Tipo comprobante</label
                                             >
                                             <el-select
@@ -209,7 +200,7 @@
                                             ></small>
                                         </div>
                                     </div>
-                                    <div class="col-lg-2 d-none">
+                                    <!-- <div class="col-lg-2 d-none">
                                         <div
                                             :class="{
                                                 'has-danger':
@@ -241,8 +232,10 @@
                                                 "
                                             ></small>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-2 align-self-end">
+                                    </div> -->
+                                    <div
+                                        class="col-lg-2 col-sm-6 col-6 col-xl-2 align-self-end"
+                                    >
                                         <div
                                             :class="{
                                                 'has-danger': errors.series_id,
@@ -282,7 +275,7 @@
                                             class="form-group"
                                         >
                                             <label class="control-label"
-                                                >Tipo Operación
+                                                >Tipo de operación
                                                 <template
                                                     v-if="
                                                         (form.operation_type_id ==
@@ -325,7 +318,9 @@
                                             ></small>
                                         </div>
                                     </div>
-                                    <div class="col-lg-2 align-self-end">
+                                    <div
+                                        class="col-lg-2 col-sm-6 col-6 col-xl-2 align-self-end"
+                                    >
                                         <div
                                             :class="{
                                                 'has-danger':
@@ -358,7 +353,9 @@
                                             ></small>
                                         </div>
                                     </div>
-                                    <div class="col-lg-2 align-self-end">
+                                    <div
+                                        class="col-lg-2 col-sm-6 col-6 col-xl-2 align-self-end"
+                                    >
                                         <div
                                             :class="{
                                                 'has-danger':
@@ -404,9 +401,7 @@
                                         }"
                                         class="form-group col-sm-6 mb-0"
                                     >
-                                        <label
-                                            class="control-label font-weight-bold text-info"
-                                        >
+                                        <label class="control-label">
                                             Cliente
                                             <a
                                                 href="#"
@@ -451,8 +446,7 @@
                                         v-if="customer_addresses.length > 0"
                                         class="form-group col-sm-6 mb-0"
                                     >
-                                        <label
-                                            class="control-label font-weight-bold text-info"
+                                        <label class="control-label"
                                             >Dirección</label
                                         >
                                         <el-select
@@ -634,47 +628,46 @@
                                         trigger="hover"
                                         content="Presiona F2"
                                     >
-                                        <el-button
+                                        <button
                                             slot="reference"
-                                            type="primary"
-                                            class="btn-block mt-2"
+                                            type="button"
+                                            class="btn btn-outline-primary mb-1"
                                             @click.prevent="clickAddItemInvoice"
                                         >
-                                            + Agregar Producto
-                                        </el-button>
+                                            + Agregar producto
+                                        </button>
                                     </el-popover>
                                 </div>
                                 <div class="col-xl-3 col-md-3 col-12 pb-2">
-                                    <el-button
-                                        class="btn-block mt-2"
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-primary mb-1"
                                         :disabled="form.customer_id == null"
-                                        type="primary"
                                         @click.prevent="
                                             visibleDialogReportCustomer
                                         "
                                     >
                                         Consulta de documentos
-                                    </el-button>
+                                    </button>
                                 </div>
                                 <div
                                     class="col-xl-3 col-md-3 col-12 pb-2"
                                     v-if="isActiveBussinessTurn('hotel')"
                                 >
                                     <el-tooltip
-                                        class="item my-2"
                                         content="Datos personales para reserva de hospedaje"
                                         effect="dark"
                                         placement="bottom-end"
                                     >
-                                        <el-button
-                                            class="btn-block mt-2"
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary mb-1"
                                             @click.prevent="
                                                 clickAddDocumentHotel
                                             "
-                                            type="primary"
                                         >
                                             Datos de reserva
-                                        </el-button>
+                                        </button>
                                     </el-tooltip>
                                 </div>
                                 <div
@@ -682,20 +675,19 @@
                                     v-if="isActiveBussinessTurn('transport')"
                                 >
                                     <el-tooltip
-                                        class="item my-2"
                                         content="Datos para transporte de pasajeros"
                                         effect="dark"
                                         placement="bottom-end"
                                     >
-                                        <el-button
-                                            class="btn-block mt-2"
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-primary mb-1"
                                             @click.prevent="
                                                 clickAddDocumentTransport
                                             "
-                                            type="primary"
                                         >
                                             Datos de transporte
-                                        </el-button>
+                                        </button>
                                     </el-tooltip>
                                 </div>
                             </div>
@@ -1347,7 +1339,7 @@
                                                                 .length > 0
                                                         "
                                                     >
-                                                        <br />Series:
+                                                        <br />series:
                                                         {{
                                                             showItemSeries(
                                                                 row.item.lots
@@ -1448,11 +1440,21 @@
                                                     "
                                                 >
                                                     {{ currency_type.symbol }}
-                                                    {{
-                                                        getFormatUnitPriceRow(
-                                                            row.unit_value
-                                                        )
-                                                    }}
+                                                    <template v-if="row.meter">
+                                                        {{
+                                                            getFormatUnitPriceRow(
+                                                                row.unit_price /
+                                                                    row.meter
+                                                            )
+                                                        }}
+                                                    </template >
+                                                    <template v-else>
+                                                        {{
+                                                            getFormatUnitPriceRow(
+                                                                row.unit_value
+                                                            )
+                                                        }}
+                                                    </template>
                                                 </td>
                                                 <td
                                                     class="text-end"
@@ -1476,8 +1478,10 @@
                                                 >
                                                     {{ currency_type.symbol }}
                                                     {{
-                                                        row.total_value
-                                                            ? row.total_value.toFixed(
+                                                        !isNaN(row.total_value)
+                                                            ? Number(
+                                                                  row.total_value
+                                                              ).toFixed(
                                                                   decimalQuantity
                                                               )
                                                             : ""
@@ -1491,8 +1495,10 @@
                                                 >
                                                     {{ currency_type.symbol }}
                                                     {{
-                                                        row.total
-                                                            ? row.total.toFixed(
+                                                        !isNaN(row.total)
+                                                            ? Number(
+                                                                  row.total
+                                                              ).toFixed(
                                                                   decimalQuantity
                                                               )
                                                             : ""
@@ -1611,13 +1617,13 @@
                                                                             ></i>
                                                                         </el-tooltip>
 
-                                                                        DESCUENTO
+                                                                        Descuento
                                                                         <template
                                                                             v-if="
                                                                                 is_amount
                                                                             "
                                                                         >
-                                                                            MONTO</template
+                                                                            monto</template
                                                                         >
                                                                         <template
                                                                             v-else
@@ -1641,6 +1647,32 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
+                                                                        <el-tooltip
+                                                                            class="item"
+                                                                            content="
+                                                                              Aplicar 18% de IGV al descuento global
+                                                                            "
+                                                                            effect="dark"
+                                                                            placement="top"
+                                                                        >
+                                                                            <i
+                                                                                class="fa fa-info-circle"
+                                                                            ></i>
+                                                                        </el-tooltip>
+                                                                        <el-checkbox
+                                                                            :disabled="
+                                                                                !is_amount ||
+                                                                                total_global_discount ==
+                                                                                    0
+                                                                            "
+                                                                            v-model="
+                                                                                split_base
+                                                                            "
+                                                                            class="ml-1 mr-1"
+                                                                            @change="
+                                                                                splitBase
+                                                                            "
+                                                                        ></el-checkbox>
                                                                         <el-input-number
                                                                             v-model="
                                                                                 total_global_discount
@@ -1681,7 +1713,7 @@
                                                                             "
                                                                         >
                                                                             M.
-                                                                            DETRACCIÓN:
+                                                                            detracción:
                                                                         </td>
                                                                         <td
                                                                             style="
@@ -1715,7 +1747,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        OP.EXPORTACIÓN:
+                                                                        Op.exportación:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -1747,7 +1779,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        OP.GRATUITAS:
+                                                                        Op.gratuitas:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -1779,7 +1811,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        OP.INAFECTAS:
+                                                                        Op.inafectas:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -1811,7 +1843,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        OP.EXONERADAS:
+                                                                        Op.exoneradas:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -1843,7 +1875,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        OP.GRAVADA:
+                                                                        Op.gravada:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -1875,7 +1907,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        ANTICIPOS:
+                                                                        Anticipos:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -1999,7 +2031,7 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        SUBTOTAL:
+                                                                        Subtotal:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -2028,8 +2060,8 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        DESCUENTOS
-                                                                        TOTALES:
+                                                                        Descuentos
+                                                                        totales:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -2058,8 +2090,8 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        OTROS
-                                                                        CARGOS:
+                                                                        Otros
+                                                                        cargos:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -2152,7 +2184,7 @@
                                                                             "
                                                                         >
                                                                             M.
-                                                                            RETENCIÓN
+                                                                            retención
                                                                             ({{
                                                                                 form
                                                                                     .retention
@@ -2188,9 +2220,9 @@
                                                                             "
                                                                         >
                                                                             <strong
-                                                                                >TOTAL
-                                                                                A
-                                                                                PAGAR</strong
+                                                                                >Total
+                                                                                a
+                                                                                pagar</strong
                                                                             >:
                                                                         </td>
                                                                         <td
@@ -2229,9 +2261,9 @@
                                                                             "
                                                                         >
                                                                             <strong
-                                                                                >TOTAL
-                                                                                A
-                                                                                PAGAR</strong
+                                                                                >Total
+                                                                                a
+                                                                                pagar</strong
                                                                             >:
                                                                         </td>
                                                                         <td
@@ -2262,8 +2294,8 @@
                                                                             height: 40px !important;
                                                                         "
                                                                     >
-                                                                        CONDICIÓN
-                                                                        DE PAGO:
+                                                                        Condición
+                                                                        de pago:
                                                                     </td>
                                                                     <td
                                                                         class="text-end"
@@ -2327,7 +2359,7 @@
                                                                             "
                                                                         >
                                                                             M.
-                                                                            PENDIENTE:
+                                                                            pendiente:
                                                                         </td>
                                                                         <td
                                                                             class="text-end"
@@ -2981,6 +3013,7 @@
         ></document-report-customer>
 
         <document-form-item
+            :person_type_id="person_type_id"
             :configuration="config"
             :currency-type-id-active="form.currency_type_id"
             :documentId="documentId"
@@ -3147,6 +3180,9 @@ export default {
     ],
     data() {
         return {
+            split_base: false,
+            loading: false,
+            person_type_id: null,
             cash_id: null,
             children: [],
             monthsSelected: [],
@@ -3317,7 +3353,10 @@ export default {
             this.decimalQuantity = decimal_quantity;
         }
         await this.initForm();
-        await this.$http.get(`/${this.resource}/tables`).then((response) => {
+
+        try {
+            this.loading = true;
+            const response = await this.$http.get(`/${this.resource}/tables`);
             this.document_types = response.data.document_types_invoice;
             this.document_types_guide = response.data.document_types_guide;
             this.currency_types = response.data.currency_types;
@@ -3348,6 +3387,10 @@ export default {
                 this.document_types.length > 0
                     ? this.document_types[0].id
                     : null;
+            console.log(
+                "🚀 ~ file: invoice_generate.vue:3373 ~ created ~ this.form.document_type_id:",
+                this.form.document_type_id
+            );
             this.form.operation_type_id =
                 this.operation_types.length > 0
                     ? this.operation_types[0].id
@@ -3364,21 +3407,24 @@ export default {
             this.seller_class =
                 this.user == "admin" ? "col-lg-4 pb-2" : "col-lg-6 pb-2";
             this.global_discount_types = response.data.global_discount_types;
+        } catch (error) {
+        } finally {
+            this.loading = false;
+        }
+        // this.default_document_type = response.data.document_id;
+        // this.default_series_type = response.data.series_id;
+        this.selectDocumentType();
 
-            // this.default_document_type = response.data.document_id;
-            // this.default_series_type = response.data.series_id;
-            this.selectDocumentType();
-
-            this.changeEstablishment();
-            this.changeDateOfIssue();
-            this.changeDocumentType();
-            this.changeDestinationSale();
-            this.changeCurrencyType();
-            this.setDefaultDocumentType();
-            this.setConfigGlobalDiscountType();
-        });
+        this.changeEstablishment();
+        this.changeDocumentType();
+        this.changeDestinationSale();
+        this.changeCurrencyType();
+        this.setDefaultDocumentType();
+        this.changeDateOfIssue();
+        this.setConfigGlobalDiscountType();
         await this.getPercentageIgv();
         this.loading_form = true;
+
         this.$eventHub.$on("reloadDataPersons", (customer_id) => {
             this.reloadDataCustomers(customer_id);
         });
@@ -3388,9 +3434,14 @@ export default {
         if (this.documentId) {
             this.btnText = this.isUpdate == true ? "Actualizar" : "Generar";
             this.loading_submit = true;
+
             await this.$http
                 .get(`/documents/${this.documentId}/show`)
                 .then((response) => {
+                    console.log(
+                        "🚀 ~ file: invoice_generate.vue:3413 ~ .then ~ response:",
+                        response
+                    );
                     this.onSetFormData(response.data.data);
                 })
                 .finally(() => (this.loading_submit = false));
@@ -3400,6 +3451,7 @@ export default {
          * #830
          */
         if (this.table) {
+            await this.changeDateOfIssue();
             await this.$http
                 .get(`/store/record/${this.table}/${this.tableId}`)
                 .then((response) => {
@@ -3433,6 +3485,9 @@ export default {
                             this.percentage_igv
                         );
                     });
+                    console.log(
+                        "🚀 ~ file: invoice_generate.vue:3458 ~ .then ~ .:"
+                    );
                 });
         }
 
@@ -3451,6 +3506,9 @@ export default {
                         return this.setItemFromResponse(i, itemsParsed);
                     });
                     this.form.items = itemsResponse.map((i) => {
+                        console.log(
+                            "🚀 ~ file: invoice_generate.vue:3476 ~ this.form.items=itemsResponse.map ~ .:"
+                        );
                         return calculateRowItem(
                             i,
                             this.form.currency_type_id,
@@ -3501,6 +3559,19 @@ export default {
         this.formatTooltip(20);
     },
     methods: {
+        splitBase() {
+            if (this.total_global_discount == 0 || !this.is_amount) return;
+            if (this.split_base) {
+                this.total_global_discount = this.total_global_discount / 1.18;
+            } else {
+                this.total_global_discount = this.total_global_discount * 1.18;
+            }
+            this.total_global_discount = Math.round(
+                this.total_global_discount * 100
+            );
+            this.total_global_discount = this.total_global_discount / 100;
+            this.calculateTotal();
+        },
         async changeSeller() {
             let { seller_id } = this.form;
             await this.getCash(seller_id);
@@ -3568,6 +3639,9 @@ export default {
         formatItems(item) {
             let oldItem = this.createItem(item);
 
+            console.log(
+                "🚀 ~ file: invoice_generate.vue:3595 ~ formatItems ~ row:"
+            );
             let row = calculateRowItem(oldItem, "PEN", 1, 0.18);
 
             this.addRow(row);
@@ -3717,6 +3791,7 @@ export default {
             this.monthCollege = [];
             this.collegeYear = 20;
             this.errors = {};
+            this.split_base = false;
             this.form = {
                 child_id: null,
                 no_stock: this.configuration.document_no_stock || false,
@@ -3852,6 +3927,9 @@ export default {
                 );
             }
 
+            console.log(
+                "🚀 ~ file: invoice_generate.vue:3879 ~ changeRowFreeAffectationIgv ~ .:"
+            );
             this.form.items[index] = await calculateRowItem(
                 row,
                 this.form.currency_type_id,
@@ -4014,6 +4092,10 @@ export default {
             }
         },
         async onSetFormData(data) {
+            console.log(
+                "🚀 ~ file: invoice_generate.vue:4078 ~ onSetFormData ~ data:",
+                data
+            );
             this.currency_type = await _.find(this.currency_types, {
                 id: data.currency_type_id,
             });
@@ -4023,6 +4105,11 @@ export default {
             }
             this.form.establishment_id = data.establishment_id;
             this.form.document_type_id = data.document_type_id;
+            if (this.company.is_rus) {
+                this.form.document_type_id = "03";
+            }
+            this.changeDocumentType();
+
             this.form.id = data.id;
             this.form.hash = data.hash;
             this.form.number = data.number;
@@ -4035,7 +4122,7 @@ export default {
             this.form.time_of_issue = data.time_of_issue;
             this.form.customer_id = data.customer_id;
             this.form.currency_type_id = data.currency_type_id;
-            this.form.exchange_rate_sale = data.exchange_rate_sale;
+            // this.form.exchange_rate_sale = data.exchange_rate_sale;
             this.form.external_id = data.external_id;
             this.form.filename = data.filename;
             this.form.group_id = data.group_id;
@@ -4063,8 +4150,9 @@ export default {
 
             this.form.seller_id = data.seller_id;
             this.form.items = this.onPrepareItems(data.items);
+
             // this.form.series = data.series; //form.series no llena el selector
-            if (this.table !== "quotations") {
+            if (this.table !== "quotations" && !this.company.is_rus) {
                 this.$store.commit(
                     "setSeries",
                     this.onSetSeries(data.document_type_id, data.series)
@@ -4096,10 +4184,13 @@ export default {
             this.form.total = parseFloat(data.total);
             this.form.subtotal = parseFloat(data.subtotal);
             this.form.total_igv_free = parseFloat(data.total_igv_free);
-            this.form.series_id = this.onSetSeriesId(
-                data.document_type_id,
-                data.series
-            );
+            if (!this.company.is_rus) {
+                this.form.series_id = this.onSetSeriesId(
+                    data.document_type_id,
+                    data.series
+                );
+            }
+
             this.form.operation_type_id = data.invoice
                 ? data.invoice.operation_type_id
                 : data.operation_type_id;
@@ -4174,6 +4265,7 @@ export default {
             this.prepareDataCustomer();
 
             this.calculateTotal();
+            this.changeCurrencyType();
             // this.currency_type = _.find(this.currency_types, {'id': this.form.currency_type_id})
         },
         preparePaymentsFee(data) {
@@ -4331,20 +4423,26 @@ export default {
                 id: this.form.currency_type_id,
             });
 
-            new_item.currency_type_id = currency_type.id;
-            new_item.currency_type_symbol = currency_type.symbol;
-
             new_item.sale_affectation_igv_type_id =
                 data.affectation_igv_type_id;
 
             if (this.table) {
-                new_item.sale_unit_price = new_item.unit_price;
-                new_item.unit_price = new_item.unit_price;
+                let { exchange_rate_sale } = this.form;
+                if (new_item.currency_type_id != this.form.currency_type_id) {
+                    new_item.sale_unit_price =
+                        new_item.unit_price * exchange_rate_sale;
+                    new_item.unit_price =
+                        new_item.unit_price * exchange_rate_sale;
+                } else {
+                    new_item.sale_unit_price = new_item.unit_price;
+                    new_item.unit_price = new_item.unit_price;
+                }
             } else {
                 new_item.sale_unit_price = data.unit_price;
                 new_item.unit_price = data.unit_price;
             }
-
+            new_item.currency_type_id = currency_type.id;
+            new_item.currency_type_symbol = currency_type.symbol;
             return new_item;
         },
         onSetSeriesId(documentType, serie) {
@@ -4479,6 +4577,9 @@ export default {
             this.form.document_type_id = this.select_first_document_type_03
                 ? "03"
                 : "01";
+            if (this.company.is_rus) {
+                this.form.document_type_id = "03";
+            }
         },
         keyupCustomer() {
             if (this.input_person.number) {
@@ -4859,6 +4960,11 @@ export default {
         async ediItem(row, index) {
             row.indexi = index;
             this.recordItem = row;
+
+            if (row.item.meter && row.item.meter > 0) {
+                this.recordItem.unit_price /= row.item.meter;
+                this.recordItem.input_unit_price_value /= row.item.meter;
+            }
             this.showDialogAddItem = true;
         },
         async searchRemoteChildren(input, fromParent = false) {
@@ -5254,13 +5360,19 @@ export default {
 
             this.form.date_of_due = this.form.date_of_issue;
             // if (! this.isUpdate) {
-            await this.searchExchangeRateByDate(this.form.date_of_issue).then(
-                (response) => {
+            try {
+                await this.searchExchangeRateByDate(
+                    this.form.date_of_issue
+                ).then((response) => {
                     this.form.exchange_rate_sale = response;
-                }
-            );
+                });
+            } catch (e) {
+                this.form.exchange_rate_sale = 1;
+            }
             await this.getPercentageIgv();
-            this.changeCurrencyType();
+            if (this.form.items) {
+                this.changeCurrencyType();
+            }
             // }
         },
         assignmentDateOfPayment() {
@@ -5366,6 +5478,12 @@ export default {
             this.calculateTotal();
         },
         clickRemoveItem(index) {
+            let item = this.form.items[index];
+            if (item.random_key) {
+                this.form.items = this.form.items.filter((it, index) => {
+                    return item.random_key !== it.depend_key;
+                });
+            }
             this.form.items.splice(index, 1);
             this.calculateTotal();
 
@@ -5382,7 +5500,8 @@ export default {
                         row,
                         this.form.currency_type_id,
                         this.form.exchange_rate_sale,
-                        this.percentage_igv
+                        this.percentage_igv,
+                        this.documentId !== null
                     )
                 );
             });
@@ -5731,6 +5850,7 @@ export default {
                 amount: amount,
                 base: base,
                 is_amount: this.is_amount,
+                is_split: this.split_base,
             });
         },
         discountGlobal() {
@@ -5843,7 +5963,15 @@ export default {
         validatePaymentDestination() {
             let error_by_item = 0;
 
+            console.log(
+                "🚀 ~ file: invoice_generate.vue:5894 ~ this.form.payments.forEach ~ this.form.payments:",
+                this.form.payments
+            );
             this.form.payments.forEach((item) => {
+                console.log(
+                    "🚀 ~ file: invoice_generate.vue:5889 ~ this.form.payments.forEach ~ item:",
+                    item
+                );
                 if (!["05", "08", "09"].includes(item.payment_method_type_id)) {
                     if (item.payment_destination_id == null) error_by_item++;
                 }
@@ -5893,6 +6021,10 @@ export default {
                     return this.$message.error(error_prepayment.message);
             }
 
+            console.log(
+                "🚀 ~ file: invoice_generate.vue:5940 ~ submit ~ this.is_receivable:",
+                this.is_receivable
+            );
             if (this.is_receivable) {
                 this.form.payments = [];
             } else {
@@ -6111,34 +6243,40 @@ export default {
                 });
         },
         async changeCustomer() {
+            this.person_type_id = null;
             this.customer_addresses = [];
             this.form.customer_address_id = null;
 
             let customer = _.find(this.customers, {
                 id: this.form.customer_id,
             });
-            this.customer_addresses = customer.addresses;
-            if (customer.address) {
-                this.customer_addresses.unshift({
-                    id: null,
-                    address: customer.address,
-                });
+            if (customer) {
+                this.person_type_id = customer.person_type_id;
+                this.customer_addresses = customer.addresses;
+                if (customer.address) {
+                    this.customer_addresses.unshift({
+                        id: null,
+                        address: customer.address,
+                    });
+                }
+
+                this.setCustomerAccumulatedPoints(
+                    customer.id,
+                    this.config.enabled_point_system
+                );
+
+                let seller = this.sellers.find(
+                    (element) => element.id == customer.seller_id
+                );
+                if (seller !== undefined) {
+                    this.form.seller_id = seller.id;
+                }
+
+                // retencion para clientes con ruc
+                this.validateCustomerRetention(
+                    customer.identity_document_type_id
+                );
             }
-
-            this.setCustomerAccumulatedPoints(
-                customer.id,
-                this.config.enabled_point_system
-            );
-
-            let seller = this.sellers.find(
-                (element) => element.id == customer.seller_id
-            );
-            if (seller !== undefined) {
-                this.form.seller_id = seller.id;
-            }
-
-            // retencion para clientes con ruc
-            this.validateCustomerRetention(customer.identity_document_type_id);
 
             /*if(this.customer_addresses.length > 0) {
                 let address = _.find(this.customer_addresses, {'main' : 1});

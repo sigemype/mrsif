@@ -136,6 +136,9 @@
                 <div class="card-body">
                     <h6 class="card-title">Ventas</h6>
                     <ul class="card-report-links">
+                        <li>
+                            <a href="{{route('tenant.reports.summary_sales.index')}}">Ventas resumidas</a>
+                        </li>
                         @if($vc_company->soap_type_id != '03')
                             <li>
                                 <a href="{{route('tenant.reports.sales.index')}}">Documentos</a>

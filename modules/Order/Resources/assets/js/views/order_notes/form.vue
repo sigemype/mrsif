@@ -22,10 +22,7 @@
                         <div class="col-sm-10 text-left mt-3 mb-0">
                             <address class="ib mr-2">
                                 <span class="font-weight-bold d-block"
-                                    >PEDIDO</span
-                                >
-                                <span class="font-weight-bold d-block"
-                                    >{{ serie ? serie : "PD" }} -XXX</span
+                                    >Pedido</span
                                 >
                                 <span class="font-weight-bold">{{
                                     company.name
@@ -42,11 +39,6 @@
                                 -
                                 {{ config.establishment.country.description }}
                                 <br />
-                                {{ config.establishment.email }} -
-                                <span
-                                    v-if="config.establishment.telephone != '-'"
-                                    >{{ config.establishment.telephone }}</span
-                                >
                             </address>
                         </div>
                     </div>

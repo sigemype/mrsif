@@ -125,7 +125,8 @@ class DispatchCarrierController extends Controller
 
 
     public function create($document_id = null, $type = null, $dispatch_id = null)
-    {
+    {   
+
         if ($type == 'q') {
             $document = Quotation::find($document_id);
         } elseif ($type == 'on') {
@@ -200,6 +201,8 @@ class DispatchCarrierController extends Controller
                 'id' => $document->id,
                 'series' => $document->series,
                 'number' => $document->number,
+                'sender_id' => $document->sender_id,
+                'receiver_id' => $document->receiver_id,
                 'establishment_id' => $document->establishment_id,
                 'customer_id' => $document->customer_id,
                 'items' => $items,
@@ -232,7 +235,7 @@ class DispatchCarrierController extends Controller
             ];
         }
 
-        return view('tenant.dispatches.carrier.form', [
+        return view('tenant.dispatches.carrier.create', [
             'document' => $data,
             'parentTable' => $parentTable,
             'parentId' => $parentId
@@ -258,7 +261,7 @@ class DispatchCarrierController extends Controller
             ];
         }
         //dd($sale_note_id);
-        return view('tenant.dispatches.form', compact('document', 'type', 'dispatch', 'items'));
+        return view('tenant.dispatches.create', compact('document', 'type', 'dispatch', 'items'));
     }
 
     public function sendDispatchToSunat(Dispatch $document)
@@ -645,7 +648,9 @@ class DispatchCarrierController extends Controller
         });
 
         $series = Series::where('establishment_id', $establishment->id)->get();
-        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])->get();
+        $document_types_invoice = DocumentType::whereIn('id', ['01', '03'])
+        ->where('active', true)
+        ->get();
         // $document_types_invoice = DocumentType::whereIn('id', ['01', '03', '80'])->get();
         $payment_method_types = PaymentMethodType::all();
         $payment_destinations = $this->getPaymentDestinations();
